@@ -1512,12 +1512,22 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         vsOverlay.classList.add('hidden');
         stopCamera();
-        toast('Trovati prodotti simili nel catalogo!');
+        toast('Prodotto analizzato! Ricerca nel catalogo...');
         const searchInput = $('search-input');
-        if (searchInput) {
-          searchInput.value = 'Scarpe running';
-          state.searchQuery = 'Scarpe running';
+        if (searchInput && state.products && state.products.length > 0) {
+          // Seleziona un prodotto casuale per simulare il risultato visivo corretto per la demo
+          const randomProduct = state.products[Math.floor(Math.random() * state.products.length)];
+          // Usa il tipo di prodotto (es. Camicia, Scarpe) o la prima parola del titolo
+          let keyword = randomProduct.productType || randomProduct.title.split(' ')[0];
+          if (!keyword) keyword = randomProduct.title;
+          
+          searchInput.value = keyword;
+          state.searchQuery = keyword.toLowerCase();
           $('search-clear').style.display = 'flex';
+          renderCatalog();
+        } else if (searchInput) {
+          searchInput.value = '';
+          state.searchQuery = '';
           renderCatalog();
         }
       }, 1000);
