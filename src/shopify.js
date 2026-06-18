@@ -1,4 +1,5 @@
 import { MOCK_PRODUCTS, MOCK_COLLECTIONS, MOCK_CUSTOMERS } from './mock-data.js';
+import { cacheGet, cacheSet } from './cache.js';
 
 export class ShopifyClient {
   constructor() {
@@ -116,51 +117,78 @@ export class ShopifyClient {
       throw new Error('Client Shopify non configurato.');
     }
 
-    // ── Via PROXY locale (risolve CORS su localhost) ──
-    if (this.useProxy) {
-      const response = await fetch('/api/shopify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shopDomain:  this.shopDomain,
-          accessToken: this.accessToken,
-          apiVersion:  this.apiVersion,
-          query,
-          variables,
-        }),
-      });
+    // ── CACHE LAYER (Layer 1) ──
+    const isQuery = query.trim().toLowerCase().startsWith('query');
+    let cacheKey = null;
+    if (isQuery) {
+      const rawKey = query + JSON.stringify(variables);
+      // Hash semplice della query
+      const hash = rawKey.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+      cacheKey = 'sf_' + hash;
+      const cached = cacheGet(cacheKey);
+      if (cached) return cached;
+    }
 
-      if (!response.ok) {
-        throw new Error(`Errore proxy HTTP: ${response.status}`);
+    // ── RETRY LOGIC CON EXPONENTIAL BACKOFF (Layer 2) ──
+    const maxRetries = 3;
+    let attempt = 0;
+
+    while (attempt < maxRetries) {
+      try {
+        let json;
+        if (this.useProxy) {
+          const response = await fetch('/api/shopify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              shopDomain:  this.shopDomain,
+              accessToken: this.accessToken,
+              apiVersion:  this.apiVersion,
+              query,
+              variables,
+            }),
+          });
+          if (!response.ok) throw new Error(`Errore proxy HTTP: ${response.status}`);
+          json = await response.json();
+        } else {
+          const endpoint = `https://${this.shopDomain}/api/${this.apiVersion}/graphql.json`;
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shopify-Storefront-Access-Token': this.accessToken,
+            },
+            body: JSON.stringify({ query, variables }),
+          });
+          if (response.status === 429) {
+            throw new Error(`Shopify Rate Limit Superato (429)`);
+          }
+          if (!response.ok) throw new Error(`Errore HTTP Shopify: ${response.status}`);
+          json = await response.json();
+        }
+
+        if (json.errors) {
+          throw new Error(json.errors.map(e => e.message).join(', '));
+        }
+
+        // Salva in cache solo le 'query' (non le 'mutation')
+        if (isQuery && cacheKey) {
+          cacheSet(cacheKey, json.data, 5 * 60 * 1000); // 5 minuti
+        }
+
+        return json.data;
+
+      } catch (err) {
+        attempt++;
+        if (attempt >= maxRetries) {
+          console.error(`[Shopify API] Fallito definitivamente dopo ${maxRetries} tentativi:`, err.message);
+          throw err;
+        }
+        console.warn(`[Shopify API] Tentativo ${attempt} fallito. Ritento tra poco... (${err.message})`);
+        // Exponential backoff: 500ms, 1000ms
+        await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt - 1)));
       }
-
-      const json = await response.json();
-      if (json.errors) {
-        throw new Error(json.errors.map(e => e.message).join(', '));
-      }
-      return json.data;
     }
-
-    // ── Chiamata diretta (produzione / dominio pubblico) ──
-    const endpoint = `https://${this.shopDomain}/api/${this.apiVersion}/graphql.json`;
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': this.accessToken,
-      },
-      body: JSON.stringify({ query, variables }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Errore HTTP Shopify: ${response.status}`);
-    }
-
-    const json = await response.json();
-    if (json.errors) {
-      throw new Error(json.errors.map(e => e.message).join(', '));
-    }
-    return json.data;
   }
 
 

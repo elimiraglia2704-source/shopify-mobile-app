@@ -349,8 +349,8 @@ function renderCatalogFilters() {
         if (!state.fetchedCollections[state.selectedCol]) {
           const sentinel = $('catalog-sentinel');
           const grid = $('catalog-products');
-          if (grid && !grid.innerHTML.includes('Caricamento')) {
-            grid.innerHTML = `<div class="catalog-empty"><i data-lucide="loader" class="spin" style="width:36px;height:36px"></i><p>Caricamento catalogo...</p></div>`;
+          if (grid && !grid.innerHTML.includes('skeleton')) {
+            grid.innerHTML = SKELETON_HTML;
             refreshIcons(grid);
           }
           
@@ -1099,8 +1099,8 @@ function bindEvents() {
         // Fetch dinamico da Shopify se la ricerca ha almeno 2 caratteri
         if (state.searchQuery.trim().length >= 2) {
           const grid = $('catalog-products');
-          if (grid && !grid.innerHTML.includes('Caricamento')) {
-             grid.innerHTML = `<div class="catalog-empty"><i data-lucide="loader" class="spin" style="width:36px;height:36px"></i><p>Ricerca in corso sul server...</p></div>`;
+          if (grid && !grid.innerHTML.includes('skeleton')) {
+             grid.innerHTML = SKELETON_HTML;
              refreshIcons(grid);
           }
           const data = await shopify.searchProducts(state.searchQuery, 50);
@@ -1406,6 +1406,47 @@ Il Team Elisee`;
   }, { rootMargin: '300px' });
   const catalogSentinel = $('catalog-sentinel');
   if (catalogSentinel) sentinelObserver.observe(catalogSentinel);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SKELETON LOADERS E PAGINAZIONE
+// ═══════════════════════════════════════════════════════════
+const SKELETON_HTML = Array(6).fill(`<div class="prod-card skeleton"><div class="prod-img-wrap skeleton-img"></div><div class="prod-body" style="padding:16px"><div class="skeleton-text" style="width:50%;height:12px;margin-bottom:8px"></div><div class="skeleton-text" style="width:80%;height:16px;margin-bottom:12px"></div><div class="skeleton-text" style="width:40%;height:14px"></div></div></div>`).join('');
+
+async function loadMoreProducts() {
+  if (!state.pageInfo || !state.pageInfo.hasNextPage || state.isLoadingMore) return;
+  state.isLoadingMore = true;
+  
+  // Aggiungi skeleton in fondo
+  const grid = $('catalog-products');
+  if (grid) {
+    const tempDiv = document.createElement('div');
+    tempDiv.id = 'loading-more-skeleton';
+    tempDiv.style.display = 'contents';
+    tempDiv.innerHTML = SKELETON_HTML;
+    grid.appendChild(tempDiv);
+  }
+
+  try {
+    const data = await shopify.getProducts(50, state.pageInfo.endCursor);
+    state.pageInfo = data.pageInfo;
+    
+    // Evita duplicati
+    const existingIds = new Set(state.products.map(p => p.id));
+    const newProducts = data.products.filter(p => !existingIds.has(p.id));
+    
+    if (newProducts.length > 0) {
+      state.products = [...state.products, ...newProducts];
+      // Ripristina l'intero render, che gestirà anche l'aggiornamento della visuale corrente
+      renderCatalog();
+    }
+  } catch (error) {
+    console.error("Errore paginazione:", error);
+  } finally {
+    state.isLoadingMore = false;
+    const skel = $('loading-more-skeleton');
+    if (skel) skel.remove();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
