@@ -29,6 +29,7 @@ import {
 } from './analytics.js';
 import { MOCK_CUSTOMERS } from './mock-data.js';
 import CONFIG from './config.js';
+import { initAuth } from './components/Auth.js';
 
 // Registrazione Service Worker per PWA
 if ('serviceWorker' in navigator) {
@@ -1297,6 +1298,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   applyConfig();
   refreshIcons();
+
+  // Inizializza Auth (SPID, Login, Landing Page)
+  initAuth(
+    () => { /* finishAuth callback */
+      updateDynamicHome();
+      renderHome();
+    },
+    (route) => go(route)
+  );
 
   // Session tracking (P5, P10)
   incrementSession();
