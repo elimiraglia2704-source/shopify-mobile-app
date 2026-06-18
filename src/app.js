@@ -1155,27 +1155,18 @@ function bindEvents() {
     refreshIcons($('ai-marketing-output'));
     
     setTimeout(() => {
-      codeEl.textContent = `<!DOCTYPE html>
-<html lang="it">
-<head>
-  <style>
-    body { font-family: 'Inter', sans-serif; background-color: #050008; color: #ffffff; padding: 20px; }
-    .container { max-width: 600px; margin: 0 auto; background: #0a0010; border: 1px solid #d4af37; padding: 40px; border-radius: 12px; }
-    h1 { color: #d4af37; font-size: 28px; text-align: center; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
-    p { font-size: 16px; line-height: 1.6; color: #a09aa6; }
-    .btn { display: block; width: 100%; max-width: 250px; margin: 30px auto; padding: 15px; background: #9b59d0; color: #fff; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Benvenuto nel Club Elisee</h1>
-    <p>Ciao *|FNAME|*,</p>
-    <p>La tua identità digitale ha sbloccato l'accesso a un'esperienza premium. Non siamo un semplice store, siamo il tuo nuovo concierge personale per lo stile.</p>
-    <p>Abbiamo già analizzato il tuo profilo. Scopri la selezione riservata a te.</p>
-    <a href="https://shopify-mobile-app-omega.vercel.app" class="btn">Entra nell'App</a>
-  </div>
-</body>
-</html>`;
+      codeEl.textContent = `Oggetto: Benvenuto nel Club Elisee!
+
+Ciao *|FNAME|*,
+
+La tua identità digitale ha sbloccato l'accesso a un'esperienza premium. Non siamo un semplice store, siamo il tuo nuovo concierge personale per lo stile.
+
+Abbiamo già analizzato il tuo profilo. Scopri la selezione riservata a te.
+
+Entra nell'App per scoprire di più.
+
+A presto,
+Il Team Elisee`;
     }, 1200);
   });
 
