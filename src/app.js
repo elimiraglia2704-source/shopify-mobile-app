@@ -44,6 +44,56 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// ════════ PWA INSTALL PROMPT ════════
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostra il banner dopo 3 secondi per non essere troppo invasivi all'avvio
+  setTimeout(showInstallPromotion, 3000);
+});
+
+function showInstallPromotion() {
+  if (document.getElementById('pwa-install-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'pwa-install-banner';
+  banner.className = 'pwa-install-banner';
+  banner.innerHTML = `
+    <div class="pwa-banner-content">
+      <img src="/logo-total-white.png" alt="Elisee" class="pwa-banner-icon">
+      <div class="pwa-banner-text">
+        <strong>Installa Elisee App</strong>
+        <p>Aggiungi alla schermata Home per un'esperienza ultra-veloce e fluida!</p>
+      </div>
+    </div>
+    <div class="pwa-banner-actions">
+      <button class="btn-secondary pwa-btn-close">Più tardi</button>
+      <button class="btn-primary pwa-btn-install">Installa l'App</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  banner.querySelector('.pwa-btn-install').addEventListener('click', async () => {
+    banner.classList.add('hide');
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('PWA prompt outcome:', outcome);
+    deferredPrompt = null;
+    setTimeout(() => banner.remove(), 300);
+  });
+
+  banner.querySelector('.pwa-btn-close').addEventListener('click', () => {
+    banner.classList.add('hide');
+    setTimeout(() => banner.remove(), 300);
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.remove();
+  console.log('PWA installata con successo!');
+});
+
 // ═══════════════════════════════════════════════════════════
 // BOOTSTRAP
 // ═══════════════════════════════════════════════════════════
@@ -1453,5 +1503,57 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 400);
     });
   }
+
+  // ──────────────────────────────────────────────────────────────
+  // PWA INSTALL BANNER LOGIC
+  // ──────────────────────────────────────────────────────────────
+  let deferredPrompt;
+  const pwaBanner = document.getElementById('pwa-install-banner');
+  const pwaInstallBtn = document.getElementById('pwa-install-btn');
+  const pwaCloseBtn = document.getElementById('pwa-close-btn');
+
+  function showPwaBanner() {
+    if (!pwaBanner || sessionStorage.getItem('pwaPromptClosed') === 'true') return;
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) return;
+    
+    pwaBanner.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      pwaBanner.classList.add('show');
+    });
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    setTimeout(showPwaBanner, 3000);
+  });
+
+  const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+  if (isIos() && !('standalone' in window.navigator && window.navigator.standalone)) {
+    const desc = document.getElementById('pwa-install-desc');
+    if (desc) desc.innerHTML = "Un'esperienza migliore. Tocca <b style='font-size:16px'>Condividi</b> in basso e poi <b>Aggiungi alla schermata Home</b>.";
+    if (pwaInstallBtn) pwaInstallBtn.style.display = 'none';
+    setTimeout(showPwaBanner, 3000);
+  }
+
+  pwaInstallBtn?.addEventListener('click', async () => {
+    if (pwaBanner) {
+      pwaBanner.classList.remove('show');
+      setTimeout(() => pwaBanner.classList.add('hidden'), 500);
+    }
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    }
+  });
+
+  pwaCloseBtn?.addEventListener('click', () => {
+    if (pwaBanner) {
+      pwaBanner.classList.remove('show');
+      setTimeout(() => pwaBanner.classList.add('hidden'), 500);
+      sessionStorage.setItem('pwaPromptClosed', 'true');
+    }
+  });
 
 });
