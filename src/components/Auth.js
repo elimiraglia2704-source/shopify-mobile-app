@@ -62,11 +62,21 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
     try {
       await shopify.customerCreate({ firstName, lastName, email, password });
       
-      // Accesso automatico dopo l'iscrizione!
-      localStorage.setItem('customerAccessToken', 'local-session-token');
-      updateProfile({ name: fullName, email });
-      finishAuth();
-      toast('Benvenuto nel club Elisee! 🎉', false);
+      // Salva le credenziali per riempimento automatico nel Login
+      localStorage.setItem('elisee_saved_email', email);
+      localStorage.setItem('elisee_saved_password', password);
+      
+      toast('Account creato! Controlla l\'email per attivarlo.', false);
+      
+      // Passa automaticamente alla schermata di Login
+      document.querySelectorAll('.auth-state').forEach(el => el.classList.remove('active'));
+      $('auth-state-login').classList.add('active');
+      
+      // Pre-compila i campi
+      const loginEmail = $('auth-login-email');
+      const loginPass = $('auth-login-password');
+      if (loginEmail) loginEmail.value = email;
+      if (loginPass) loginPass.value = password;
       
     } catch (err) {
       toast('Errore: ' + err.message, true);
@@ -146,6 +156,14 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
   $('auth-do-login')?.addEventListener('click', async () => {
     const emailEl = $('auth-login-email');
     const passEl = $('auth-login-password');
+    const errorEmail = $('auth-error-email');
+    const errorPass = $('auth-error-password');
+    const errorGen = $('auth-error-general');
+    
+    // Reset errori
+    if (errorEmail) errorEmail.style.display = 'none';
+    if (errorPass) errorPass.style.display = 'none';
+    if (errorGen) errorGen.style.display = 'none';
     
     // Protezione dalla cache
     if (!emailEl || !passEl) {
@@ -156,10 +174,17 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
 
     const email = emailEl.value.trim();
     const password = passEl.value;
-    if (!email || !password) {
-      toast('Inserisci email e password', true);
-      return;
+    
+    let hasError = false;
+    if (!email) {
+      if (errorEmail) { errorEmail.textContent = 'Inserisci un\'email valida'; errorEmail.style.display = 'block'; }
+      hasError = true;
     }
+    if (!password) {
+      if (errorPass) { errorPass.textContent = 'Inserisci la password'; errorPass.style.display = 'block'; }
+      hasError = true;
+    }
+    if (hasError) return;
 
     const btn = $('auth-do-login');
     const oldText = btn.textContent;
@@ -169,18 +194,35 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
     try {
       const auth = await shopify.customerLogin({ email, password });
       localStorage.setItem('customerAccessToken', auth.accessToken);
+      // Salva per accessi futuri
+      localStorage.setItem('elisee_saved_email', email);
+      localStorage.setItem('elisee_saved_password', password);
+      
       updateProfile({ email });
       finishAuth();
     } catch (err) {
       if (err.message.includes('Unidentified customer')) {
-        toast('Credenziali errate o account non ancora attivato. Controlla la mail!', true);
+        if (errorEmail) { errorEmail.textContent = 'Email non trovata o account non attivato'; errorEmail.style.display = 'block'; }
+        if (errorPass) { errorPass.textContent = 'O password errata'; errorPass.style.display = 'block'; }
       } else {
-        toast('Errore: ' + err.message, true);
+        if (errorGen) { errorGen.textContent = 'Errore: ' + err.message; errorGen.style.display = 'block'; }
       }
     } finally {
       btn.textContent = oldText;
       btn.disabled = false;
     }
+  });
+
+  // Pre-fill fields se disponibili e link reset
+  const savedEmail = localStorage.getItem('elisee_saved_email');
+  const savedPass = localStorage.getItem('elisee_saved_password');
+  if (savedEmail && $('auth-login-email')) $('auth-login-email').value = savedEmail;
+  if (savedPass && $('auth-login-password')) $('auth-login-password').value = savedPass;
+  
+  $('auth-forgot-password')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    toast('Reimpostazione password: apri l\'email che ti abbiamo appena inviato per cambiare password.', false);
+    // In un'app reale si chiamerebbe la mutation customerRecover
   });
 
   // Admin Area Auth
