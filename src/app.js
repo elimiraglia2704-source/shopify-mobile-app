@@ -1092,11 +1092,27 @@ function bindEvents() {
       state.searchQuery = e.target.value;
       if (searchClear) searchClear.style.display = state.searchQuery ? 'flex' : 'none';
       clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => {
+      searchTimer = setTimeout(async () => {
         trackSearch(state.searchQuery);
         track('search', { query: state.searchQuery });
+        
+        // Fetch dinamico da Shopify se la ricerca ha almeno 2 caratteri
+        if (state.searchQuery.trim().length >= 2) {
+          const grid = $('catalog-products');
+          if (grid && !grid.innerHTML.includes('Caricamento')) {
+             grid.innerHTML = `<div class="catalog-empty"><i data-lucide="loader" class="spin" style="width:36px;height:36px"></i><p>Ricerca in corso sul server...</p></div>`;
+             refreshIcons(grid);
+          }
+          const data = await shopify.searchProducts(state.searchQuery, 50);
+          if (data && data.products) {
+            const existingIds = new Set(state.products.map(p => p.id));
+            const newProducts = data.products.filter(p => !existingIds.has(p.id));
+            state.products = [...state.products, ...newProducts];
+          }
+        }
+        
         renderCatalog();
-      }, 250); // debounce 250ms (P2)
+      }, 400); // debounce 400ms per chiamata di rete
     });
     searchClear?.addEventListener('click', () => {
       searchInput.value = '';

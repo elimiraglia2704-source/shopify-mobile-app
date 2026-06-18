@@ -330,7 +330,7 @@ export class ShopifyClient {
 
     const query = `
       query getCollections {
-        collections(first: 10) {
+        collections(first: 50) {
           edges {
             node {
               id
@@ -344,7 +344,7 @@ export class ShopifyClient {
     `;
 
     try {
-      const data = await this.queryStorefront(query, { first: 10 });
+      const data = await this.queryStorefront(query);
       let collections = data.collections.edges.map(edge => edge.node);
       if (collections.length === 0) {
         console.warn("Il negozio Shopify non ha restituito collezioni.");
@@ -352,8 +352,58 @@ export class ShopifyClient {
       }
       return collections;
     } catch (error) {
-      console.error("Chiamata API Shopify fallita in getCollections:", error);
+      console.error("Errore fetch getCollections:", error);
       return [];
+    }
+  }
+
+  async searchProducts(searchQuery, limit = 50) {
+    if (this.useMock || !this.isConfigured || !searchQuery) {
+      return { products: [] };
+    }
+
+    const query = `
+      query searchProducts($query: String!, $first: Int!) {
+        products(first: $first, query: $query) {
+          edges {
+            node {
+              id
+              title
+              description
+              vendor
+              availableForSale
+              priceRange {
+                minVariantPrice { amount currencyCode }
+              }
+              images(first: 5) {
+                edges { node { url altText } }
+              }
+              options { name values }
+              collections(first: 5) {
+                edges { node { id title } }
+              }
+              variants(first: 20) {
+                edges {
+                  node {
+                    id title availableForSale
+                    price { amount currencyCode }
+                    compareAtPrice { amount currencyCode }
+                    selectedOptions { name value }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.queryStorefront(query, { query: searchQuery, first: limit });
+      return { products: data.products.edges.map(e => e.node) };
+    } catch (error) {
+      console.error("Errore searchProducts:", error);
+      return { products: [] };
     }
   }
 
