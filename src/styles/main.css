@@ -847,9 +847,15 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
 .landing-overlay {
   position: absolute; inset: 0;
   z-index: 9999;
-  background: transparent;
+  background: var(--bg);
   display: flex; flex-direction: column; justify-content: flex-end;
   opacity: 1; transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+}
+.landing-overlay::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: url('/pattern.jpg');
+  background-size: cover; background-position: center; background-repeat: repeat-y;
+  opacity: .12; mix-blend-mode: luminosity; z-index: 0; pointer-events: none;
 }
 .landing-overlay.hidden {
   opacity: 0; pointer-events: none; transform: scale(1.02);
@@ -1084,20 +1090,7 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
   height: 16px;
 }
 
-/* Landing Overlay */
-.landing-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 24px;
-}
-.landing-overlay.hidden {
-  display: none !important;
-}
+/* Landing Overlay (merged above) */
 .landing-content {
   position: relative;
   z-index: 1;
