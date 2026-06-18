@@ -18,7 +18,7 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
   const finishAuth = () => {
     authOverlay.classList.add('hidden');
     if (landingOverlay) landingOverlay.classList.add('hidden');
-    sessionStorage.setItem('hasSeenLanding', 'true');
+    localStorage.setItem('hasSeenLanding', 'true');
     toast('Accesso effettuato con successo!');
     if (finishAuthCallback) finishAuthCallback();
   };
@@ -63,7 +63,7 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
       await shopify.customerCreate({ firstName, lastName, email, password });
       
       // Accesso automatico dopo l'iscrizione!
-      sessionStorage.setItem('customerAccessToken', 'local-session-token');
+      localStorage.setItem('customerAccessToken', 'local-session-token');
       updateProfile({ name: fullName, email });
       finishAuth();
       toast('Benvenuto nel club Elisee! 🎉', false);
@@ -168,7 +168,7 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
 
     try {
       const auth = await shopify.customerLogin({ email, password });
-      sessionStorage.setItem('customerAccessToken', auth.accessToken);
+      localStorage.setItem('customerAccessToken', auth.accessToken);
       updateProfile({ email });
       finishAuth();
     } catch (err) {
@@ -213,7 +213,7 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
         if (overlay) overlay.classList.add('hidden');
         $('dir-login-username').value = '';
         $('dir-login-password').value = '';
-        sessionStorage.setItem('admin_token', data.token); // Secure token
+        localStorage.setItem('admin_token', data.token); // Secure token
         if (goCallback) goCallback('admin');
         if (renderAdminAreaCallback) renderAdminAreaCallback();
         toast('Accesso Direzione consentito.');

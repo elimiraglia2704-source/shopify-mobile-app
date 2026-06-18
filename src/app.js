@@ -1165,7 +1165,7 @@ function bindEvents() {
         if (overlay) overlay.classList.add('hidden');
         $('dir-login-username').value = '';
         $('dir-login-password').value = '';
-        sessionStorage.setItem('admin_token', data.token); // Secure token
+        localStorage.setItem('admin_token', data.token); // Secure token
         go('admin');
         renderAdminArea();
         toast('Accesso Direzione consentito.');
@@ -1397,10 +1397,10 @@ Il Team Elisee`;
 // ═══════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   // Check landing status (disattivato temporaneamente per permettere sempre l'accesso alla pagina di Iscrizione/Accesso)
-  // if (sessionStorage.getItem('hasSeenLanding') === 'true') {
-  //   const overlay = $('landing-overlay');
-  //   if (overlay) overlay.style.display = 'none';
-  // }
+  if (localStorage.getItem('hasSeenLanding') === 'true') {
+    const overlay = $('landing-overlay');
+    if (overlay) overlay.classList.add('hidden');
+  }
 
   // applyConfig(); // TODO: implement
   refreshIcons();
