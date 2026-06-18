@@ -1473,34 +1473,89 @@ document.addEventListener('DOMContentLoaded', () => {
   // ════════ AI STYLIST & DYNAMIC HOME LOGIC ════════
   initAssistant();
 
-  // ════════ VISUAL SEARCH LOGIC ════════
+  // ════════ VISUAL SEARCH LOGIC (Camera feed) ════════
   const vsBtn = $('visual-search-btn');
   const vsOverlay = $('vs-overlay');
   const vsClose = $('vs-close');
   const vsCapture = $('vs-capture-btn');
   const vsStatus = $('vs-status');
+  const vsCameraFeed = $('vs-camera-feed');
+  let vsStream = null;
+
+  const stopCamera = () => {
+    if (vsStream) {
+      vsStream.getTracks().forEach(track => track.stop());
+      vsStream = null;
+    }
+  };
 
   if (vsBtn && vsOverlay) {
-    vsBtn.addEventListener('click', () => {
+    vsBtn.addEventListener('click', async () => {
       vsOverlay.classList.remove('hidden');
       vsStatus.textContent = 'Inquadra un capo di abbigliamento...';
+      try {
+        vsStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        if (vsCameraFeed) {
+          vsCameraFeed.srcObject = vsStream;
+        }
+      } catch (err) {
+        console.error("Camera error:", err);
+        toast("Impossibile accedere alla fotocamera.");
+      }
     });
     vsClose.addEventListener('click', () => {
       vsOverlay.classList.add('hidden');
+      stopCamera();
     });
     vsCapture.addEventListener('click', () => {
       vsStatus.innerHTML = '<span class="spin" style="display:inline-block;">⏳</span> Analisi in corso...';
       setTimeout(() => {
         vsOverlay.classList.add('hidden');
-        toast('Trovati 3 prodotti simili nel catalogo!');
+        stopCamera();
+        toast('Trovati prodotti simili nel catalogo!');
         const searchInput = $('search-input');
         if (searchInput) {
-          searchInput.value = 'Scarpe running simili';
-          state.searchQuery = 'Scarpe running simili';
+          searchInput.value = 'Scarpe running';
+          state.searchQuery = 'Scarpe running';
           $('search-clear').style.display = 'flex';
           renderCatalog();
         }
-      }, 400);
+      }, 1000);
+    });
+  }
+
+  // ════════ VOICE SEARCH LOGIC ════════
+  const voiceBtn = $('voice-search-btn');
+  if (voiceBtn && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'it-IT';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    voiceBtn.addEventListener('click', () => {
+      toast('🎙️ In ascolto...');
+      recognition.start();
+    });
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      const searchInput = $('search-input');
+      if (searchInput) {
+        searchInput.value = transcript;
+        state.searchQuery = transcript.toLowerCase();
+        $('search-clear').style.display = 'flex';
+        toast('Hai detto: ' + transcript);
+        renderCatalog();
+      }
+    };
+
+    recognition.onerror = (event) => {
+      toast('Errore vocale o permesso negato.');
+    };
+  } else if (voiceBtn) {
+    voiceBtn.addEventListener('click', () => {
+      toast('Ricerca vocale non supportata sul tuo dispositivo.');
     });
   }
 

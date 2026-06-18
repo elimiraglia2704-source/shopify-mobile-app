@@ -513,7 +513,7 @@ body::before {
 .pdp-recs-title { font-family:var(--font-d); font-size:18px; color:var(--text); margin:14px 0 10px; }
 
 .pdp-sticky-bar {
-  position:absolute; bottom:0; left:0; width:100%;
+  position:absolute; bottom:110px; left:0; width:100%;
   background:var(--glass); backdrop-filter:blur(18px);
   border-top:1px solid var(--border);
   padding:10px 14px;
@@ -881,7 +881,7 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
 
 /* ── LANDING OVERLAY (NIKE STYLE) ───────────────────────── */
 .landing-overlay {
-  position: absolute; inset: 0;
+  position: fixed; inset: 0;
   z-index: 9999;
   background: var(--bg);
   display: flex; flex-direction: column; justify-content: flex-end;
@@ -898,7 +898,7 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
 }
 .landing-content {
   position: relative; z-index: 2;
-  padding: 32px 24px 80px;
+  padding: 32px 24px calc(env(safe-area-inset-bottom, 24px) + 32px);
   display: flex; flex-direction: column; gap: 20px;
 }
 .landing-logo {
@@ -1057,11 +1057,10 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
 .visual-search-overlay.hidden { opacity: 0; pointer-events: none; }
 .vs-camera-view {
   position: relative; flex: 1;
-  background-image: url('https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop');
-  background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: space-between;
+  display: flex; flex-direction: column; justify-content: space-between;
 }
 .vs-camera-view::before {
-  content:''; position:absolute; inset:0; background: rgba(0,0,0,0.4);
+  content:''; position:absolute; inset:0; background: rgba(0,0,0,0.2);
 }
 .vs-header, .vs-frame, .vs-footer { position: relative; z-index: 2; }
 .vs-header { display: flex; justify-content: space-between; padding: 20px; padding-top: env(safe-area-inset-top, 20px); align-items: center; }
