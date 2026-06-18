@@ -1336,12 +1336,12 @@ Il Team Elisee`;
       heroTitle.textContent = `${headline.base}, ${newName.split(' ')[0]}`;
     }
 
-    // Aggiorno visibilità bottone Area Direzione
-    const adminBtn = $('btn-profile-admin');
-    if (adminBtn) {
-      const isAdmin = newEmail.toLowerCase().includes('eliseemilano.com') || newName.toLowerCase().includes('eliseo');
-      adminBtn.style.display = isAdmin ? 'flex' : 'none';
-    }
+    // Aggiorno visibilità bottoni Area Direzione
+    const adminBtnClienti = $('btn-profile-dir-clienti');
+    const adminBtnSystem  = $('btn-profile-dir-admin');
+    const isAdmin = newEmail.toLowerCase().includes('eliseemilano.com') || newName.toLowerCase().includes('eliseo');
+    if (adminBtnClienti) adminBtnClienti.style.display = isAdmin ? 'flex' : 'none';
+    if (adminBtnSystem) adminBtnSystem.style.display = isAdmin ? 'flex' : 'none';
 
     go('profile');
     toast('Profilo aggiornato con successo!');
@@ -1387,6 +1387,9 @@ Il Team Elisee`;
 const SKELETON_HTML = Array(6).fill(`<div class="prod-card skeleton"><div class="prod-img-wrap skeleton-img"></div><div class="prod-body" style="padding:16px"><div class="skeleton-text" style="width:50%;height:12px;margin-bottom:8px"></div><div class="skeleton-text" style="width:80%;height:16px;margin-bottom:12px"></div><div class="skeleton-text" style="width:40%;height:14px"></div></div></div>`).join('');
 
 async function loadMoreProducts() {
+  // Disabilita infinite scroll se stiamo cercando qualcosa o stiamo vedendo una collezione specifica
+  // (evita bug visuali degli skeleton permanenti e il caricamento di prodotti non coerenti)
+  if (state.searchQuery || state.selectedCol !== 'all') return;
   if (!state.pageInfo || !state.pageInfo.hasNextPage || state.isLoadingMore) return;
   state.isLoadingMore = true;
   
@@ -1477,11 +1480,11 @@ document.addEventListener('DOMContentLoaded', () => {
   updateDynamicHome();
 
   // Controllo accessi Area Direzione (mostra solo all'Admin)
-  const adminBtn = $('btn-profile-admin');
-  if (adminBtn) {
-    const isAdmin = p.email?.toLowerCase().includes('eliseemilano.com') || p.name?.toLowerCase().includes('eliseo');
-    adminBtn.style.display = isAdmin ? 'flex' : 'none';
-  }
+  const adminBtnClienti = $('btn-profile-dir-clienti');
+  const adminBtnSystem  = $('btn-profile-dir-admin');
+  const isAdmin = p.email?.toLowerCase().includes('eliseemilano.com') || p.name?.toLowerCase().includes('eliseo');
+  if (adminBtnClienti) adminBtnClienti.style.display = isAdmin ? 'flex' : 'none';
+  if (adminBtnSystem) adminBtnSystem.style.display = isAdmin ? 'flex' : 'none';
   if (p.dob) {
     const d = $('input-profile-dob'); if (d) d.value = p.dob;
   }
