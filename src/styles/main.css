@@ -851,10 +851,10 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
   display: flex; flex-direction: column; justify-content: flex-end;
   opacity: 1; transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
 }
-.landing-overlay::before {
-  content: ''; position: absolute; inset: 0;
-  background-image: url('/mimetico.png');
-  background-size: cover; background-position: center; background-repeat: repeat-y;
+.landing-video-bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
   z-index: 0; pointer-events: none;
 }
 .landing-overlay.hidden {
