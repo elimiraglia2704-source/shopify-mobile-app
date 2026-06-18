@@ -81,9 +81,9 @@ body::before {
 
 .app-bg-pattern {
   position:absolute; top:0; left:0; right:0; bottom:0;
-  background-image:url('/mimetico.png');
+  background-image:url('/pattern.jpg');
   background-size:cover; background-position:center; background-repeat:repeat-y;
-  z-index:0; pointer-events:none;
+  opacity:.12; mix-blend-mode:luminosity; z-index:0; pointer-events:none;
 }
 
 @media (min-width:600px) {
