@@ -5,6 +5,18 @@ import { ShopifyClient } from '../shopify.js';
 const shopify = new ShopifyClient();
 
 export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback) {
+  // Controllo scadenza sessione (3 mesi = 90 giorni)
+  const lastLogin = localStorage.getItem('elisee_last_login');
+  if (lastLogin) {
+    const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
+    if (Date.now() - parseInt(lastLogin, 10) > THREE_MONTHS_MS) {
+      localStorage.removeItem('customerAccessToken');
+      localStorage.removeItem('elisee_last_login');
+      localStorage.removeItem('hasSeenLanding');
+      toast('Sessione scaduta, effettua nuovamente l\'accesso.');
+    }
+  }
+
   // Landing & Auth Overlay
   const authOverlay = $('auth-overlay');
   const landingOverlay = $('landing-overlay');
@@ -148,6 +160,7 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
       $('spid-credentials-form').style.display = 'none';
       $('spid-loading-state').style.display = 'none';
       
+      localStorage.setItem('elisee_last_login', Date.now().toString());
       finishAuth();
       toast(`Accesso SPID completato con ${currentSpidProvider}.`);
     }, 3000);
@@ -194,6 +207,7 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
     try {
       const auth = await shopify.customerLogin({ email, password });
       localStorage.setItem('customerAccessToken', auth.accessToken);
+      localStorage.setItem('elisee_last_login', Date.now().toString());
       // Salva per accessi futuri
       localStorage.setItem('elisee_saved_email', email);
       localStorage.setItem('elisee_saved_password', password);
