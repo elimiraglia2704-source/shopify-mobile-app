@@ -1296,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //   if (overlay) overlay.style.display = 'none';
   // }
 
-  applyConfig();
+  // applyConfig(); // TODO: implement
   refreshIcons();
 
   // Inizializza Auth (SPID, Login, Landing Page)
