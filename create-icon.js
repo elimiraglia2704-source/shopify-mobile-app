@@ -24,9 +24,10 @@ async function run() {
   await createIcon(192, 'public/logo-total-white.png', 'public/icon-192-maskable.png', '#0a0010');
   await createIcon(512, 'public/logo-total-white.png', 'public/icon-512-maskable.png', '#0a0010');
   
-  // Sfondo trasparente per chi supporta icone libere
-  await createIcon(192, 'public/logo-total-white.png', 'public/icon-192-any.png', null);
-  await createIcon(512, 'public/logo-total-white.png', 'public/icon-512-any.png', null);
+  // Sfondo trasparente per chi supporta icone libere: USIAMO IL LOGO NERO
+  // Così se Android ci mette uno sfondo bianco dietro, la tigre nera si vedrà benissimo!
+  await createIcon(192, 'public/logo-total-black.png', 'public/icon-192-any.png', null);
+  await createIcon(512, 'public/logo-total-black.png', 'public/icon-512-any.png', null);
 }
 
 run();
