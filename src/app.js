@@ -29,7 +29,6 @@ import {
 } from './analytics.js';
 import { MOCK_CUSTOMERS } from './mock-data.js';
 import CONFIG from './config.js';
-import { initAuth } from './components/Auth.js';
 
 // Registrazione Service Worker per PWA
 if ('serviceWorker' in navigator) {
