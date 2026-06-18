@@ -1212,6 +1212,52 @@ Il Team Elisee`;
   // Edit Profile
   $('go-edit-profile-btn')?.addEventListener('click', () => go('edit-profile'));
   $('edit-profile-back')?.addEventListener('click', () => go('profile'));
+  
+  const avatarTrigger = $('avatar-upload-trigger');
+  const avatarInput = $('avatar-upload-input');
+  if (avatarTrigger && avatarInput) {
+    avatarTrigger.addEventListener('click', () => {
+      if (confirm('Vuoi consentire ad Elisee di accedere alle tue foto per caricare l\'avatar?')) {
+        avatarInput.click();
+      }
+    });
+
+    avatarInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const maxSize = 200;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > maxSize) { height *= maxSize / width; width = maxSize; }
+            } else {
+              if (height > maxSize) { width *= maxSize / height; height = maxSize; }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            
+            const preview = $('edit-avatar-preview');
+            if (preview) {
+              preview.style.backgroundImage = `url(${dataUrl})`;
+              preview.innerHTML = '';
+            }
+            updateProfile({ avatarUrl: dataUrl });
+            toast('Immagine avatar salvata!');
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
   $('btn-save-profile')?.addEventListener('click', () => {
     const newName  = $('input-profile-name').value.trim() || 'Utente';
     const newEmail = $('input-profile-email').value.trim() || '';
@@ -1222,9 +1268,20 @@ Il Team Elisee`;
     const nameDisplay = $('profile-name-display');
     if (nameDisplay) nameDisplay.textContent = newName;
     
-    // Possiamo aggiornare anche l'iniziale nell'avatar
+    // Possiamo aggiornare anche l'iniziale nell'avatar se non c'è una foto
     const avatarDisplay = $('profile-avatar-display');
-    if (avatarDisplay) avatarDisplay.innerHTML = `<span style="font-weight:bold; font-size:32px; color:var(--text);">${newName.charAt(0).toUpperCase()}</span>`;
+    const p = getProfile();
+    if (avatarDisplay) {
+      if (p.avatarUrl) {
+        avatarDisplay.style.backgroundImage = `url(${p.avatarUrl})`;
+        avatarDisplay.style.backgroundSize = 'cover';
+        avatarDisplay.style.backgroundPosition = 'center';
+        avatarDisplay.innerHTML = '';
+      } else {
+        avatarDisplay.innerHTML = `<span style="font-weight:bold; font-size:32px; color:var(--text);">${newName.charAt(0).toUpperCase()}</span>`;
+        avatarDisplay.style.backgroundImage = 'none';
+      }
+    }
     
     // Svuoto il campo password per motivi di sicurezza/UI
     const passInput = $('input-profile-password');
@@ -1317,7 +1374,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const nd = $('profile-name-display'); if (nd) nd.textContent = p.name;
     const ni = $('input-profile-name');   if (ni) ni.value = p.name;
     const ad = $('profile-avatar-display'); 
-    if (ad) ad.innerHTML = `<span style="font-weight:bold; font-size:32px; color:var(--text);">${p.name.charAt(0).toUpperCase()}</span>`;
+    if (ad) {
+      if (p.avatarUrl) {
+        ad.style.backgroundImage = `url(${p.avatarUrl})`;
+        ad.style.backgroundSize = 'cover';
+        ad.style.backgroundPosition = 'center';
+        ad.innerHTML = '';
+      } else {
+        ad.innerHTML = `<span style="font-weight:bold; font-size:32px; color:var(--text);">${p.name.charAt(0).toUpperCase()}</span>`;
+      }
+    }
+    const editPreview = $('edit-avatar-preview');
+    if (editPreview && p.avatarUrl) {
+      editPreview.style.backgroundImage = `url(${p.avatarUrl})`;
+      editPreview.innerHTML = '';
+    }
   }
   if (p.email) {
     const ei = $('input-profile-email'); if (ei) ei.value = p.email;

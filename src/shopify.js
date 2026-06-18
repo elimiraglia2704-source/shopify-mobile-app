@@ -205,6 +205,7 @@ export class ShopifyClient {
                 edges {
                   node {
                     id
+                    title
                   }
                 }
               }
@@ -292,6 +293,7 @@ export class ShopifyClient {
                   edges {
                     node {
                       id
+                      title
                     }
                   }
                 }

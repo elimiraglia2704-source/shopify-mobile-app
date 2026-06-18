@@ -210,9 +210,16 @@ export function smartSearch(products, query, profile) {
 
   return products
     .map(p => {
-      const text = `${p.title} ${p.vendor} ${p.description}`.toLowerCase();
+      const collectionsText = p.collections?.edges?.map(e => e.node.title || '').join(' ') || '';
+      const text = `${p.title} ${p.vendor} ${p.description} ${collectionsText}`.toLowerCase();
       const exactMatch = text.includes(q);
       const termScore = terms.filter(t => text.includes(t)).length / terms.length;
+      
+      // Esclude i prodotti che non corrispondono alla ricerca
+      if (!exactMatch && termScore === 0) {
+        return { ...p, _score: 0 };
+      }
+
       const aiScore = scoreProduct(p, profile);
       return {
         ...p,
