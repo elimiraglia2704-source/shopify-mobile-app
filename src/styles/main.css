@@ -847,22 +847,12 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
 .landing-overlay {
   position: absolute; inset: 0;
   z-index: 9999;
-  background: var(--bg);
+  background: transparent;
   display: flex; flex-direction: column; justify-content: flex-end;
   opacity: 1; transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
 }
 .landing-overlay.hidden {
   opacity: 0; pointer-events: none; transform: scale(1.02);
-}
-.landing-bg {
-  position: absolute; inset: 0;
-  background-image: url('https://elisee.shop/cdn/shop/files/file_00000000834c61fbb3c77bed2d057f01_78b76f91-811d-485e-8af2-5a44f3483e8f.png?v=1757546803');
-  background-size: cover; background-position: center;
-  z-index: 1;
-}
-.landing-bg::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.9) 80%, #000 100%);
 }
 .landing-content {
   position: relative; z-index: 2;
@@ -1099,7 +1089,7 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: #0a0010;
+  background: transparent;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1107,20 +1097,6 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
 }
 .landing-overlay.hidden {
   display: none !important;
-}
-.landing-bg {
-  position: absolute;
-  inset: 0;
-  background-image: url('https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=1000');
-  background-size: cover;
-  background-position: center;
-  z-index: -1;
-}
-.landing-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(10, 0, 16, 1) 10%, rgba(10, 0, 16, 0.4) 60%, rgba(10, 0, 16, 0.1) 100%);
 }
 .landing-content {
   position: relative;
