@@ -593,7 +593,7 @@ body::before {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   background:none; color: rgba(255,255,255,0.7);
   flex: 1; height: 100%;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: color 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position:relative;
 }
 
@@ -601,12 +601,14 @@ body::before {
   font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
   opacity: 0; transform: translateY(10px);
   position: absolute; bottom: 10px;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  will-change: transform, opacity;
 }
 
 .nav-tab svg { 
   width: 22px; height: 22px; stroke-width: 1.8; 
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  will-change: transform;
 }
 
 .nav-tab.active { color: #fff; }
@@ -647,15 +649,17 @@ body::before {
 
 /* ── CART DRAWER ─────────────────────────────────────── */
 .cart-drawer {
-  position:absolute; top:0; right:-100%;
+  position:absolute; top:0; right:0;
   width:90%; max-width:360px; height:100%;
   background:linear-gradient(170deg,#180030,#0a0010);
   border-left:1px solid var(--border);
   z-index:401;
   display:flex; flex-direction:column;
-  transition:right var(--duration) var(--ease);
+  transform: translateX(100%);
+  transition:transform var(--duration) var(--ease);
+  will-change: transform;
 }
-.cart-drawer.open { right:0; }
+.cart-drawer.open { transform: translateX(0); }
 .drawer-header {
   display:flex; align-items:center; justify-content:space-between;
   padding:18px 14px;

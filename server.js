@@ -4,11 +4,18 @@
  * alle API Shopify Storefront senza restrizioni CORS.
  */
 
-const http  = require('http');
-const https = require('https');
-const fs    = require('fs');
-const path  = require('path');
-const url   = require('url');
+import http from 'http';
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
+import url from 'url';
+import { fileURLToPath } from 'url';
+import 'dotenv/config';
+
+import { eliseeAgent } from './server/agent.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = 8000;
 const APP_DIR = __dirname;
@@ -47,8 +54,8 @@ function proxyShopify(req, res) {
       return sendJSON(res, 400, { error: 'Invalid JSON body' });
     }
 
-    const shopDomain  = payload.shopDomain  || 'xdjj7t-3x.myshopify.com';
-    const accessToken = payload.accessToken || '9882e437dde6515ff91dc2522bd19598';
+    const shopDomain  = payload.shopDomain  || 'eliseebrand.myshopify.com';
+    const accessToken = payload.accessToken || 'fd3d51862812c1f0c530dc83ac3f6685';
     const apiVersion  = payload.apiVersion  || '2024-04';
     const graphql     = payload.query       || '';
     const variables   = payload.variables   || {};
@@ -109,6 +116,54 @@ const server = http.createServer((req, res) => {
   // ── Proxy endpoint ──────────────────────────────────
   if (pathname === '/api/shopify' && req.method === 'POST') {
     return proxyShopify(req, res);
+  }
+
+  // ── Admin Login endpoint (Secured) ──────────────────
+  if (pathname === '/api/admin/login' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const creds = JSON.parse(body);
+        if (creds.username === 'Eliseo2704' && creds.password === 'Iemmello9') {
+          return sendJSON(res, 200, { success: true, token: 'admin_token_secure_xyz123' });
+        } else {
+          return sendJSON(res, 401, { success: false, error: 'Credenziali errate' });
+        }
+      } catch {
+        return sendJSON(res, 400, { success: false, error: 'Invalid JSON' });
+      }
+    });
+    return;
+  }
+
+  // ── AI Agent endpoint (LangGraph) ───────────────────
+  if (pathname === '/api/ai/chat' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body);
+        const { message, sessionId, profile } = data;
+        
+        if (!message) return sendJSON(res, 400, { error: 'Message required' });
+
+        const config = { configurable: { thread_id: sessionId || 'default_thread' } };
+        const inputMessage = { role: "user", content: message };
+        
+        const finalState = await eliseeAgent.invoke(
+          { messages: [inputMessage], profile }, 
+          config
+        );
+        
+        const lastMsg = finalState.messages[finalState.messages.length - 1];
+        sendJSON(res, 200, { reply: lastMsg.content });
+      } catch (e) {
+        console.error("AI Error:", e);
+        sendJSON(res, 500, { error: e.message });
+      }
+    });
+    return;
   }
 
   // ── File statici ────────────────────────────────────

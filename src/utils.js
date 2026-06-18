@@ -25,3 +25,9 @@ export function refreshIcons(node) {
     _lucideScheduled = false;
   });
 }
+export function haptic(duration = 50) {
+  if (navigator.vibrate) {
+    // navigator.vibrate non lancia eccezioni se fallisce, al massimo viene ignorata su desktop
+    navigator.vibrate(duration);
+  }
+}

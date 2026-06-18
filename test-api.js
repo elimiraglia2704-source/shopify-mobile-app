@@ -1,57 +1,28 @@
-const https = require('https');
-
-const domain = 'eliseebrand.myshopify.com';
-const token = 'fd3d51862812c1f0c530dc83ac3f6685';
-const apiVersion = '2024-04';
-
 const query = `
-  mutation customerCreate($input: CustomerCreateInput!) {
-    customerCreate(input: $input) {
-      customer {
-        id
-        email
-        firstName
-        lastName
-      }
-      customerUserErrors {
-        message
+  query getProducts {
+    products(first: 5) {
+      edges {
+        node {
+          id
+          title
+        }
       }
     }
   }
 `;
 
-const postData = JSON.stringify({
-  query,
-  variables: {
-    input: {
-      firstName: "Test",
-      lastName: "Test",
-      email: "test_new123@example.com",
-      password: "password123!"
-    }
-  }
-});
-
-const options = {
-  hostname: domain,
-  path: `/api/${apiVersion}/graphql.json`,
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Shopify-Storefront-Access-Token': token,
-    'Content-Length': Buffer.byteLength(postData)
-  }
-};
-
-const req = https.request(options, (res) => {
-  let data = '';
-  res.on('data', chunk => data += chunk);
-  res.on('end', () => {
-    console.log('Status:', res.statusCode);
-    console.log('Response:', data);
+async function test() {
+  const response = await fetch("https://eliseebrand.myshopify.com/api/2024-04/graphql.json", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Storefront-Access-Token': 'fd3d51862812c1f0c530dc83ac3f6685'
+    },
+    body: JSON.stringify({ query })
   });
-});
+  
+  const data = await response.json();
+  console.log(JSON.stringify(data, null, 2));
+}
 
-req.on('error', (e) => console.error(e));
-req.write(postData);
-req.end();
+test();

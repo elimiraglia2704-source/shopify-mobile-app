@@ -49,13 +49,27 @@ if ('serviceWorker' in navigator) {
 // ═══════════════════════════════════════════════════════════
 const shopify = new ShopifyClient();
 
+// ════════ GLOBAL ERROR HANDLER (Task 8) ════════
+window.addEventListener('error', (e) => {
+  console.error("Global Error Caught:", e.error);
+  toast("Si è verificato un errore imprevisto. Riprova.", true);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error("Unhandled Promise Rejection:", e.reason);
+  toast("Errore di rete o server irraggiungibile.", true);
+});
+// ════════════════════════════════════════════════
+
 import { state } from './state.js';
-import { $, $$, fmt, toast, refreshIcons } from './utils.js';
+import { $, $$, fmt, toast, refreshIcons, haptic } from './utils.js';
 import { openCart, closeCart, updateCartBadge, addToCart, updateQty, renderCartBody, checkout } from './components/Cart.js';
+import { initAssistant } from './components/Assistant.js';
+import { initAuth } from './components/Auth.js';
 
 // ═══════════════════════════════════════════════════════════
-function go(screen) {
+function go(screen, pushToHistory = true) {
   if (!$(`screen-${screen}`)) return;
+  haptic(20);
   closeMenu(); closeCart();
   state.prevScreen = state.screen;
   state.screen = screen;
@@ -69,6 +83,10 @@ function go(screen) {
   if (screen === 'home')    renderFlywheel();
   $('app-main').scrollTop = 0;
 
+  if (pushToHistory) {
+    history.pushState({ screen }, '', `#${screen}`);
+  }
+
   track('screen_view', { screen });
 }
 window.go = go; // global for inline HTML
@@ -76,8 +94,17 @@ window.go = go; // global for inline HTML
 // ═══════════════════════════════════════════════════════════
 // SIDE MENU
 // ═══════════════════════════════════════════════════════════
-function openMenu()  { $('side-menu').classList.add('open'); $('menu-backdrop').classList.add('open'); }
-function closeMenu() { $('side-menu')?.classList.remove('open'); $('menu-backdrop')?.classList.remove('open'); }
+function openMenu() {
+  haptic(15);
+  $('side-menu').classList.add('open'); 
+  $('menu-backdrop').classList.add('open');
+  history.pushState({ overlay: 'menu' }, '', window.location.hash);
+}
+function closeMenu() { 
+  $('side-menu').classList.remove('open'); 
+  $('menu-backdrop').classList.remove('open');
+  if (history.state?.overlay === 'menu') history.back();
+}
 
 function saveWish() { localStorage.setItem('elisee:wish', JSON.stringify(state.wishlist)); }
 
@@ -87,6 +114,7 @@ function saveWish() { localStorage.setItem('elisee:wish', JSON.stringify(state.w
 function isWished(id) { return state.wishlist.includes(id); }
 
 function toggleWish(productId) {
+  haptic(30);
   const added = !isWished(productId);
   if (added) state.wishlist.push(productId);
   else        state.wishlist = state.wishlist.filter(id => id !== productId);
@@ -313,6 +341,9 @@ function renderCatalog() {
   if (state.sortOption === 'price-desc') list.sort((a,b) => +b.priceRange.minVariantPrice.amount - +a.priceRange.minVariantPrice.amount);
   if (state.sortOption === 'az') list.sort((a,b) => a.title.localeCompare(b.title));
 
+  state.currentCatalogList = list;
+  state.catalogRendered = Math.min(20, list.length);
+
   grid.innerHTML = '';
   if (!list.length) {
     grid.innerHTML = `<div class="catalog-empty">
@@ -320,7 +351,7 @@ function renderCatalog() {
       <p>Nessun prodotto trovato</p>
     </div>`;
   } else {
-    list.forEach(p => grid.appendChild(makeCard(p, true)));
+    list.slice(0, state.catalogRendered).forEach(p => grid.appendChild(makeCard(p, true)));
   }
   refreshIcons(grid);
 }
@@ -940,6 +971,20 @@ export const updateDynamicHome = () => {
 // EVENTS — bind everything
 // ═══════════════════════════════════════════════════════════
 function bindEvents() {
+  // Gestione pulsante indietro nativo (Android/Browser)
+  window.addEventListener('popstate', (e) => {
+    if ($('cart-drawer')?.classList.contains('open')) { closeCart(); return; }
+    if ($('side-menu')?.classList.contains('open')) { closeMenu(); return; }
+    
+    initAuth(e, go, renderAdminArea);
+
+    if (e.state && e.state.screen) {
+      go(e.state.screen, false);
+    } else {
+      go('home', false);
+    }
+  });
+
   // Header
   $('hamburger-btn')?.addEventListener('click', openMenu);
   $('header-logo-btn')?.addEventListener('click', () => go('home'));
@@ -971,174 +1016,6 @@ function bindEvents() {
     btn.addEventListener('click', () => go(btn.dataset.screen));
   });
   $('nav-cart-btn').addEventListener('click', openCart);
-
-  // Landing & Auth Overlay
-  const authOverlay = $('auth-overlay');
-  const landingOverlay = $('landing-overlay');
-  
-  const showAuthState = (stateId) => {
-    $$('.auth-state').forEach(el => el.classList.remove('active'));
-    $(stateId).classList.add('active');
-    authOverlay.classList.remove('hidden');
-  };
-
-  const finishAuth = () => {
-    authOverlay.classList.add('hidden');
-    if (landingOverlay) landingOverlay.classList.add('hidden');
-    sessionStorage.setItem('hasSeenLanding', 'true');
-    toast('Accesso effettuato con successo!');
-  };
-
-  $('landing-signup-btn')?.addEventListener('click', () => showAuthState('auth-state-signup'));
-  $('landing-login-btn')?.addEventListener('click', () => showAuthState('auth-state-login'));
-  
-  $('auth-back-btn')?.addEventListener('click', () => {
-    authOverlay.classList.add('hidden');
-  });
-
-  // Auth actions
-  $('auth-do-signup')?.addEventListener('click', async () => {
-    const nameEl = $('signup-name');
-    const emailEl = $('signup-email');
-    const passEl = $('signup-password');
-    
-    // Protezione dalla cache: se mancano gli ID, la UI è vecchia e forziamo il ricaricamento
-    if (!nameEl || !emailEl || !passEl) {
-      toast('Aggiornamento app in corso...', false);
-      setTimeout(() => window.location.reload(true), 1500);
-      return;
-    }
-
-    const fullName = nameEl.value.trim();
-    const email = emailEl.value.trim();
-    const password = passEl.value;
-    if (!fullName || !email || !password) {
-      toast('Compila tutti i campi', true);
-      return;
-    }
-    const parts = fullName.split(' ');
-    const firstName = parts[0];
-    const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
-    
-    const btn = $('auth-do-signup');
-    const oldText = btn.textContent;
-    btn.textContent = 'Registrazione...';
-    btn.disabled = true;
-
-    try {
-      const customer = await shopify.customerCreate({ firstName, lastName, email, password });
-      updateProfile({ name: fullName, email });
-      finishAuth();
-    } catch (err) {
-      toast('Errore: ' + err.message, true);
-    } finally {
-      btn.textContent = oldText;
-      btn.disabled = false;
-    }
-  });
-
-  $('btn-spid')?.addEventListener('click', () => {
-    $('spid-gateway-overlay').style.display = 'flex';
-  });
-
-  $('spid-gateway-close')?.addEventListener('click', () => {
-    $('spid-gateway-overlay').style.display = 'none';
-  });
-
-  let currentSpidProvider = '';
-
-  document.querySelectorAll('.spid-provider').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      currentSpidProvider = e.currentTarget.dataset.name;
-      $('spid-providers-container').style.display = 'none';
-      $('spid-provider-title').textContent = `Accedi con ${currentSpidProvider}`;
-      $('spid-credentials-form').style.display = 'block';
-    });
-  });
-
-  $('spid-back-to-providers')?.addEventListener('click', () => {
-    $('spid-credentials-form').style.display = 'none';
-    $('spid-providers-container').style.display = 'grid';
-    $('spid-username').value = '';
-    $('spid-password').value = '';
-  });
-
-  $('spid-submit-credentials')?.addEventListener('click', () => {
-    const user = $('spid-username').value.trim();
-    const pass = $('spid-password').value;
-    
-    if (!user || !pass) {
-      toast('Inserisci Nome Utente e Password SPID', true);
-      return;
-    }
-
-    $('spid-credentials-form').style.display = 'none';
-    $('spid-loading-state').style.display = 'flex';
-    
-    setTimeout(() => {
-      $('spid-gateway-overlay').style.display = 'none';
-      $('spid-providers-container').style.display = 'grid'; // reset
-      $('spid-credentials-form').style.display = 'none';
-      $('spid-loading-state').style.display = 'none';
-      $('spid-username').value = '';
-      $('spid-password').value = '';
-      
-      finishAuth();
-      toast(`Accesso certificato con ${currentSpidProvider}.`);
-    }, 300);
-  });
-
-  $('spid-qr-login-btn')?.addEventListener('click', () => {
-    $('spid-credentials-form').style.display = 'none';
-    $('spid-loading-state').style.display = 'flex';
-    $('spid-loading-text').textContent = 'In attesa di autorizzazione dall\'App...';
-    
-    setTimeout(() => {
-      $('spid-gateway-overlay').style.display = 'none';
-      $('spid-providers-container').style.display = 'grid';
-      $('spid-credentials-form').style.display = 'none';
-      $('spid-loading-state').style.display = 'none';
-      
-      finishAuth();
-      toast(`Accesso SPID completato con ${currentSpidProvider}.`);
-    }, 3000);
-  });
-  
-  $('auth-do-login')?.addEventListener('click', async () => {
-    const emailEl = $('auth-login-email');
-    const passEl = $('auth-login-password');
-    
-    // Protezione dalla cache
-    if (!emailEl || !passEl) {
-      toast('Aggiornamento app in corso...', false);
-      setTimeout(() => window.location.reload(true), 1500);
-      return;
-    }
-
-    const email = emailEl.value.trim();
-    const password = passEl.value;
-    if (!email || !password) {
-      toast('Inserisci email e password', true);
-      return;
-    }
-
-    const btn = $('auth-do-login');
-    const oldText = btn.textContent;
-    btn.textContent = 'Accesso...';
-    btn.disabled = true;
-
-    try {
-      const auth = await shopify.customerLogin({ email, password });
-      sessionStorage.setItem('customerAccessToken', auth.accessToken);
-      updateProfile({ email });
-      finishAuth();
-    } catch (err) {
-      toast('Credenziali errate: ' + err.message, true);
-    } finally {
-      btn.textContent = oldText;
-      btn.disabled = false;
-    }
-  });
 
   // Cart
   $('cart-backdrop').addEventListener('click', closeCart);
@@ -1221,19 +1098,32 @@ function bindEvents() {
     if (overlay) overlay.classList.add('hidden');
   });
 
-  $('dir-do-login')?.addEventListener('click', () => {
+  $('dir-do-login')?.addEventListener('click', async () => {
     const user = $('dir-login-username').value;
     const pass = $('dir-login-password').value;
-    if (user === 'Eliseo2704' && pass === 'Iemmello9') {
-      const overlay = $('dir-auth-overlay');
-      if (overlay) overlay.classList.add('hidden');
-      $('dir-login-username').value = '';
-      $('dir-login-password').value = '';
-      go('admin');
-      renderAdminArea();
-      toast('Accesso consentito.');
-    } else {
-      toast('Credenziali errate.', true);
+    
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pass })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        const overlay = $('dir-auth-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        $('dir-login-username').value = '';
+        $('dir-login-password').value = '';
+        sessionStorage.setItem('admin_token', data.token); // Secure token
+        go('admin');
+        renderAdminArea();
+        toast('Accesso Direzione consentito.');
+      } else {
+        toast(data.error || 'Credenziali errate.', true);
+      }
+    } catch (err) {
+      toast('Errore di rete durante il login', true);
     }
   });
 
@@ -1383,10 +1273,21 @@ function bindEvents() {
   // Espone il lazy observer globalmente per usarlo nei render
   window._eliseeObserver = lazyObserver;
 
-  // Infinite scroll observer per il catalogo
+  // Infinite scroll observer per il catalogo (DOM Pagination / Virtual Scrolling)
   const sentinelObserver = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting && state.pageInfo?.hasNextPage && !state.isLoadingMore) {
-      loadMoreProducts();
+    if (entries[0].isIntersecting) {
+      if (state.currentCatalogList && state.catalogRendered < state.currentCatalogList.length) {
+        // Appendi i successivi elementi dal DOM
+        const fragment = document.createDocumentFragment();
+        const nextBatch = state.currentCatalogList.slice(state.catalogRendered, state.catalogRendered + 20);
+        nextBatch.forEach(p => fragment.appendChild(makeCard(p, true)));
+        $('catalog-products').appendChild(fragment);
+        state.catalogRendered += nextBatch.length;
+        refreshIcons($('catalog-products'));
+      } else if (state.pageInfo?.hasNextPage && !state.isLoadingMore) {
+        // Fallback su chiamata API se il listato locale è terminato
+        loadMoreProducts();
+      }
     }
   }, { rootMargin: '300px' });
   const catalogSentinel = $('catalog-sentinel');
@@ -1449,91 +1350,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ════════ AI STYLIST & DYNAMIC HOME LOGIC ════════
-  const aiFab = $('ai-stylist-btn');
-  const aiOverlay = $('ai-stylist-overlay');
-  const aiClose = $('ai-stylist-close');
-  const aiBody = $('ai-chat-body');
-  const aiInput = $('ai-chat-input');
-  const aiSend = $('ai-chat-send');
-
-  const addAiMessage = (text, sender) => {
-    const el = document.createElement('div');
-    el.className = `ai-bubble ${sender}`;
-    el.innerHTML = text;
-    aiBody.appendChild(el);
-    aiBody.scrollTop = aiBody.scrollHeight;
-  };
-
-  const processAiQuery = async (query) => {
-    addAiMessage(query, 'user');
-    aiInput.value = '';
-    
-    // Simulate thinking delay
-    const typingId = 'typing-' + Date.now();
-    const typingEl = document.createElement('div');
-    typingEl.className = 'ai-bubble bot';
-    typingEl.id = typingId;
-    typingEl.innerHTML = '<span class="spin" style="display:inline-block; font-size:10px;">⏳</span> Analisi in corso...';
-    aiBody.appendChild(typingEl);
-    aiBody.scrollTop = aiBody.scrollHeight;
-
-    setTimeout(() => {
-      const el = document.getElementById(typingId);
-      if (el) el.remove();
-      
-      const q = query.toLowerCase();
-      let response = "Posso aiutarti sia a trovare l'outfit perfetto nello Shop Elisee, sia a creare un progetto visivo per il tuo brand. Cosa cerchi?";
-      
-      // Vector Memory RAG Simulation (Super App Mode)
-      if (q.includes('outfit') || q.includes('stasera') || q.includes('vestito')) {
-        response = `Ho notato che ami il nero. <br><br><b>Outfit consigliato:</b><br>- T-Shirt Boxy Total Black<br>- Pantaloni Cargo Elisee<br><br><button class="btn-primary" style="height:32px; font-size:11px; margin-top:8px;" onclick="toast('Aggiunto al carrello con il 10% di sconto AI!')">Aggiungi al carrello (-10%)</button>`;
-      } else if (q.includes('allenamento') || q.includes('running') || q.includes('sport')) {
-        response = `Visto il tuo meteo attuale (Piove 🌧️), ti suggerisco le <b>Elisee Rain-X Sneakers</b> per mantenere il piede asciutto durante l'allenamento.`;
-      } else if (q.includes('preventivo') || q.includes('progetto') || q.includes('video') || q.includes('brand') || q.includes('spot')) {
-        // Modalità: Agenzia Creativa
-        response = `Vedo che hai bisogno di un <b>Progetto Creativo</b>.<br><br>
-        Ho esaminato il mio portfolio per casi simili. Ti propongo un pacchetto <i>Visual Branding</i> che include:<br>
-        - 1 Spot Cinematico (15s)<br>
-        - 5 Varianti Reel per IG/TikTok<br>
-        - Moodboard personalizzato<br><br>
-        <b>Preventivo:</b> €1.200 (Scelto dal 68% dei miei clienti del settore).<br><br>
-        <button class="btn-primary" style="height:32px; font-size:11px; margin-top:8px; background:var(--purple-light);" onclick="toast('Preventivo inviato alla tua email!')">Approva e ricevi contratto</button>`;
-      }
-      
-      addAiMessage(response, 'bot');
-    }, 300);
-  };
-
-  const openAiStylist = (customGreeting) => {
-    aiOverlay.classList.remove('hidden');
-    if (aiBody.children.length === 0 || customGreeting) {
-      if (customGreeting && aiBody.children.length > 0) aiBody.innerHTML = ''; // Reset per nuovo contesto
-      const greeting = customGreeting || `Ciao ${getProfile().name?.split(' ')[0] || ''}, sono l'Agente Elisee. Posso farti da Personal Stylist per lo shop o generare preventivi per i tuoi progetti creativi. Come ti aiuto?`;
-      addAiMessage(greeting, 'bot');
-    }
-  };
-
-  if (aiFab) aiFab.addEventListener('click', () => openAiStylist());
-
-  $('btn-studio-ai')?.addEventListener('click', () => {
-    openAiStylist(`Ciao! Sono l'Agente Elisee. Pronto a sfogliare il portfolio e creare pacchetti su misura per il tuo progetto video o fotografico. Di cosa hai bisogno?`);
-  });
-
-  if (aiClose) aiClose.addEventListener('click', () => aiOverlay.classList.add('hidden'));
-  
-  if (aiSend) aiSend.addEventListener('click', () => {
-    if (aiInput.value.trim()) processAiQuery(aiInput.value.trim());
-  });
-  
-  if (aiInput) aiInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && aiInput.value.trim()) processAiQuery(aiInput.value.trim());
-  });
-
-  document.querySelectorAll('.ai-suggestion-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      processAiQuery(chip.getAttribute('data-query'));
-    });
-  });
+  initAssistant();
 
   // ════════ VISUAL SEARCH LOGIC ════════
   const vsBtn = $('visual-search-btn');

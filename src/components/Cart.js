@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { $, $$, fmt, toast, refreshIcons } from '../utils.js';
+import { $, $$, fmt, toast, refreshIcons, haptic } from '../utils.js';
 import { trackAddToCart } from '../intelligence.js';
 import { track } from '../analytics.js';
 import { ShopifyClient } from '../shopify.js';
@@ -13,6 +13,7 @@ export function openCart() {
   const d = $('cart-drawer');
   if (b) b.classList.add('open'); 
   if (d) d.classList.add('open'); 
+  history.pushState({ overlay: 'cart' }, '', window.location.hash);
   track('cart_open'); 
 }
 
@@ -21,6 +22,7 @@ export function closeCart() {
   const d = $('cart-drawer');
   if (b) b.classList.remove('open'); 
   if (d) d.classList.remove('open'); 
+  if (history.state?.overlay === 'cart') history.back();
 }
 
 export function updateCartBadge() {
@@ -50,6 +52,7 @@ export function addToCart(product, variantId) {
   saveCart();
   updateCartBadge();
   renderCartBody();
+  haptic(40);
   toast(`"${product.title}" aggiunto`);
 
   trackAddToCart(product.id, variantId);
@@ -64,6 +67,7 @@ export function updateQty(variantId, delta) {
   saveCart();
   updateCartBadge();
   renderCartBody();
+  haptic(30);
 }
 
 export function renderCartBody() {
@@ -94,7 +98,7 @@ export function renderCartBody() {
     const el = document.createElement('div');
     el.className = 'cart-item';
     el.innerHTML = `
-      <img src="${item.img}" alt="${item.title}" class="ci-img">
+      <img src="${item.img}" alt="${item.title}" class="ci-img" loading="lazy" decoding="async">
       <div class="ci-detail">
         <div>
           <p class="ci-title">${item.title}</p>
@@ -135,7 +139,7 @@ export function renderCartBody() {
             <span>Scelto dal ${perc}% degli utenti insieme ai tuoi articoli</span>
           </div>
           <div class="cart-upsell-body">
-            <img src="${rec.images?.edges[0]?.node?.url || ''}" alt="${rec.title}">
+            <img src="${rec.images?.edges[0]?.node?.url || ''}" alt="${rec.title}" loading="lazy" decoding="async">
             <div class="cart-upsell-info">
               <p class="cart-upsell-title">${rec.title}</p>
               <p class="cart-upsell-price">${fmt(variant.price.amount, variant.price.currencyCode)}</p>
@@ -160,13 +164,16 @@ export function renderCartBody() {
 
 export async function checkout() {
   track('checkout_start', { items: state.cart.length });
+  haptic(60);
   const btn = $('checkout-btn');
   btn.textContent = '⏳ Preparazione...'; btn.disabled = true;
   try {
     const url = await shopify.createCheckoutUrl(state.cart);
-    window.open(url, '_blank');
-  } catch { toast('Errore checkout. Riprova.', true); }
-  btn.innerHTML = '<i data-lucide="credit-card"></i> Checkout';
-  btn.disabled = false;
-  refreshIcons(btn);
+    window.location.href = url;
+  } catch { 
+    toast('Errore checkout. Riprova.', true); 
+    btn.innerHTML = '<i data-lucide="credit-card"></i> Checkout';
+    btn.disabled = false;
+    refreshIcons(btn);
+  }
 }
