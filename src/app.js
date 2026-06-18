@@ -1371,17 +1371,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init Profile UI
   const p = getProfile();
   if (p.name) {
-    const nd = $('profile-name-display'); if (nd) nd.textContent = p.name;
-    const ni = $('input-profile-name');   if (ni) ni.value = p.name;
-    const ad = $('profile-avatar-display'); 
-    if (ad) {
+    const nameDisplay = $('profile-name-display'); if (nameDisplay) nameDisplay.textContent = p.name;
+    const nameInput = $('input-profile-name');   if (nameInput) nameInput.value = p.name;
+    const avatarDisplay = $('profile-avatar-display'); 
+    if (avatarDisplay) {
       if (p.avatarUrl) {
-        ad.style.backgroundImage = `url(${p.avatarUrl})`;
-        ad.style.backgroundSize = 'cover';
-        ad.style.backgroundPosition = 'center';
-        ad.innerHTML = '';
+        avatarDisplay.style.backgroundImage = `url(${p.avatarUrl})`;
+        avatarDisplay.style.backgroundSize = 'cover';
+        avatarDisplay.style.backgroundPosition = 'center';
+        avatarDisplay.innerHTML = '';
       } else {
-        ad.innerHTML = `<span style="font-weight:bold; font-size:32px; color:var(--text);">${p.name.charAt(0).toUpperCase()}</span>`;
+        avatarDisplay.innerHTML = `<span style="font-weight:bold; font-size:32px; color:var(--text);">${p.name.charAt(0).toUpperCase()}</span>`;
       }
     }
     const editPreview = $('edit-avatar-preview');
@@ -1391,7 +1391,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   if (p.email) {
-    const ei = $('input-profile-email'); if (ei) ei.value = p.email;
+    const emailInput = $('input-profile-email'); if (emailInput) emailInput.value = p.email;
   }
   
   updateDynamicHome();

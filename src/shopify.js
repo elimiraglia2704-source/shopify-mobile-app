@@ -242,17 +242,14 @@ export class ShopifyClient {
       
       // Fallback: se il negozio reale è vuoto, usa i dati finti per non rompere l'UI
       if (products.length === 0) {
-        console.warn("Il negozio Shopify non ha restituito prodotti. Uso i MOCK_PRODUCTS.");
-        products = MOCK_PRODUCTS;
+        console.warn("Il negozio Shopify non ha restituito prodotti. Verifica il dominio e il token.");
+        // Non usiamo più i MOCK_PRODUCTS per evitare confusione se l'utente si aspetta la sincronizzazione.
+        // products = MOCK_PRODUCTS;
       }
-      
-      return {
-        products,
-        pageInfo: data.products.pageInfo
-      };
+      return { products, pageInfo: data.products.pageInfo };
     } catch (error) {
-      console.warn("Chiamata API Shopify fallita:", error);
-      return { products: MOCK_PRODUCTS, pageInfo: { hasNextPage: false, endCursor: null } };
+      console.error("Chiamata API Shopify fallita in getProducts:", error);
+      return { products: [], pageInfo: { hasNextPage: false, endCursor: null } };
     }
   }
   async getCollectionProducts(collectionId, limit = 250) {
@@ -347,13 +344,16 @@ export class ShopifyClient {
     `;
 
     try {
-      const data = await this.queryStorefront(query);
-      let collections = data.collections.edges.map(e => e.node);
-      if (collections.length === 0) collections = MOCK_COLLECTIONS;
+      const data = await this.queryStorefront(query, { first: 10 });
+      let collections = data.collections.edges.map(edge => edge.node);
+      if (collections.length === 0) {
+        console.warn("Il negozio Shopify non ha restituito collezioni.");
+        // collections = MOCK_COLLECTIONS;
+      }
       return collections;
     } catch (error) {
-      console.warn("Chiamata API Shopify fallita:", error);
-      return MOCK_COLLECTIONS;
+      console.error("Chiamata API Shopify fallita in getCollections:", error);
+      return [];
     }
   }
 
