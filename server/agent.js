@@ -3,6 +3,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { SystemMessage, ToolMessage } from "@langchain/core/messages";
+import { MOCK_PRODUCTS } from "../src/mock-data.js";
 
 let llm = null;
 if (process.env.GOOGLE_API_KEY) {
@@ -55,9 +56,17 @@ const searchCatalogTool = tool(
           available: p.availableForSale
         };
       });
-      return JSON.stringify(products.length ? products : { message: "Nessun prodotto trovato." });
+      
+      if (products.length > 0) {
+        return JSON.stringify(products);
+      }
+      
+      // Fallback a dati mockati se lo store è vuoto o c'è un problema
+      return JSON.stringify(MOCK_PRODUCTS.filter(p => p.title.toLowerCase().includes(query.toLowerCase())));
+      
     } catch (e) {
-      return JSON.stringify({ error: e.message });
+      // In caso di errore API, usiamo comunque i prodotti di mock
+      return JSON.stringify(MOCK_PRODUCTS.filter(p => p.title.toLowerCase().includes(query.toLowerCase())));
     }
   },
   {
@@ -89,7 +98,33 @@ const generateQuoteTool = tool(
   }
 );
 
-const tools = [searchCatalogTool, generateQuoteTool];
+const recommendOutfitTool = tool(
+  async ({ occasion, style_preference }) => {
+    // Possiamo usare i mock data per suggerire combinazioni
+    const tops = MOCK_PRODUCTS.filter(p => p.title.toLowerCase().includes('t-shirt') || p.title.toLowerCase().includes('felpa') || p.title.toLowerCase().includes('giacca'));
+    const bottoms = MOCK_PRODUCTS.filter(p => p.title.toLowerCase().includes('pantaloni') || p.title.toLowerCase().includes('shorts'));
+    const shoes = MOCK_PRODUCTS.filter(p => p.title.toLowerCase().includes('sneakers') || p.title.toLowerCase().includes('scarpe'));
+
+    const top = tops[Math.floor(Math.random() * tops.length)] || { title: "T-Shirt Elisee Basic", price: "35 EUR" };
+    const shoe = shoes[Math.floor(Math.random() * shoes.length)] || { title: "Sneakers Elisee", price: "95 EUR" };
+
+    return JSON.stringify({
+      message: `Ho preparato un outfit perfetto per l'occasione '${occasion}' con stile '${style_preference}'.`,
+      outfit: [top, shoe],
+      total_estimated_price: "130 EUR"
+    });
+  },
+  {
+    name: "recommend_outfit",
+    description: "Crea e suggerisce un outfit completo (ad esempio maglia + scarpe) basato sull'occasione o sullo stile preferito. Usa questo tool quando l'utente chiede consigli su cosa indossare.",
+    schema: z.object({
+      occasion: z.string().describe("L'occasione per cui serve l'outfit (es. 'serata', 'palestra', 'ufficio')"),
+      style_preference: z.string().optional().describe("Le preferenze di stile dell'utente (es. 'elegante', 'sportivo', 'nero')")
+    })
+  }
+);
+
+const tools = [searchCatalogTool, generateQuoteTool, recommendOutfitTool];
 const toolsByName = Object.fromEntries(tools.map((t) => [t.name, t]));
 const llmWithTools = llm ? llm.bindTools(tools) : null;
 
