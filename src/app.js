@@ -1091,7 +1091,7 @@ function bindEvents() {
   $('spid-qr-login-btn')?.addEventListener('click', () => {
     $('spid-credentials-form').style.display = 'none';
     $('spid-loading-state').style.display = 'flex';
-    $('spid-loading-text').textContent = 'Acquisizione codice QR in corso...';
+    $('spid-loading-text').textContent = 'In attesa di autorizzazione dall\'App...';
     
     setTimeout(() => {
       $('spid-gateway-overlay').style.display = 'none';
@@ -1100,8 +1100,8 @@ function bindEvents() {
       $('spid-loading-state').style.display = 'none';
       
       finishAuth();
-      toast(`Accesso tramite QR Code ${currentSpidProvider} completato.`);
-    }, 300);
+      toast(`Accesso SPID completato con ${currentSpidProvider}.`);
+    }, 3000);
   });
   
   $('auth-do-login')?.addEventListener('click', async () => {

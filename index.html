@@ -874,14 +874,10 @@
     </div>
 
     <div style="text-align: center; padding: 20px; border: 1px dashed #d1d5db; border-radius: 8px; background: #f9fafb;">
-      <h4 style="font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 8px;">Accedi più velocemente</h4>
-      <p style="font-size: 13px; color: #4b5563; margin-bottom: 16px; line-height: 1.5;">Inquadra questo QR Code con l'app del tuo provider per accedere istantaneamente.</p>
+      <h4 style="font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 8px;">Accesso rapido da Smartphone</h4>
+      <p style="font-size: 13px; color: #4b5563; margin-bottom: 16px; line-height: 1.5;">Clicca il pulsante qui sotto per aprire l'app del tuo provider (es. PosteID) e autorizzare l'accesso con impronta digitale o FaceID.</p>
       
-      <div style="display: inline-block; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 16px;">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SPID-Login-Simulation" alt="QR Code SPID" style="width: 120px; height: 120px; display: block;">
-      </div>
-      
-      <button id="spid-qr-login-btn" style="display: block; width: 100%; padding: 12px; background: transparent; border: 1px solid #0066cc; color: #0066cc; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s;">Conferma Scansione QR</button>
+      <button id="spid-qr-login-btn" style="display: block; width: 100%; padding: 14px; background: #0066cc; color: white; font-weight: bold; font-size: 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: none; box-shadow: 0 4px 6px rgba(0,102,204,0.2);">Apri App Provider</button>
     </div>
   </div>
 
@@ -896,7 +892,7 @@
   </div>
 </div>
 
-<script type="module" src="/src/app.js"></script>
+<script type="module" src="/src/app.js?v=2"></script>
   <!-- ════════ VISUAL SEARCH OVERLAY (Laser Scan) ════════ -->
   <div class="visual-search-overlay hidden" id="vs-overlay">
     <div class="vs-camera-view">
