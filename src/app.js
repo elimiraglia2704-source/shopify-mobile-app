@@ -1397,11 +1397,11 @@ function bindEvents() {
 // INIT
 // ═══════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  // Check landing status
-  if (sessionStorage.getItem('hasSeenLanding') === 'true') {
-    const overlay = $('landing-overlay');
-    if (overlay) overlay.style.display = 'none';
-  }
+  // Check landing status (disattivato temporaneamente per permettere sempre l'accesso alla pagina di Iscrizione/Accesso)
+  // if (sessionStorage.getItem('hasSeenLanding') === 'true') {
+  //   const overlay = $('landing-overlay');
+  //   if (overlay) overlay.style.display = 'none';
+  // }
 
   applyConfig();
   refreshIcons();
