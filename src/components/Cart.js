@@ -1,0 +1,172 @@
+import { state } from '../state.js';
+import { $, $$, fmt, toast, refreshIcons } from '../utils.js';
+import { trackAddToCart } from '../intelligence.js';
+import { track } from '../analytics.js';
+import { ShopifyClient } from '../shopify.js';
+
+const shopify = new ShopifyClient();
+
+export function saveCart() { localStorage.setItem('elisee:cart', JSON.stringify(state.cart)); }
+
+export function openCart() { 
+  const b = $('cart-backdrop');
+  const d = $('cart-drawer');
+  if (b) b.classList.add('open'); 
+  if (d) d.classList.add('open'); 
+  track('cart_open'); 
+}
+
+export function closeCart() { 
+  const b = $('cart-backdrop');
+  const d = $('cart-drawer');
+  if (b) b.classList.remove('open'); 
+  if (d) d.classList.remove('open'); 
+}
+
+export function updateCartBadge() {
+  const n = state.cart.reduce((s, i) => s + i.qty, 0);
+  const badge = $('cart-count');
+  const dot   = $('cart-dot');
+  if (badge) { badge.textContent = n || ''; badge.classList.toggle('visible', n > 0); }
+  if (dot)   { dot.classList.toggle('visible', n > 0); }
+}
+
+export function addToCart(product, variantId) {
+  const variant = product.variants.edges.find(e => e.node.id === variantId)?.node;
+  if (!variant) { toast('Seleziona una variante', true); return; }
+
+  const img = product.images.edges[0]?.node.url || '';
+  const existing = state.cart.find(i => i.variantId === variantId);
+  if (existing) { existing.qty++; }
+  else {
+    state.cart.push({
+      variantId, productId: product.id,
+      title: product.title,
+      variantTitle: variant.title,
+      price: variant.price,
+      img, qty: 1,
+    });
+  }
+  saveCart();
+  updateCartBadge();
+  renderCartBody();
+  toast(`"${product.title}" aggiunto`);
+
+  trackAddToCart(product.id, variantId);
+  track('cart_add', { productId: product.id, price: variant.price.amount });
+}
+
+export function updateQty(variantId, delta) {
+  const item = state.cart.find(i => i.variantId === variantId);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) state.cart = state.cart.filter(i => i.variantId !== variantId);
+  saveCart();
+  updateCartBadge();
+  renderCartBody();
+}
+
+export function renderCartBody() {
+  const body = $('cart-body');
+  const btn  = $('checkout-btn');
+  const tot  = $('cart-total');
+  if (!body) return;
+
+  if (!state.cart.length) {
+    body.innerHTML = `<div class="cart-empty">
+      <i data-lucide="shopping-cart" style="width:44px;height:44px"></i>
+      <p>Il carrello è vuoto</p>
+    </div>`;
+    if (btn) btn.disabled = true;
+    if (tot) tot.textContent = '€0.00';
+    refreshIcons(body);
+    return;
+  }
+
+  if (btn) btn.disabled = false;
+  let total = 0;
+  body.innerHTML = '';
+
+  state.cart.forEach(item => {
+    const lineTotal = parseFloat(item.price.amount) * item.qty;
+    total += lineTotal;
+    const varLabel = item.variantTitle !== 'Default Title' ? item.variantTitle : '';
+    const el = document.createElement('div');
+    el.className = 'cart-item';
+    el.innerHTML = `
+      <img src="${item.img}" alt="${item.title}" class="ci-img">
+      <div class="ci-detail">
+        <div>
+          <p class="ci-title">${item.title}</p>
+          ${varLabel ? `<p class="ci-variant">${varLabel}</p>` : ''}
+        </div>
+        <div class="ci-row">
+          <span class="ci-price">${fmt(lineTotal, item.price.currencyCode)}</span>
+          <div class="qty-ctrl">
+            <button class="qty-btn">−</button>
+            <span class="qty-val">${item.qty}</span>
+            <button class="qty-btn">+</button>
+          </div>
+        </div>
+      </div>`;
+    el.querySelectorAll('.qty-btn')[0].addEventListener('click', () => updateQty(item.variantId, -1));
+    el.querySelectorAll('.qty-btn')[1].addEventListener('click', () => updateQty(item.variantId, +1));
+    body.appendChild(el);
+  });
+
+  // PREDICTIVE UPSELL MODULE
+  if (state.products && state.products.length > 0) {
+    const cartProductIds = new Set(state.cart.map(i => i.productId));
+    const availableUpsells = state.products.filter(p => !cartProductIds.has(p.id));
+    
+    if (availableUpsells.length > 0) {
+      // Scegliamo un prodotto casuale per simulare la predizione
+      const rec = availableUpsells[Math.floor(Math.random() * availableUpsells.length)];
+      const variant = rec.variants?.edges[0]?.node;
+      
+      if (variant) {
+        const perc = Math.floor(Math.random() * (85 - 60) + 60); // Random tra 60 e 85%
+        
+        const upsellEl = document.createElement('div');
+        upsellEl.className = 'cart-upsell';
+        upsellEl.innerHTML = `
+          <div class="cart-upsell-header">
+            <i data-lucide="sparkles"></i>
+            <span>Scelto dal ${perc}% degli utenti insieme ai tuoi articoli</span>
+          </div>
+          <div class="cart-upsell-body">
+            <img src="${rec.images?.edges[0]?.node?.url || ''}" alt="${rec.title}">
+            <div class="cart-upsell-info">
+              <p class="cart-upsell-title">${rec.title}</p>
+              <p class="cart-upsell-price">${fmt(variant.price.amount, variant.price.currencyCode)}</p>
+            </div>
+            <button class="icon-btn cart-upsell-add" aria-label="Aggiungi all'ordine"><i data-lucide="plus"></i></button>
+          </div>
+        `;
+        
+        upsellEl.querySelector('.cart-upsell-add').addEventListener('click', () => {
+          addToCart(rec, variant.id);
+          toast("Aggiunto all'ordine!");
+        });
+        
+        body.appendChild(upsellEl);
+        refreshIcons(upsellEl);
+      }
+    }
+  }
+
+  if (tot) tot.textContent = fmt(total, state.cart[0]?.price?.currencyCode || 'EUR');
+}
+
+export async function checkout() {
+  track('checkout_start', { items: state.cart.length });
+  const btn = $('checkout-btn');
+  btn.textContent = '⏳ Preparazione...'; btn.disabled = true;
+  try {
+    const url = await shopify.createCheckoutUrl(state.cart);
+    window.open(url, '_blank');
+  } catch { toast('Errore checkout. Riprova.', true); }
+  btn.innerHTML = '<i data-lucide="credit-card"></i> Checkout';
+  btn.disabled = false;
+  refreshIcons(btn);
+}

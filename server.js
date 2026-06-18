@@ -1,0 +1,157 @@
+/**
+ * Elisee Mobile App — Proxy Server
+ * Risolve il CORS servendo sia i file statici che proxando le chiamate
+ * alle API Shopify Storefront senza restrizioni CORS.
+ */
+
+const http  = require('http');
+const https = require('https');
+const fs    = require('fs');
+const path  = require('path');
+const url   = require('url');
+
+const PORT = 8000;
+const APP_DIR = __dirname;
+
+// ── Tipi MIME ──────────────────────────────────────────
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.css':  'text/css; charset=utf-8',
+  '.js':   'application/javascript; charset=utf-8',
+  '.json': 'application/json',
+  '.png':  'image/png',
+  '.jpg':  'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg':  'image/svg+xml',
+  '.ico':  'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2':'font/woff2',
+};
+
+// ── Helper: invia risposta JSON ────────────────────────
+function sendJSON(res, status, data) {
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+  });
+  res.end(JSON.stringify(data));
+}
+
+// ── Proxy verso Shopify Storefront API ─────────────────
+function proxyShopify(req, res) {
+  let body = '';
+  req.on('data', chunk => { body += chunk; });
+  req.on('end', () => {
+    let payload;
+    try { payload = JSON.parse(body); } catch {
+      return sendJSON(res, 400, { error: 'Invalid JSON body' });
+    }
+
+    const shopDomain  = payload.shopDomain  || 'xdjj7t-3x.myshopify.com';
+    const accessToken = payload.accessToken || '9882e437dde6515ff91dc2522bd19598';
+    const apiVersion  = payload.apiVersion  || '2024-04';
+    const graphql     = payload.query       || '';
+    const variables   = payload.variables   || {};
+
+    const postData = JSON.stringify({ query: graphql, variables });
+
+    const options = {
+      hostname: shopDomain,
+      path:     `/api/${apiVersion}/graphql.json`,
+      method:   'POST',
+      headers:  {
+        'Content-Type':                        'application/json',
+        'Content-Length':                      Buffer.byteLength(postData),
+        'X-Shopify-Storefront-Access-Token':   accessToken,
+        'Accept':                              'application/json',
+      },
+    };
+
+    const proxyReq = https.request(options, proxyRes => {
+      let data = '';
+      proxyRes.on('data', chunk => { data += chunk; });
+      proxyRes.on('end', () => {
+        res.writeHead(proxyRes.statusCode, {
+          'Content-Type':                  'application/json',
+          'Access-Control-Allow-Origin':   '*',
+          'Access-Control-Allow-Methods':  'POST, OPTIONS',
+          'Access-Control-Allow-Headers':  'Content-Type',
+        });
+        res.end(data);
+      });
+    });
+
+    proxyReq.on('error', err => {
+      console.error('❌ Proxy error:', err.message);
+      sendJSON(res, 502, { error: 'Proxy request failed', detail: err.message });
+    });
+
+    proxyReq.write(postData);
+    proxyReq.end();
+  });
+}
+
+// ── Server principale ──────────────────────────────────
+const server = http.createServer((req, res) => {
+  const parsedUrl = url.parse(req.url);
+  const pathname  = parsedUrl.pathname;
+
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin':  '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Shopify-Storefront-Access-Token',
+    });
+    return res.end();
+  }
+
+  // ── Proxy endpoint ──────────────────────────────────
+  if (pathname === '/api/shopify' && req.method === 'POST') {
+    return proxyShopify(req, res);
+  }
+
+  // ── File statici ────────────────────────────────────
+  let filePath = path.join(APP_DIR, pathname === '/' ? 'index.html' : pathname);
+
+  // Sicurezza: evita path traversal
+  if (!filePath.startsWith(APP_DIR)) {
+    res.writeHead(403);
+    return res.end('Forbidden');
+  }
+
+  const ext  = path.extname(filePath).toLowerCase();
+  const mime = MIME[ext] || 'application/octet-stream';
+
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      if (err.code === 'ENOENT') {
+        // Fallback a index.html per SPA routing
+        fs.readFile(path.join(APP_DIR, 'index.html'), (e2, d2) => {
+          if (e2) { res.writeHead(404); return res.end('Not Found'); }
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(d2);
+        });
+      } else {
+        res.writeHead(500);
+        res.end('Internal Server Error');
+      }
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': mime });
+    res.end(data);
+  });
+});
+
+server.listen(PORT, () => {
+  console.log('');
+  console.log('╔══════════════════════════════════════════╗');
+  console.log('║     Elisee Mobile App — Proxy Server     ║');
+  console.log('╠══════════════════════════════════════════╣');
+  console.log(`║  App:   http://localhost:${PORT}             ║`);
+  console.log(`║  Proxy: http://localhost:${PORT}/api/shopify ║`);
+  console.log('║  CORS:  OK Risolto via proxy locale      ║');
+
+  console.log('╚══════════════════════════════════════════╝');
+  console.log('');
+});

@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Elisee</title>
+  <meta name="description" content="Abbigliamento premium Elisee. Scopri e acquista la collezione.">
+  <meta name="theme-color" content="#0a0010">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="logo-total-white.png">
+  <link rel="apple-touch-icon" href="logo-total-white.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <div class="app-bg-pattern"></div>
+
+  <!-- ════════ LANDING OVERLAY (Nike style) ════════ -->
+  <div id="landing-overlay" class="landing-overlay">
+    <div class="landing-bg"></div>
+    <div class="landing-content">
+      <h1 class="landing-text">Spedizione gratuita, articoli riservati ai member, tutto il meglio di Elisee, personalizzato per te.</h1>
+      <div class="landing-buttons">
+        <button class="btn-primary landing-btn-solid" id="landing-signup-btn">Iscriviti</button>
+        <button class="btn-secondary landing-btn-outline" id="landing-login-btn">Accedi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ AUTH OVERLAY (Registrazione / Login) ════════ -->
+  <div id="auth-overlay" class="auth-overlay hidden">
+    <div class="auth-header">
+      <button class="icon-btn" id="auth-back-btn" style="color:#fff;"><i data-lucide="arrow-left"></i></button>
+      <img src="logo-total-white.png" alt="Elisee" class="auth-logo">
+      <div style="width:38px;"></div> <!-- Spacer per centrare -->
+    </div>
+
+    <!-- State: Signup -->
+    <div class="auth-state" id="auth-state-signup">
+      <h2 class="auth-title">Crea un account</h2>
+      <p class="auth-subtitle">Unisciti al club esclusivo Elisee.</p>
+      
+      <button class="btn-spid" id="btn-spid">
+        <img src="/spid-logo.png" alt="SPID" style="height:20px; margin-right:8px; filter: brightness(0) invert(1);"> Entra con SPID
+      </button>
+      
+      <div class="auth-divider"><span>oppure</span></div>
+
+      <div class="field"><input class="field-input auth-input" id="signup-name" type="text" placeholder="Nome completo"></div>
+      <div class="field"><input class="field-input auth-input" id="signup-email" type="email" placeholder="Email"></div>
+      <div class="field"><input class="field-input auth-input" id="signup-password" type="password" placeholder="Password"></div>
+      <button class="btn-primary" id="auth-do-signup" style="width:100%; height:48px; margin-top:12px;">Iscriviti</button>
+    </div>
+
+    <!-- State: Login Email + Password -->
+    <div class="auth-state" id="auth-state-login">
+      <h2 class="auth-title">Bentornato</h2>
+      <p class="auth-subtitle">Inserisci le tue credenziali per accedere.</p>
+      
+      <div class="field" style="margin-top:24px;">
+        <input class="field-input auth-input" type="email" id="auth-login-email" placeholder="Indirizzo Email">
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <input class="field-input auth-input" type="password" id="auth-login-password" placeholder="Password">
+      </div>
+      <button class="btn-primary" id="auth-do-login" style="width:100%; height:48px; margin-top:12px;">Accedi</button>
+    </div>
+  </div>
+
+  <!-- ════════ DIREZIONE AUTH OVERLAY ════════ -->
+  <div id="dir-auth-overlay" class="auth-overlay hidden" style="z-index: 10005;">
+    <div class="auth-header">
+      <button class="icon-btn" id="dir-auth-back-btn" style="color:#fff;"><i data-lucide="arrow-left"></i></button>
+      <div style="font-weight:600; font-size:16px;">Area Direzione</div>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="auth-state active" style="justify-content: center; padding-bottom: 80px;">
+      <div style="text-align: center; margin-bottom: 32px;">
+        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <i data-lucide="shield" style="width: 32px; height: 32px; color: var(--gold);"></i>
+        </div>
+        <h2 class="auth-title" id="dir-auth-title" style="font-size: 24px;">Accesso Riservato</h2>
+        <p class="auth-subtitle" style="margin-bottom: 0;">Inserisci le credenziali di direzione.</p>
+      </div>
+      
+      <div class="field" style="margin-top:24px;">
+        <input class="field-input auth-input" type="text" id="dir-login-username" placeholder="Username">
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <input class="field-input auth-input" type="password" id="dir-login-password" placeholder="Password">
+      </div>
+      <button class="btn-primary" id="dir-do-login" style="width:100%; height:48px; margin-top:24px;">Accedi</button>
+    </div>
+  </div>
+
+  <!-- ════════ HEADER ════════ -->
+  <header class="header">
+    <button class="icon-btn" id="hamburger-btn" aria-label="Menu" style="display:none">
+      <i data-lucide="align-left"></i>
+    </button>
+
+    <!-- Logo rimosso su richiesta dell'utente -->
+
+    <button class="icon-btn cart-icon-btn" id="header-cart-btn" aria-label="Carrello" style="display:none">
+      <i data-lucide="shopping-bag"></i>
+      <span class="cart-badge" id="cart-count"></span>
+    </button>
+  </header>
+
+  <!-- ════════ SIDE MENU (secondario) ════════ -->
+  <div class="backdrop" id="menu-backdrop"></div>
+  <nav class="side-menu" id="side-menu">
+    <div class="side-menu-header">
+      <img src="logo-total-white.png" alt="Elisee" class="side-logo" id="side-logo-img">
+      <button class="icon-btn" id="menu-close-btn"><i data-lucide="x"></i></button>
+    </div>
+    <div class="side-menu-body">
+      <p class="side-menu-label">Esplora</p>
+      <ul class="side-nav-list">
+        <li class="side-nav-item" data-nav="home">
+          <i data-lucide="home"></i><span>Home</span>
+        </li>
+        <li class="side-nav-item" data-nav="catalog">
+          <i data-lucide="grid-3x3"></i><span>Catalogo</span>
+        </li>
+      </ul>
+      <p class="side-menu-label" style="margin-top:20px">Altro</p>
+      <ul class="side-nav-list">
+        <li class="side-nav-item" data-nav="settings">
+          <i data-lucide="settings-2"></i><span>Impostazioni</span>
+        </li>
+      </ul>
+    </div>
+    <div class="side-menu-footer">
+      <div class="side-social">
+        <a href="https://www.instagram.com/elisee.brand" id="link-instagram" class="social-link" aria-label="Instagram" target="_blank"><i data-lucide="instagram"></i></a>
+        <a href="https://www.tiktok.com/@elisee.brand" id="link-tiktok" class="social-link" aria-label="TikTok" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.01a8.16 8.16 0 0 0 4.77 1.52V7.08a4.85 4.85 0 0 1-1-.39z"/></svg>
+        </a>
+      </div>
+      <p class="side-copyright">© 2024 Elisee</p>
+    </div>
+  </nav>
+
+  <!-- ════════ MAIN CONTENT ════════ -->
+  <main class="app-main" id="app-main">
+
+    <!-- ── HOME ── -->
+    <section class="screen active" id="screen-home">
+      <!-- Hero compatto (Senza immagine enorme) -->
+      <div style="padding: 24px 16px 8px;">
+        <h1 id="hero-title" style="font-family: var(--font-d); font-size: 28px; margin-bottom: 4px;">Buongiorno, Elisee</h1>
+        <p id="hero-sub" style="color: var(--text-muted); font-size: 14px;">Stile. Qualità. Esclusività.</p>
+      </div>
+
+      <!-- Flywheel insights (Principio 10) -->
+      <div class="flywheel-bar" id="flywheel-bar" style="display:none"></div>
+
+      <!-- Collezioni chips -->
+      <div class="home-section">
+        <div class="section-head">
+          <h2 class="section-title">Collezioni</h2>
+        </div>
+        <div class="chips-scroll" id="home-collections"></div>
+      </div>
+
+      <!-- Ultimi Arrivi -->
+      <div class="home-section">
+        <div class="section-head">
+          <h2 class="section-title">Ultimi arrivi</h2>
+        </div>
+        <div class="products-grid" id="home-latest"></div>
+      </div>
+
+      <!-- Prodotti AI-ranked -->
+      <div class="home-section">
+        <div class="section-head">
+          <h2 class="section-title">Per te <span class="section-ai-badge">AI</span></h2>
+          <button class="link-btn" id="home-see-all">Vedi tutti</button>
+        </div>
+        <div class="products-grid" id="home-products"></div>
+      </div>
+
+      <p class="home-footer-note">© 2024 Elisee — Tutti i diritti riservati</p>
+    </section>
+
+    <!-- ── CATALOGO ── -->
+    <section class="screen" id="screen-catalog">
+      <div class="catalog-top">
+        <div class="search-wrap">
+          <i data-lucide="search" class="search-ico"></i>
+          <input type="text" id="search-input" class="search-field" placeholder="Es. scarpe da running leggere..." style="padding-left:36px; padding-right:72px;">
+          <div style="position:absolute; right:8px; top:50%; transform:translateY(-50%); display:flex; gap:8px;">
+            <button class="icon-btn" id="voice-search-btn" style="width:24px; height:24px; background:rgba(212,175,55,0.15); color:var(--gold);"><i data-lucide="mic" style="width:14px; height:14px;"></i></button>
+            <button class="icon-btn" id="visual-search-btn" style="width:24px; height:24px; background:rgba(155,89,208,0.15); color:var(--purple-light);"><i data-lucide="camera" style="width:14px; height:14px;"></i></button>
+            <button class="search-clear" id="search-clear" style="display:none; position:relative; right:0; transform:none;"><i data-lucide="x"></i></button>
+          </div>
+        </div>
+        <div class="chips-scroll" id="catalog-filters" style="padding:0 14px 12px;"></div>
+        <div class="catalog-bar">
+          <select class="sort-select" id="sort-select">
+            <option value="">Ordina</option>
+            <option value="price-asc">Prezzo ↑</option>
+            <option value="price-desc">Prezzo ↓</option>
+            <option value="az">A → Z</option>
+          </select>
+          <button class="wish-filter-btn" id="wish-filter-btn">
+            <i data-lucide="heart" style="width:12px;height:12px"></i> Preferiti
+          </button>
+        </div>
+      </div>
+      <div class="products-grid catalog-grid" id="catalog-products"></div>
+      <div id="catalog-sentinel" class="loading-sentinel" style="height: 60px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 12px; opacity: 0; transition: opacity 0.2s;"></div>
+    </section>
+
+    <!-- ── DETTAGLIO PRODOTTO ── -->
+    <section class="screen" id="screen-pdp">
+      <button class="back-row" id="pdp-back"><i data-lucide="arrow-left"></i><span>Indietro</span></button>
+      <div class="pdp-gallery" id="pdp-gallery">
+        <img id="pdp-img" src="" alt="" class="pdp-main-img">
+        <div class="pdp-thumbs" id="pdp-thumbs"></div>
+      </div>
+      <div class="pdp-info">
+        <p class="pdp-vendor" id="pdp-vendor"></p>
+        <h1 class="pdp-title" id="pdp-title"></h1>
+        <div class="pdp-price-line">
+          <span class="pdp-price" id="pdp-price"></span>
+          <span class="pdp-compare" id="pdp-compare" style="display:none"></span>
+        </div>
+        <div id="pdp-options"></div>
+        <div class="pdp-desc-box">
+          <p class="pdp-desc" id="pdp-desc"></p>
+        </div>
+      </div>
+
+      <!-- Raccomandazioni AI (Principio 3) -->
+      <div class="pdp-recs">
+        <h2 class="pdp-recs-title">Potrebbe piacerti</h2>
+        <div class="products-grid" style="padding:0 14px"></div>
+      </div>
+
+      <div style="height:80px"></div>
+
+      <div class="pdp-sticky-bar">
+        <button class="wish-btn" id="pdp-wish-btn" aria-label="Preferiti"><i data-lucide="heart"></i></button>
+        <button class="btn-primary pdp-buy-btn" id="pdp-add-cart"><i data-lucide="shopping-bag"></i> Aggiungi al Carrello</button>
+      </div>
+    </section>
+
+    <!-- ── PROFILO UTENTE ── -->
+    <!-- ── PROFILO UTENTE ── -->
+    <section class="screen" id="screen-profile">
+      <div class="profile-body" style="padding: 24px 16px; display: flex; flex-direction: column; gap: 24px; padding-bottom: 100px;">
+        
+        <!-- Header: Avatar & Info -->
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 10px;">
+          <!-- Avatar con anello gradiente e glow -->
+          <div style="position: relative; width: 90px; height: 90px; margin-bottom: 16px;">
+            <div style="position: absolute; inset: -4px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--purple)); opacity: 0.7; filter: blur(6px);"></div>
+            <div style="position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(135deg, var(--bg2), var(--bg)); border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; z-index: 1;">
+              <span id="profile-avatar-display" style="font-weight: 700; font-size: 36px; color: var(--text); font-family: var(--font-d); text-shadow: none;">E</span>
+            </div>
+          </div>
+          <h2 id="profile-name-display" style="font-family: var(--font-d); font-size: 28px; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px;">Eliseo Miraglia</h2>
+          <button id="go-edit-profile-btn" style="background: rgba(255,255,255,0.06); color: var(--text-sub); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 8px 20px; font-size: 13px; font-weight: 500; transition: all 0.2s; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.2);">Modifica profilo</button>
+        </div>
+
+        <!-- Glassmorphic Grid for Quick Actions -->
+        <div style="background: rgba(20, 10, 30, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 24px; padding: 20px 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+            
+            <div id="btn-profile-orders" style="display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer;">
+              <div style="width: 46px; height: 46px; border-radius: 16px; background: rgba(155,89,208,0.12); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(155,89,208,0.25); box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);">
+                <i data-lucide="package" style="width: 22px; height: 22px; color: var(--purple-light);"></i>
+              </div>
+              <span style="font-size: 11px; font-weight: 600; color: var(--text-sub);">Ordini</span>
+            </div>
+            
+            <div id="btn-profile-pass" style="display: flex; flex-direction: column; align-items: center; gap: 10px; opacity: 0.4; pointer-events: none;">
+              <div style="width: 46px; height: 46px; border-radius: 16px; background: rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05);">
+                <i data-lucide="qr-code" style="width: 22px; height: 22px; color: var(--text-muted);"></i>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Pass</span>
+                <span style="font-size: 8px; font-style: italic; color: var(--text-muted);">In arrivo</span>
+              </div>
+            </div>
+
+            <div id="btn-profile-wishlist" style="display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer;">
+              <div style="width: 46px; height: 46px; border-radius: 16px; background: rgba(155,89,208,0.12); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(155,89,208,0.25); box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);">
+                <i data-lucide="heart" style="width: 22px; height: 22px; color: var(--purple-light);"></i>
+              </div>
+              <span style="font-size: 11px; font-weight: 600; color: var(--text-sub);">Preferiti</span>
+            </div>
+
+            <div id="profile-settings-btn" style="display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer;">
+              <div style="width: 46px; height: 46px; border-radius: 16px; background: rgba(155,89,208,0.12); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(155,89,208,0.25); box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);">
+                <i data-lucide="settings" style="width: 22px; height: 22px; color: var(--purple-light);"></i>
+              </div>
+              <span style="font-size: 11px; font-weight: 600; color: var(--text-sub);">Setup</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Glassmorphic List Menus -->
+        <div style="background: rgba(20, 10, 30, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 24px; padding: 6px 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+          
+          <div id="btn-profile-inbox" style="padding: 18px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.03);">
+                <i data-lucide="mail" style="width: 18px; height: 18px; color: var(--text);"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 2px; color: var(--text);">Posta in arrivo</h3>
+                <p style="font-size: 12px; color: var(--text-sub);">Visualizza i tuoi messaggi</p>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" style="color: rgba(255,255,255,0.2); width: 20px;"></i>
+          </div>
+          
+          <div id="btn-profile-vip" style="padding: 18px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05)); border: 1px solid rgba(212,175,55,0.3); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(212,175,55,0.1);">
+                <i data-lucide="award" style="width: 18px; height: 18px; color: var(--gold);"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 2px; color: var(--text);">Vantaggi VIP Elisee</h3>
+                <p style="font-size: 12px; color: var(--gold-light);">1.250 Punti Stile sbloccati</p>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" style="color: rgba(255,255,255,0.2); width: 20px;"></i>
+          </div>
+
+          <div id="btn-profile-dir-clienti" style="padding: 18px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(155,89,208,0.15); border: 1px solid rgba(155,89,208,0.3); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="users" style="width: 18px; height: 18px; color: var(--purple-light);"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 2px; color: var(--text);">Area Direzione Clienti</h3>
+                <p style="font-size: 12px; color: var(--text-sub);">Gestione clienti e profili</p>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" style="color: rgba(255,255,255,0.2); width: 20px;"></i>
+          </div>
+
+          <div id="btn-profile-dir-admin" style="padding: 18px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.3); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="shield" style="width: 18px; height: 18px; color: var(--gold);"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 2px; color: var(--text);">Area Direzione Admin</h3>
+                <p style="font-size: 12px; color: var(--text-sub);">Gestione vendite e sistema</p>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" style="color: rgba(255,255,255,0.2); width: 20px;"></i>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── ORDINI ── -->
+    <section class="screen" id="screen-orders">
+      <div class="simple-header">
+        <button class="back-row" onclick="go('profile')"><i data-lucide="arrow-left"></i><span>Profilo</span></button>
+        <h2 class="simple-title">Ordini</h2>
+      </div>
+      <div class="profile-body" style="padding: 24px 16px; text-align: center; color: var(--text-muted); margin-top: 50px;">
+        <i data-lucide="package" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+        <p>Nessun ordine recente.</p>
+        <p style="font-size: 12px; margin-top: 8px;">I tuoi acquisti appariranno qui.</p>
+      </div>
+    </section>
+
+    <!-- ── PASS (QR Code) ── -->
+    <section class="screen" id="screen-pass">
+      <div class="simple-header">
+        <button class="back-row" onclick="go('profile')"><i data-lucide="arrow-left"></i><span>Profilo</span></button>
+        <h2 class="simple-title">Il tuo Pass</h2>
+      </div>
+      <div class="profile-body" style="padding: 24px 16px; text-align: center; display:flex; flex-direction:column; align-items:center; margin-top: 40px;">
+        <div style="background: #fff; padding: 24px; border-radius: 16px; display:inline-block; margin-bottom: 24px;">
+          <i data-lucide="qr-code" style="width: 200px; height: 200px; color: #000;"></i>
+        </div>
+        <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Scansiona in cassa</h3>
+        <p style="color: var(--text-muted); font-size: 14px; max-width: 280px;">Mostra questo QR Code nei nostri store fisici per accumulare Punti Stile.</p>
+      </div>
+    </section>
+
+    <!-- ── POSTA IN ARRIVO ── -->
+    <section class="screen" id="screen-inbox">
+      <div class="simple-header">
+        <button class="back-row" onclick="go('profile')"><i data-lucide="arrow-left"></i><span>Profilo</span></button>
+        <h2 class="simple-title">Posta in arrivo</h2>
+      </div>
+      <div class="profile-body" style="padding: 16px;">
+        <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="font-size: 11px; color: var(--purple-light); font-weight: 600;">NUOVO</span>
+            <span style="font-size: 11px; color: var(--text-muted);">Oggi</span>
+          </div>
+          <h4 style="font-size: 16px; margin-bottom: 4px;">Benvenuto nel mondo Elisee</h4>
+          <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">Grazie per esserti unito a noi. Scopri subito la nuova collezione autunnale e approfitta dei tuoi vantaggi VIP.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VANTAGGI VIP ── -->
+    <section class="screen" id="screen-vip">
+      <div class="simple-header">
+        <button class="back-row" onclick="go('profile')"><i data-lucide="arrow-left"></i><span>Profilo</span></button>
+        <h2 class="simple-title">Vantaggi VIP</h2>
+      </div>
+      <div class="profile-body" style="padding: 24px 16px; text-align: center;">
+        <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--purple-light)); display:flex; align-items:center; justify-content:center; margin: 0 auto 24px;">
+          <span style="font-size: 24px; font-weight: 700; color:#fff;">1.250</span>
+        </div>
+        <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Punti Stile</h3>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 32px;">Sei a 250 punti dal livello <strong style="color:#fff;">Elite</strong>.</p>
+        
+        <div style="text-align:left; background: var(--bg2); border-radius: var(--r); padding: 16px; border: 1px solid var(--border);">
+          <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 16px;">
+            <i data-lucide="truck" style="color:var(--purple-light);"></i>
+            <span>Spedizione sempre gratuita</span>
+          </div>
+          <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 16px;">
+            <i data-lucide="clock" style="color:var(--purple-light);"></i>
+            <span>Accesso anticipato ai drop</span>
+          </div>
+          <div style="display:flex; align-items:center; gap: 12px;">
+            <i data-lucide="scissors" style="color:var(--purple-light);"></i>
+            <span>Sartoria inclusa in store</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MODIFICA PROFILO ── -->
+    <section class="screen" id="screen-edit-profile">
+      <div class="simple-header">
+        <button class="back-row" id="edit-profile-back"><i data-lucide="arrow-left"></i><span>Profilo</span></button>
+        <h2 class="simple-title">Modifica Profilo</h2>
+      </div>
+      <div class="profile-body" style="padding: 24px 16px;">
+        <div style="display: flex; justify-content: center; margin-bottom: 32px;">
+          <div style="position: relative;">
+            <div id="edit-avatar-preview" style="width: 80px; height: 80px; border-radius: 50%; background: var(--bg2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 32px; color: var(--text-muted);">
+              <i data-lucide="user" style="width: 32px; height: 32px;"></i>
+            </div>
+            <div style="position: absolute; bottom: 0; right: 0; background: var(--bg); border-radius: 50%; padding: 4px; border: 1px solid var(--border);">
+              <i data-lucide="camera" style="width: 14px; height: 14px; color: var(--text);"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Nome Completo</label>
+          <input class="field-input" id="input-profile-name" type="text" value="Eliseo Miraglia">
+        </div>
+        <div class="field">
+          <label class="field-label">Indirizzo Email</label>
+          <input class="field-input" id="input-profile-email" type="email" value="utente@elisee.shop">
+        </div>
+        <div class="field">
+          <label class="field-label">Data di nascita</label>
+          <input class="field-input" id="input-profile-dob" type="date">
+        </div>
+        <div class="field">
+          <label class="field-label">Luogo di nascita</label>
+          <input class="field-input" id="input-profile-pob" type="text" placeholder="Es. Milano">
+        </div>
+        <div class="field">
+          <label class="field-label">Nuova Password</label>
+          <input class="field-input" id="input-profile-password" type="password" placeholder="Lascia vuoto per non modificare">
+        </div>
+
+        <button class="btn-primary" id="btn-save-profile" style="width:100%; margin-top: 24px;">Salva Modifiche</button>
+      </div>
+    </section>
+
+    <!-- ── IMPOSTAZIONI (User Settings) ── -->
+    <section class="screen" id="screen-settings">
+      <div class="simple-header">
+        <button class="back-row" id="settings-back"><i data-lucide="arrow-left"></i><span>Profilo</span></button>
+        <h2 class="simple-title">Impostazioni</h2>
+      </div>
+      <div class="profile-body" style="padding: 24px 16px;">
+        
+        <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+            <div style="display:flex; flex-direction:column;">
+              <span style="font-weight:500; font-size:15px; margin-bottom:4px;">Notifiche Push</span>
+              <span style="font-size:12px; color:var(--text-muted);">Ricevi aggiornamenti sugli ordini</span>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="knob"></span></label>
+          </div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+            <div style="display:flex; flex-direction:column;">
+              <span style="font-weight:500; font-size:15px; margin-bottom:4px;">Promo e Sconti</span>
+              <span style="font-size:12px; color:var(--text-muted);">Codici esclusivi via email</span>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="knob"></span></label>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; flex-direction:column;">
+              <span style="font-weight:500; font-size:15px; margin-bottom:4px;">Dark Mode</span>
+              <span style="font-size:12px; color:var(--text-muted);">Stile premium predefinito</span>
+            </div>
+            <label class="toggle"><input type="checkbox" checked disabled><span class="knob"></span></label>
+          </div>
+        </div>
+
+        <div style="margin-top: 32px; padding: 0 8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding: 16px 0; border-bottom: 1px solid var(--border);">
+            <span style="font-size: 15px; color: var(--text);">Termini e Condizioni</span>
+            <i data-lucide="chevron-right" style="color: var(--text-muted); width: 16px;"></i>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding: 16px 0; border-bottom: 1px solid var(--border);">
+            <span style="font-size: 15px; color: var(--text);">Informativa sulla Privacy</span>
+            <i data-lucide="chevron-right" style="color: var(--text-muted); width: 16px;"></i>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding: 16px 0;">
+            <span style="font-size: 15px; color: var(--text);">Assistenza Clienti</span>
+            <i data-lucide="life-buoy" style="color: var(--text-muted); width: 16px;"></i>
+          </div>
+        </div>
+
+        <div style="margin-top: 40px; text-align: center;">
+          <img src="logo-total-white.png" alt="Elisee" style="height:20px; filter:brightness(0) invert(1); opacity: 0.5; margin-bottom: 8px;">
+          <p style="color: var(--text-muted); font-size: 12px;">Versione App 1.0.0 (Build 2026)</p>
+        </div>
+        
+      </div>
+    </section>
+
+    <!-- ── AREA RISERVATA (ADMIN) ── -->
+    <section class="screen" id="screen-admin">
+      <button class="back-row" id="admin-back"><i data-lucide="arrow-left"></i><span>Torna al Profilo</span></button>
+      
+      <div style="padding: 16px 16px 100px; display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- Header Dashboard -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <h1 style="font-family: var(--font-d); font-size: 28px; color: var(--gold); margin-bottom: 4px;">Area Direzione</h1>
+            <p style="color: var(--text-muted); font-size: 13px;">Gestione Clienti Elite</p>
+          </div>
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--purple)); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(212,175,55,0.3);">
+            <i data-lucide="shield" style="color: white; width: 20px; height: 20px;"></i>
+          </div>
+        </div>
+
+        <!-- Quick Stats Glassmorphic -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="background: rgba(20, 10, 30, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 40px rgba(212,175,55,0.25);">
+            <p style="color: var(--text-sub); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Totale Clienti</p>
+            <p id="admin-total-customers" style="font-family: var(--font-d); font-size: 26px; font-weight: 600; color: var(--text);">...</p>
+          </div>
+          <div style="background: rgba(20, 10, 30, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(155,89,208,0.3); border-radius: 16px; padding: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 40px rgba(155,89,208,0.25);">
+            <p style="color: var(--text-sub); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Nuovi (Oggi)</p>
+            <p style="font-family: var(--font-d); font-size: 26px; font-weight: 600; color: var(--purple-light);">+2</p>
+          </div>
+        </div>
+
+        <!-- AI Marketing Studio (Fase 4) -->
+        <div style="background: rgba(20, 10, 30, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(212,175,55,0.5); border-radius: 16px; padding: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 40px rgba(212,175,55,0.15);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <h3 style="font-size: 16px; font-weight: 600; color: var(--gold); display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="sparkles" style="width: 18px; color: var(--gold);"></i> AI Marketing Studio
+            </h3>
+            <span style="font-size: 10px; color: var(--gold); border: 1px solid var(--gold); padding: 2px 6px; border-radius: 12px;">Mailchimp Ready</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 16px;">Genera template HTML responsivi ad altissima conversione per le tue campagne email con il tono di voce Elisee.</p>
+          
+          <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <button id="btn-ai-marketing-welcome" style="flex: 1; background: rgba(212,175,55,0.2); border: 1px solid var(--gold); color: var(--gold); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 600;">Genera Welcome Email</button>
+            <button id="btn-ai-marketing-promo" style="flex: 1; background: rgba(155,89,208,0.2); border: 1px solid var(--purple-light); color: var(--purple-light); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 600;">Genera Promo Estiva</button>
+          </div>
+
+          <div id="ai-marketing-output" style="display: none; flex-direction: column; gap: 12px;">
+            <div style="background: #000; border-radius: 8px; padding: 12px; border: 1px solid rgba(255,255,255,0.1); max-height: 200px; overflow-y: auto;">
+              <code id="ai-marketing-code" style="font-size: 10px; color: #a5b4fc; white-space: pre-wrap; font-family: monospace;"></code>
+            </div>
+            <button id="btn-ai-marketing-copy" style="background: var(--gold); color: #000; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <i data-lucide="copy" style="width: 18px;"></i> Copia HTML per Mailchimp
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Users Radar -->
+        <div style="background: rgba(20, 10, 30, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(155,89,208,0.3); border-radius: 16px; padding: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 40px rgba(155,89,208,0.25);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <h3 style="font-size: 14px; font-weight: 600; color: var(--text);">Live Radar</h3>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span id="admin-live-count" style="font-family: var(--font-d); font-size: 16px; font-weight: 700; color: #10b981;">14</span>
+              <span style="font-size: 11px; color: var(--text-muted);">online</span>
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981; animation: pulse 2s infinite;"></div>
+            </div>
+          </div>
+          <div id="admin-live-feed" style="display: flex; flex-direction: column; gap: 8px; max-height: 140px; overflow-y: hidden; position: relative;">
+            <!-- Popolato da JS -->
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 40px; background: linear-gradient(to bottom, transparent, rgba(14,7,21,0.95)); pointer-events: none;"></div>
+          </div>
+        </div>
+        <!-- Search Bar Clienti -->
+        <div style="position: relative;">
+          <i data-lucide="search" style="position: absolute; left: 14px; top: 12px; width: 18px; color: var(--text-muted);"></i>
+          <input type="text" id="admin-search" placeholder="Cerca cliente per nome o email..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 12px 16px 12px 42px; color: var(--text); font-size: 14px;">
+        </div>
+
+        <!-- Lista Clienti -->
+        <div style="display: flex; flex-direction: column; gap: 12px;" id="admin-customers-list">
+          <!-- Popolato da JS -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── AREA VIP (CLIENTI) ── -->
+    <section class="screen" id="screen-vip">
+      <button class="back-row" id="vip-back"><i data-lucide="arrow-left"></i><span>Torna al Profilo</span></button>
+      
+      <div style="padding: 16px 16px 100px; display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- Intestazione Livello -->
+        <div style="text-align: center; padding: 24px 0;">
+          <div style="width: 80px; height: 80px; margin: 0 auto 16px; border-radius: 50%; background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05)); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(212,175,55,0.3);">
+            <i data-lucide="crown" style="color: var(--gold); width: 40px; height: 40px;"></i>
+          </div>
+          <h1 style="font-family: var(--font-d); font-size: 32px; color: var(--gold); margin-bottom: 4px;">Elisee Gold</h1>
+          <p style="color: var(--text-muted); font-size: 14px;">Il tuo stato VIP attuale</p>
+        </div>
+
+        <!-- Progress Bar Punti -->
+        <div style="background: rgba(20, 10, 30, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
+            <div>
+              <p style="color: var(--text-sub); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Punti Stile</p>
+              <p style="font-family: var(--font-d); font-size: 28px; font-weight: 600; color: var(--text);"><span id="vip-points-current">1.250</span></p>
+            </div>
+            <div style="text-align: right;">
+              <p style="font-size: 11px; color: var(--text-sub);">Prossimo Livello</p>
+              <p style="font-size: 14px; font-weight: 600; color: var(--gold);">Elite (2.000)</p>
+            </div>
+          </div>
+          <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; position: relative;">
+            <div style="width: 62.5%; height: 100%; background: var(--gold); border-radius: 3px; box-shadow: 0 0 10px var(--gold);"></div>
+          </div>
+          <p style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 12px;">Mancano 750 punti per diventare Elisee Elite</p>
+        </div>
+
+        <!-- Cronologia Punti -->
+        <div>
+          <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text);">Ultimi Movimenti</h2>
+          <div style="display: flex; flex-direction: column; gap: 12px;" id="vip-history-list">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 12px;">
+              <div>
+                <p style="font-size: 13px; font-weight: 600; color: var(--text);">Acquisto Ordine #1042</p>
+                <p style="font-size: 11px; color: var(--text-muted);">12 Maggio 2024</p>
+              </div>
+              <span style="font-size: 14px; font-weight: 600; color: var(--gold);">+320 pt</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 12px;">
+              <div>
+                <p style="font-size: 13px; font-weight: 600; color: var(--text);">Recensione Prodotto</p>
+                <p style="font-size: 11px; color: var(--text-muted);">5 Aprile 2024</p>
+              </div>
+              <span style="font-size: 14px; font-weight: 600; color: var(--gold);">+50 pt</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 12px;">
+              <div>
+                <p style="font-size: 13px; font-weight: 600; color: var(--text);">Premio Iscrizione</p>
+                <p style="font-size: 11px; color: var(--text-muted);">1 Aprile 2024</p>
+              </div>
+              <span style="font-size: 14px; font-weight: 600; color: var(--gold);">+880 pt</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── AREA STUDIO / CREATOR (SUPER APP) ── -->
+    <section class="screen" id="screen-studio">
+      <div style="padding: 24px 16px 16px;">
+        <h1 style="font-family: var(--font-d); font-size: 32px; margin-bottom: 4px;">Studio <span style="color:var(--gold);">Elisee</span></h1>
+        <p style="color: var(--text-muted); font-size: 14px;">Il tuo partner creativo. Foto, Video, Brand Identity.</p>
+      </div>
+
+      <div style="padding: 0 16px 100px; display: flex; flex-direction: column; gap: 20px;">
+        <!-- Pulsante Chiama Agente AI -->
+        <div style="background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.02)); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 20px; text-align: center;">
+          <div style="width: 48px; height: 48px; margin: 0 auto 12px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(212,175,55,0.4);">
+            <i data-lucide="sparkles" style="color: #000;"></i>
+          </div>
+          <h2 style="font-size: 18px; font-family: var(--font-d); margin-bottom: 8px;">Agente Elisee</h2>
+          <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.4;">Chiedimi un preventivo per i tuoi progetti visivi. Genererò idee, moodboard e pacchetti su misura per te.</p>
+          <button class="btn-primary" id="btn-studio-ai" style="width: 100%; height: 44px; font-size: 14px;">Crea Progetto con AI</button>
+        </div>
+
+        <!-- Portfolio Lavori -->
+        <div>
+          <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text);">Ultimi Lavori (Portfolio)</h2>
+          <div style="display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; padding-bottom: 8px; margin: 0 -16px; padding: 0 16px;">
+            <div style="min-width: 240px; height: 160px; border-radius: 12px; background-image: url('https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=600'); background-size: cover; background-position: center; position: relative;">
+              <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: flex-end;">
+                <p style="font-weight: 600; font-size: 14px; color:#fff;">Spot Cinematico - Profumo</p>
+                <p style="font-size: 11px; color: var(--gold);">Visual Branding</p>
+              </div>
+            </div>
+            <div style="min-width: 240px; height: 160px; border-radius: 12px; background-image: url('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=600'); background-size: cover; background-position: center; position: relative;">
+              <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: flex-end;">
+                <p style="font-weight: 600; font-size: 14px; color:#fff;">Riprese Calcio Serie A</p>
+                <p style="font-size: 11px; color: var(--gold);">Sport Videography</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+
+  <!-- ════════ BOTTOM NAV (Nike Style Pill) ════════ -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" data-screen="home">
+      <i data-lucide="home"></i><span>Home</span>
+    </button>
+    <button class="nav-tab" data-screen="catalog">
+      <i data-lucide="tag"></i><span>Shop</span>
+    </button>
+    <button class="nav-tab" data-screen="studio">
+      <i data-lucide="video"></i><span>Studio</span>
+    </button>
+    <button class="nav-tab cart-tab" id="nav-cart-btn">
+      <div class="cart-tab-ico">
+        <i data-lucide="shopping-cart"></i>
+        <span class="cart-dot" id="cart-dot"></span>
+      </div>
+      <span>Carrello</span>
+    </button>
+    <button class="nav-tab" data-screen="profile">
+      <i data-lucide="user"></i><span>Profilo</span>
+    </button>
+  </nav>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"><i data-lucide="check-circle-2"></i><span id="toast-msg"></span></div>
+
+  <!-- ════════ AI STYLIST FAB ════════ -->
+  <button class="ai-fab" id="ai-stylist-btn" aria-label="AI Stylist">
+    <i data-lucide="sparkles"></i>
+  </button>
+
+  <!-- ════════ AI STYLIST OVERLAY ════════ -->
+  <div class="ai-overlay hidden" id="ai-stylist-overlay">
+    <div class="ai-header">
+      <div class="ai-header-title">
+        <i data-lucide="sparkles" class="ai-sparkle-ico"></i>
+        <span>Elisee AI Stylist</span>
+      </div>
+      <button class="icon-btn ai-close" id="ai-stylist-close"><i data-lucide="chevron-down"></i></button>
+    </div>
+    <div class="ai-body" id="ai-chat-body">
+      <!-- Intro dinamica generata via JS -->
+    </div>
+    <div class="ai-footer">
+      <div class="ai-chips-scroll" id="ai-suggestions">
+        <button class="ai-suggestion-chip" data-query="Consigliami un outfit per stasera">Crea outfit da sera</button>
+        <button class="ai-suggestion-chip" data-query="Scarpe per allenamento pesante">Scarpe da workout</button>
+      </div>
+      <div class="search-wrap" style="margin: 12px 0 0 0;">
+        <i data-lucide="mic" class="search-ico" style="cursor:pointer; color: var(--gold);"></i>
+        <input type="text" id="ai-chat-input" class="search-field" placeholder="Chiedi al tuo personal stylist..." style="padding-left:36px; padding-right:44px; border-color: rgba(212,175,55,0.4);">
+        <button class="icon-btn" id="ai-chat-send" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); color: var(--gold);"><i data-lucide="send" style="width:16px;height:16px;"></i></button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app-shell -->
+
+<!-- ════════ CART DRAWER ════════ -->
+<div class="backdrop" id="cart-backdrop"></div>
+<aside class="cart-drawer" id="cart-drawer">
+  <div class="drawer-header">
+    <h3 class="drawer-title">Carrello</h3>
+    <button class="icon-btn" id="cart-close-btn"><i data-lucide="x"></i></button>
+  </div>
+  <div class="cart-body" id="cart-body"></div>
+  <div class="cart-foot">
+    <div class="cart-total-row">
+      <span>Totale</span>
+      <span class="cart-total" id="cart-total">€0.00</span>
+    </div>
+    <button class="btn-primary" id="checkout-btn" style="width:100%" disabled>
+      <i data-lucide="credit-card"></i> Checkout
+    </button>
+  </div>
+</aside>
+<!-- ════════ SPID GATEWAY OVERLAY ════════ -->
+<div id="spid-gateway-overlay" class="hidden" style="position: fixed; inset: 0; background: #fff; z-index: 10000; flex-direction: column; overflow-y: auto;">
+  <!-- Intestazione SPID -->
+  <div style="background: #0066cc; padding: 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(0,102,204,0.3);">
+    <img src="/spid-logo.png" style="height: 24px; filter: brightness(0) invert(1);" alt="SPID">
+    <span style="color: white; font-weight: 600; font-size: 16px;">Scegli il tuo Provider</span>
+    <button id="spid-gateway-close" style="margin-left: auto; color: white; background: none; border: none;"><i data-lucide="x"></i></button>
+  </div>
+
+  <!-- Providers List -->
+  <div id="spid-providers-container" style="padding: 24px; display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; flex: 1; background: #f9fafb;">
+    <button class="spid-provider" data-name="Poste ID" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;">
+      <span style="font-weight: bold; color: #004d99; font-size: 16px;">Poste ID</span>
+      <i data-lucide="chevron-right" style="color: #9ca3af;"></i>
+    </button>
+    <button class="spid-provider" data-name="Aruba ID" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;">
+      <span style="font-weight: bold; color: #ff6600; font-size: 16px;">Aruba ID</span>
+      <i data-lucide="chevron-right" style="color: #9ca3af;"></i>
+    </button>
+    <button class="spid-provider" data-name="InfoCert ID" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;">
+      <span style="font-weight: bold; color: #00a651; font-size: 16px;">InfoCert ID</span>
+      <i data-lucide="chevron-right" style="color: #9ca3af;"></i>
+    </button>
+    <button class="spid-provider" data-name="Sielte ID" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;">
+      <span style="font-weight: bold; color: #e60000; font-size: 16px;">Sielte ID</span>
+      <i data-lucide="chevron-right" style="color: #9ca3af;"></i>
+    </button>
+    
+    <div style="text-align: center; margin-top: 30px;">
+      <p style="color: #6b7280; font-size: 12px; line-height: 1.5;">Accesso sicuro e certificato dall'Agenzia per l'Italia Digitale</p>
+    </div>
+  </div>
+
+  <!-- Form Credenziali SPID -->
+  <div id="spid-credentials-form" class="hidden" style="flex: 1; width: 100%; height: 100%; padding: 24px; padding-bottom: 150px; background: #fff; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box;">
+    <button id="spid-back-to-providers" style="background: none; border: none; color: #0066cc; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-bottom: 24px; cursor: pointer;">
+      <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Indietro
+    </button>
+    <h3 id="spid-provider-title" style="font-size: 22px; font-weight: bold; margin-bottom: 24px; color: #111827;">Accedi con Poste ID</h3>
+    
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-size: 14px; color: #374151; margin-bottom: 8px; font-weight: 500;">Nome Utente SPID</label>
+      <input type="text" id="spid-username" placeholder="Inserisci il tuo nome utente" style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;">
+    </div>
+    
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-size: 14px; color: #374151; margin-bottom: 8px; font-weight: 500;">Password</label>
+      <input type="password" id="spid-password" placeholder="Inserisci la tua password" style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;">
+    </div>
+
+    <div style="text-align: right; margin-bottom: 24px;">
+      <a href="https://posteid.poste.it/recuperocredenziali.shtml" id="spid-forgot-password" target="_blank" style="font-size: 13px; color: #0066cc; text-decoration: underline; font-weight: 500;">Hai dimenticato la password?</a>
+    </div>
+
+    <button id="spid-submit-credentials" style="width: 100%; background: #0066cc; color: white; border: none; border-radius: 8px; padding: 14px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,102,204,0.2); cursor: pointer;">Entra con SPID</button>
+
+    <div style="display: flex; align-items: center; margin: 24px 0;">
+      <hr style="flex: 1; border: none; border-top: 1px solid #e5e7eb;">
+      <span style="padding: 0 12px; color: #6b7280; font-size: 14px; font-weight: 500;">OPPURE</span>
+      <hr style="flex: 1; border: none; border-top: 1px solid #e5e7eb;">
+    </div>
+
+    <div style="text-align: center; padding: 20px; border: 1px dashed #d1d5db; border-radius: 8px; background: #f9fafb;">
+      <h4 style="font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 8px;">Accedi più velocemente</h4>
+      <p style="font-size: 13px; color: #4b5563; margin-bottom: 16px; line-height: 1.5;">Inquadra questo QR Code con l'app del tuo provider per accedere istantaneamente.</p>
+      
+      <div style="display: inline-block; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 16px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SPID-Login-Simulation" alt="QR Code SPID" style="width: 120px; height: 120px; display: block;">
+      </div>
+      
+      <button id="spid-qr-login-btn" style="display: block; width: 100%; padding: 12px; background: transparent; border: 1px solid #0066cc; color: #0066cc; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s;">Conferma Scansione QR</button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div id="spid-loading-state" class="hidden" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; background: #fff;">
+    <i data-lucide="loader" class="spin" style="width: 48px; height: 48px; color: #0066cc; margin-bottom: 20px;"></i>
+    <h2 style="font-size: 20px; font-weight: 600; color: #111827; margin-bottom: 8px;">Autenticazione in corso</h2>
+    <p style="color: #6b7280; font-size: 14px;" id="spid-loading-text">Verifica credenziali in corso...</p>
+    <div style="margin-top: 32px; padding: 16px; background: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe;">
+      <p style="font-size: 12px; color: #1d4ed8; margin: 0;"><i data-lucide="info" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> In attesa di risposta dal provider di identità.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/app.js"></script>
+  <!-- ════════ VISUAL SEARCH OVERLAY (Laser Scan) ════════ -->
+  <div class="visual-search-overlay hidden" id="vs-overlay">
+    <div class="vs-camera-view">
+      <div class="vs-header">
+        <button class="icon-btn" id="vs-close" style="background:rgba(0,0,0,0.5);"><i data-lucide="x"></i></button>
+        <span style="font-weight:600; font-family:var(--font-d); letter-spacing:1px; text-shadow:0 1px 4px #000;">Visual Search AI</span>
+        <div style="width:38px;"></div>
+      </div>
+      <div class="vs-frame">
+        <div class="vs-corner top-left"></div>
+        <div class="vs-corner top-right"></div>
+        <div class="vs-corner bottom-left"></div>
+        <div class="vs-corner bottom-right"></div>
+        <div class="vs-laser"></div>
+      </div>
+      <div class="vs-footer">
+        <p class="vs-status" id="vs-status">Inquadra un capo di abbigliamento</p>
+        <button class="btn-primary" id="vs-capture-btn" style="width:64px; height:64px; border-radius:50%; background:#fff; color:#000; padding:0; border:4px solid rgba(255,255,255,0.4); background-clip:padding-box;"><i data-lucide="camera" style="width:24px; height:24px;"></i></button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
