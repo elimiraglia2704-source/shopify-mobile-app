@@ -843,33 +843,6 @@ async function loadData(force = false) {
   }
 }
 
-async function loadMoreProducts() {
-  if (state.isLoadingMore || !state.pageInfo.hasNextPage) return;
-  state.isLoadingMore = true;
-  
-  const sentinel = $('catalog-sentinel');
-  if (sentinel) { sentinel.style.opacity = '1'; sentinel.innerHTML = '<i data-lucide="loader" class="spin"></i> Caricamento...'; refreshIcons(sentinel); }
-
-  try {
-    const prodData = await shopify.getProducts(20, state.pageInfo.endCursor);
-    
-    // Append the new products
-    state.products = [...state.products, ...prodData.products];
-    state.pageInfo = prodData.pageInfo;
-
-    // Update the cache with the appended list
-    cacheSet('products', { products: state.products, pageInfo: state.pageInfo });
-
-    // Invece di fare un re-render totale, aggiungiamo solo le card (più efficiente) o per semplicità rieseguiamo renderCatalog
-    renderCatalog();
-  } catch (err) {
-    console.error('Failed to load more products:', err);
-  } finally {
-    state.isLoadingMore = false;
-    if (sentinel) { sentinel.style.opacity = '0'; sentinel.innerHTML = ''; }
-  }
-}
-
 // ═══════════════════════════════════════════════════════════
 // POWER USER — Principio 6: depth for power users
 // ═══════════════════════════════════════════════════════════
