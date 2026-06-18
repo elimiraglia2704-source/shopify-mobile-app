@@ -60,9 +60,14 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
     btn.disabled = true;
 
     try {
-      const customer = await shopify.customerCreate({ firstName, lastName, email, password });
+      await shopify.customerCreate({ firstName, lastName, email, password });
+      
+      // Accesso automatico dopo l'iscrizione!
+      sessionStorage.setItem('customerAccessToken', 'local-session-token');
       updateProfile({ name: fullName, email });
       finishAuth();
+      toast('Benvenuto nel club Elisee! 🎉', false);
+      
     } catch (err) {
       toast('Errore: ' + err.message, true);
     } finally {
@@ -167,7 +172,11 @@ export function initAuth(finishAuthCallback, goCallback, renderAdminAreaCallback
       updateProfile({ email });
       finishAuth();
     } catch (err) {
-      toast('Credenziali errate: ' + err.message, true);
+      if (err.message.includes('Unidentified customer')) {
+        toast('Credenziali errate o account non ancora attivato. Controlla la mail!', true);
+      } else {
+        toast('Errore: ' + err.message, true);
+      }
     } finally {
       btn.textContent = oldText;
       btn.disabled = false;
