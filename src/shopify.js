@@ -430,10 +430,30 @@ export class ShopifyClient {
     `;
 
     try {
-      const data = await this.queryStorefront(query, { query: searchQuery, first: limit });
-      const products = data.products.edges.map(e => e.node);
-      if (products.length === 0) return { products: MOCK_PRODUCTS };
-      return { products };
+      // Effettuiamo due query in parallelo per aggirare il problema di Shopify 
+      // che seppellisce i match esatti del titolo sotto 200 risultati broad.
+      const queryTitle = `title:*${searchQuery}*`;
+      const queryAny = `${searchQuery}`;
+
+      const [resTitle, resAny] = await Promise.all([
+        this.queryStorefront(query, { query: queryTitle, first: limit }),
+        this.queryStorefront(query, { query: queryAny, first: limit })
+      ]);
+
+      const products1 = resTitle.products?.edges.map(e => e.node) || [];
+      const products2 = resAny.products?.edges.map(e => e.node) || [];
+
+      // Uniamo i risultati rimuovendo i duplicati
+      const allProducts = [...products1];
+      const ids = new Set(allProducts.map(p => p.id));
+      for (const p of products2) {
+        if (!ids.has(p.id)) {
+          allProducts.push(p);
+        }
+      }
+
+      if (allProducts.length === 0) return { products: MOCK_PRODUCTS };
+      return { products: allProducts };
     } catch (error) {
       console.error("Errore searchProducts:", error);
       return { products: MOCK_PRODUCTS };
