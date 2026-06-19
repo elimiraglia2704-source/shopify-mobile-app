@@ -224,8 +224,14 @@ function makeCard(product, showAIBadge = false) {
   const hasDiscount = v?.compareAtPrice && parseFloat(v.compareAtPrice.amount) > parseFloat(v.price.amount);
   const wished = isWished(product.id);
 
+  const profile = getProfile();
+  const views = profile.viewHistory?.filter(v => v.id === product.id).length || 0;
+  // Mix di dati reali e casualità fissa basata sull'ID per creare movimento
+  const isHighDemand = views >= 2 || (parseInt(product.id.replace(/\D/g, '') || '0') % 7 === 0);
+
   let badge = '';
   if (!product.availableForSale) badge = `<span class="prod-badge badge-sold">Esaurito</span>`;
+  else if (isHighDemand) badge = `<span class="prod-badge badge-fire">🔥 Molto richiesto</span>`;
   else if (showAIBadge && (product._score || 0) >= 70) badge = `<span class="prod-badge badge-ai">Per te</span>`;
   else if (hasDiscount) {
     const pct = Math.round(((parseFloat(v.compareAtPrice.amount) - parseFloat(v.price.amount)) / parseFloat(v.compareAtPrice.amount)) * 100);
@@ -455,10 +461,49 @@ function renderPDP() {
     });
   }
 
+function parseDescriptionToFAQ(text) {
+  const paragraphs = text.split('\n').filter(p => p.trim().length > 0);
+  let mainDesc = [];
+  let materials = [];
+  
+  paragraphs.forEach(p => {
+    const l = p.toLowerCase();
+    if (l.includes('cotone') || l.includes('lavaggio') || l.includes('materiale') || l.includes('pelle') || l.includes('%')) {
+      materials.push(p);
+    } else {
+      mainDesc.push(p);
+    }
+  });
+
+  if (mainDesc.length === 0) mainDesc = [text];
+
+  return `
+    <div class="faq-accordion">
+      <details open class="faq-item">
+        <summary class="faq-summary">Dettagli Prodotto <i data-lucide="chevron-down" class="faq-icon"></i></summary>
+        <div class="faq-content">${mainDesc.map(p => `<p>${p}</p>`).join('')}</div>
+      </details>
+      ${materials.length > 0 ? `
+      <details class="faq-item">
+        <summary class="faq-summary">Materiali e Cura <i data-lucide="chevron-down" class="faq-icon"></i></summary>
+        <div class="faq-content">${materials.map(p => `<p>${p}</p>`).join('')}</div>
+      </details>
+      ` : ''}
+      <details class="faq-item">
+        <summary class="faq-summary">Spedizione e Resi <i data-lucide="chevron-down" class="faq-icon"></i></summary>
+        <div class="faq-content">
+          <p>Spedizione gratuita per ordini superiori a 50€.</p>
+          <p>Reso gratuito entro 14 giorni dalla ricezione dell'ordine.</p>
+        </div>
+      </details>
+    </div>
+  `;
+}
+
   // Info
   const vendor = $('pdp-vendor'); if (vendor) vendor.textContent = p.vendor || 'ELISEE';
   const title  = $('pdp-title');  if (title)  title.textContent  = p.title;
-  const desc   = $('pdp-desc');   if (desc)   desc.textContent   = p.description || 'Nessuna descrizione.';
+  const desc   = $('pdp-desc');   if (desc)   desc.innerHTML     = p.description ? parseDescriptionToFAQ(p.description) : '<p>Nessuna descrizione.</p>';
 
   if (v) {
     const priceEl = $('pdp-price');

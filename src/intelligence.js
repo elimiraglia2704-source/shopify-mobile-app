@@ -310,8 +310,33 @@ export function getRecommendations(allProducts, viewedProductId, limit = 4) {
   if (!viewed) return allProducts.slice(0, limit);
 
   const profile = getProfile();
-  const others = allProducts.filter(p => p.id !== viewedProductId);
-  return rankProducts(others, profile, limit);
+  
+  // Otteniamo il tipo di prodotto o il primo tag per capire la categoria
+  const viewedType = viewed.productType || (viewed.tags && viewed.tags[0]) || '';
+  const viewedCollections = viewed.collections?.edges?.map(e => e.node.id) || [];
+
+  // Cross-selling Semantico ("Completa l'Outfit")
+  const others = allProducts
+    .filter(p => p.id !== viewedProductId)
+    .map(p => {
+      let score = scoreProduct(p, profile);
+      const pType = p.productType || (p.tags && p.tags[0]) || '';
+      const pCollections = p.collections?.edges?.map(e => e.node.id) || [];
+      
+      const isSameType = (viewedType && pType === viewedType) || 
+                         pCollections.some(c => viewedCollections.includes(c));
+
+      if (isSameType) {
+        score -= 20; // Penalità: Evitiamo di mostrare 4 magliette se sta già guardando una maglietta
+      } else {
+        score += 30; // Boost "Completa l'outfit": Suggeriamo accessori, pantaloni, etc.
+      }
+
+      return { ...p, _score: score };
+    })
+    .sort((a, b) => b._score - a._score);
+
+  return others.slice(0, limit);
 }
 
 // ──────────────────────────────────────────────────────────────
