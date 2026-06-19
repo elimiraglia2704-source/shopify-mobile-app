@@ -993,21 +993,29 @@ export const updateDynamicHome = () => {
 // ═══════════════════════════════════════════════════════════
 // ELISEE CLUB 1X2 - L'ANGOLO LUDOPATICO
 // ═══════════════════════════════════════════════════════════
-const BET_MATCHES = [
-  { id: 'm1', home: 'Canada', away: 'Qatar', info: 'Mondiale 2026 - Gruppo A', startTime: '2026-06-19T20:00:00+02:00' },
-  { id: 'm2', home: 'Messico', away: 'Corea del Sud', info: 'Mondiale 2026 - Gruppo B', startTime: '2026-06-19T22:30:00+02:00' },
-  { id: 'm3', home: 'Svizzera', away: 'Bosnia', info: 'Mondiale 2026 - Gruppo C', startTime: '2026-06-20T18:00:00+02:00' },
-  { id: 'm4', home: 'Olanda', away: 'Svezia', info: 'Mondiale 2026 - Gruppo D', startTime: '2026-06-20T21:00:00+02:00' },
-  { id: 'm5', home: 'Germania', away: "Costa d'Avorio", info: 'Mondiale 2026 - Gruppo E', startTime: '2026-06-21T18:00:00+02:00' },
-  { id: 'm6', home: 'Brasile', away: 'Haiti', info: 'Mondiale 2026 - Gruppo F', startTime: '2026-06-21T21:00:00+02:00' },
-  { id: 'm7', home: 'Ecuador', away: 'Curaçao', info: 'Mondiale 2026 - Gruppo G', startTime: '2026-06-22T18:00:00+02:00' }
-];
 
 let userBets = {};
 
-function renderBettingSection() {
+async function renderBettingSection() {
   const container = $('betting-matches-list');
   if (!container) return;
+
+  // Stato di caricamento
+  container.innerHTML = '<div style="text-align:center; padding:40px 0;"><i data-lucide="loader" class="spin"></i><br><br><span style="color:var(--text-muted)">Ricerca partite in corso...</span></div>';
+  refreshIcons(container);
+
+  let BET_MATCHES = [];
+  try {
+    const response = await fetch('/api/sports/matches');
+    const data = await response.json();
+    BET_MATCHES = data.matches || [];
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = '<div style="text-align:center; padding:40px 0; color:#ef4444;"><i data-lucide="alert-circle"></i><br><br>Impossibile caricare le partite. Riprova più tardi.</div>';
+    refreshIcons(container);
+    return;
+  }
+
   container.innerHTML = '';
   userBets = {};
 
