@@ -218,16 +218,16 @@ function makeCard(product, showAIBadge = false) {
   const card = document.createElement('div');
   card.className = 'prod-card';
 
-  const img = product.images.edges[0]?.node.url || '';
-  const v   = product.variants.edges[0]?.node;
-  const price = product.priceRange.minVariantPrice;
+  const img = product.images?.edges?.[0]?.node?.url || '';
+  const v   = product.variants?.edges?.[0]?.node;
+  const price = product.priceRange?.minVariantPrice || { amount: '0', currencyCode: 'EUR' };
   const hasDiscount = v?.compareAtPrice && parseFloat(v.compareAtPrice.amount) > parseFloat(v.price.amount);
   const wished = isWished(product.id);
 
   const profile = getProfile();
   const views = profile.viewHistory?.filter(v => v.id === product.id).length || 0;
   // Mix di dati reali e casualità fissa basata sull'ID per creare movimento
-  const isHighDemand = views >= 2 || (parseInt(product.id.replace(/\D/g, '') || '0') % 7 === 0);
+  const isHighDemand = views >= 2 || (parseInt(String(product.id).replace(/\D/g, '') || '0') % 7 === 0);
 
   let badge = '';
   if (!product.availableForSale) badge = `<span class="prod-badge badge-sold">Esaurito</span>`;
