@@ -161,10 +161,11 @@ function saveWish() { localStorage.setItem('elisee:wish', JSON.stringify(state.w
 // ═══════════════════════════════════════════════════════════
 // WISHLIST
 // ═══════════════════════════════════════════════════════════
-function isWished(id) { return state.wishlist.includes(id); }
+function isWished(id) { return (Array.isArray(state.wishlist) ? state.wishlist : []).includes(id); }
 
 function toggleWish(productId) {
   haptic(30);
+  if (!Array.isArray(state.wishlist)) state.wishlist = [];
   const added = !isWished(productId);
   if (added) state.wishlist.push(productId);
   else        state.wishlist = state.wishlist.filter(id => id !== productId);
@@ -217,12 +218,13 @@ function renderFlywheel() {
 function makeCard(product, showAIBadge = false) {
   const card = document.createElement('div');
   card.className = 'prod-card';
+  if (!product) return card;
 
-  const img = product.images?.edges?.[0]?.node?.url || '';
-  const v   = product.variants?.edges?.[0]?.node;
-  const price = product.priceRange?.minVariantPrice || { amount: '0', currencyCode: 'EUR' };
+  const img = product?.images?.edges?.[0]?.node?.url || '';
+  const v   = product?.variants?.edges?.[0]?.node;
+  const price = product?.priceRange?.minVariantPrice || { amount: '0', currencyCode: 'EUR' };
   const hasDiscount = v?.compareAtPrice && parseFloat(v.compareAtPrice.amount) > parseFloat(v.price.amount);
-  const wished = isWished(product.id);
+  const wished = isWished(product?.id);
 
   const profile = getProfile();
   const views = (profile.viewHistory || []).filter(v => v.id === product.id).length || 0;
@@ -274,57 +276,64 @@ function makeCard(product, showAIBadge = false) {
 // HOME
 // ═══════════════════════════════════════════════════════════
 function renderHome() {
-  const profile  = getProfile();
-  const context  = getContext();
+  try {
+    const profile  = getProfile();
+    const context  = getContext();
 
-  // Headline contestuale (P5)
-  const headline = getContextualHeadline(profile);
-  const heroTitle = $('hero-title');
-  if (heroTitle) {
-    const firstName = profile.name ? profile.name.split(' ')[0] : 'Elisee';
-    heroTitle.textContent = `${headline.base}, ${firstName}`;
+    // Headline contestuale (P5)
+    const headline = getContextualHeadline(profile);
+    const heroTitle = $('hero-title');
+    if (heroTitle) {
+      const firstName = profile?.name ? String(profile.name).split(' ')[0] : 'Elisee';
+      heroTitle.textContent = `${headline?.base || 'Ciao'}, ${firstName}`;
+    }
+
+    // Collezioni select
+    const colsEl = $('home-collections');
+    if (colsEl) {
+      colsEl.innerHTML = '<option value="all">Tutte le Collezioni</option>';
+      const colsArray = Array.isArray(state.collections) ? state.collections : [];
+      const sorted = [...colsArray].sort((a, b) => String(a?.title || '').localeCompare(String(b?.title || '')));
+      sorted.forEach(col => {
+        if (!col) return;
+        const opt = document.createElement('option');
+        opt.value = col.id;
+        opt.textContent = col.title || 'Collezione';
+        colsEl.appendChild(opt);
+      });
+      colsEl.value = state.selectedCol || 'all';
+      
+      colsEl.onchange = (e) => { 
+        state.selectedCol = e.target.value; 
+        go('catalog'); 
+      };
+    }
+
+    // Ultimi Arrivi (dal più recente al meno recente)
+    const latestGrid = $('home-latest');
+    if (latestGrid) {
+      latestGrid.innerHTML = '';
+      const prodArray = Array.isArray(state.products) ? state.products : [];
+      const latest = prodArray.slice(0, 4);
+      latest.forEach(p => { if (p) latestGrid.appendChild(makeCard(p, false)) });
+    }
+
+    // Prodotti AI-ranked (P3 + P5)
+    const grid = $('home-products');
+    if (grid) {
+      grid.innerHTML = '';
+      const prodArray = Array.isArray(state.products) ? state.products : [];
+      const ranked = rankProducts(prodArray, profile, 6);
+      // Prefetch immagini above-fold (P2)
+      prefetchImages((ranked || []).slice(0, 4).map(p => p?.images?.edges?.[0]?.node?.url).filter(Boolean));
+      (ranked || []).forEach(p => { if (p) grid.appendChild(makeCard(p, true)) });
+    }
+
+    renderFlywheel();
+    refreshIcons();
+  } catch(err) {
+    console.error("Critical error in renderHome:", err);
   }
-
-  // Collezioni select
-  const colsEl = $('home-collections');
-  if (colsEl) {
-    colsEl.innerHTML = '<option value="all">Tutte le Collezioni</option>';
-    const sorted = [...state.collections].sort((a, b) => a.title.localeCompare(b.title));
-    sorted.forEach(col => {
-      const opt = document.createElement('option');
-      opt.value = col.id;
-      opt.textContent = col.title;
-      colsEl.appendChild(opt);
-    });
-    colsEl.value = state.selectedCol || 'all';
-    
-    colsEl.onchange = (e) => { 
-      state.selectedCol = e.target.value; 
-      go('catalog'); 
-    };
-  }
-
-  // Ultimi Arrivi (dal più recente al meno recente)
-  const latestGrid = $('home-latest');
-  if (latestGrid) {
-    latestGrid.innerHTML = '';
-    // I dati da Shopify sono già ordinati CREATED_AT, reverse: true
-    const latest = state.products.slice(0, 4);
-    latest.forEach(p => latestGrid.appendChild(makeCard(p, false)));
-  }
-
-  // Prodotti AI-ranked (P3 + P5)
-  const grid = $('home-products');
-  if (grid) {
-    grid.innerHTML = '';
-    const ranked = rankProducts(state.products, profile, 6);
-    // Prefetch immagini above-fold (P2)
-    prefetchImages(ranked.slice(0, 4).map(p => p.images?.edges?.[0]?.node?.url).filter(Boolean));
-    ranked.forEach(p => grid.appendChild(makeCard(p, true)));
-  }
-
-  renderFlywheel();
-  refreshIcons();
 }
 
 // ═══════════════════════════════════════════════════════════
