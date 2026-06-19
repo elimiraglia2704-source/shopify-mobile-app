@@ -1789,9 +1789,15 @@ let betPollingInterval = null;
 
 async function fetchLiveMatches() {
   try {
-    const res = await fetch('/betMatches.json?t=' + Date.now()); // cache-busting
-    if (!res.ok) throw new Error("Errore fetch matches");
-    betMatches = await res.json();
+    const res = await fetch('/api/sports/matches?t=' + Date.now()); // cache-busting
+    if (!res.ok) throw new Error("Errore fetch matches da API");
+    const data = await res.json();
+    
+    // Mappa la struttura JSON in quella richiesta dall'UI
+    betMatches = data.matches.map(m => ({
+      match: `${m.home} - ${m.away} (${m.info.split('-')[0].trim()})`,
+      time: new Date(m.startTime).getTime()
+    }));
     
     // Se l'utente è attualmente nella schermata scommesse, ri-renderizza "live"
     const activeScreen = document.querySelector('.screen.active');
