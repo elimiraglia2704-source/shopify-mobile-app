@@ -1871,11 +1871,51 @@ function renderBetting() {
         return;
       }
 
-      toast("Scommessa confermata! In bocca al lupo 🍀");
-      setTimeout(() => {
-        alert("Pronostici salvati! Se indovinerai tutti i risultati giocati, riceverai un buono sconto (valido 30 giorni) su articoli da 1€ a 35€ direttamente via email/notifica.");
-        go('profile');
-      }, 1000);
+      // Raccogliamo i pronostici
+      const predictions = [];
+      inputs.forEach(input => {
+        predictions.push(input.value.trim().toUpperCase());
+      });
+
+      // Preparazione chiamata al server (la rendiamo asincrona chiudendo la funzione in un async IIFE o facendola async)
+      (async () => {
+        const btnText = submitBtn.innerText;
+        submitBtn.innerText = "Invio in corso...";
+        submitBtn.disabled = true;
+
+        try {
+          const profile = getProfile();
+          const payload = {
+            email: profile.email || 'guest@eliseemilano.com',
+            name: profile.name || 'Ospite',
+            predictions: predictions
+          };
+
+          const res = await fetch('/api/betting/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            toast(data.error || "Errore nell'invio della scommessa.");
+          } else {
+            toast("Scommessa confermata! In bocca al lupo 🍀");
+            setTimeout(() => {
+              alert("Pronostici salvati sul server! Se indovinerai tutti i risultati, riceverai un buono sconto automatico via email entro 48h.");
+              go('profile');
+            }, 1000);
+          }
+        } catch (err) {
+          console.error(err);
+          toast("Errore di connessione al server.");
+        } finally {
+          submitBtn.innerText = btnText;
+          submitBtn.disabled = false;
+        }
+      })();
     };
   }
 }
