@@ -10,7 +10,7 @@
 // ──────────────────────────────────────────────────────────────
 // PROFILO UTENTE (persiste in localStorage, privacy-first)
 // ──────────────────────────────────────────────────────────────
-const PROFILE_KEY = 'elisee:profile';
+export const PROFILE_KEY = 'elisee:profile';
 
 const DEFAULT_PROFILE = {
   name: 'Eliseo Miraglia', // Per far finta che l'utente sia già loggato
