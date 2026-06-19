@@ -20,7 +20,7 @@ import {
   STYLE_QUIZ, isFirstLaunch, completeOnboarding,
   rankProducts, smartSearch,  trackView, trackViewEnd, trackAddToCart, trackWishlist, trackSearch,
   exportUserData, deleteUserData,
-  getRecommendations, getContextualHeadline,
+  getRecommendations, getContextualHeadline, getContext,
   PROFILE_KEY, saveOptionPreference, getOptionPreference, checkTypo
 } from './intelligence.js';
 import {
