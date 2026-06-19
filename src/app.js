@@ -279,22 +279,23 @@ function renderHome() {
     heroTitle.textContent = `${headline.base}, ${firstName}`;
   }
 
-  // Collezioni chips
+  // Collezioni select
   const colsEl = $('home-collections');
   if (colsEl) {
-    colsEl.innerHTML = '';
-    const allChip = document.createElement('div');
-    allChip.className = 'chip active';
-    allChip.textContent = 'Tutti';
-    allChip.addEventListener('click', () => { state.selectedCol = 'all'; go('catalog'); });
-    colsEl.appendChild(allChip);
-    state.collections.forEach(col => {
-      const c = document.createElement('div');
-      c.className = 'chip';
-      c.textContent = col.title;
-      c.addEventListener('click', () => { state.selectedCol = col.id; renderCatalog(); go('catalog'); });
-      colsEl.appendChild(c);
+    colsEl.innerHTML = '<option value="all">Tutte le Collezioni</option>';
+    const sorted = [...state.collections].sort((a, b) => a.title.localeCompare(b.title));
+    sorted.forEach(col => {
+      const opt = document.createElement('option');
+      opt.value = col.id;
+      opt.textContent = col.title;
+      colsEl.appendChild(opt);
     });
+    colsEl.value = state.selectedCol || 'all';
+    
+    colsEl.onchange = (e) => { 
+      state.selectedCol = e.target.value; 
+      go('catalog'); 
+    };
   }
 
   // Ultimi Arrivi (dal più recente al meno recente)
@@ -326,47 +327,42 @@ function renderHome() {
 function renderCatalogFilters() {
   const filters = $('catalog-filters');
   if (!filters) return;
-  filters.innerHTML = '';
-  const allC = document.createElement('div');
-  allC.className = 'chip active';
-  allC.textContent = 'Tutti';
-  allC.dataset.col = 'all';
-  filters.appendChild(allC);
-  state.collections.forEach(col => {
-    const c = document.createElement('div');
-    c.className = 'chip'; c.textContent = col.title; c.dataset.col = col.id;
-    if (col.id === state.selectedCol) { c.classList.add('active'); allC.classList.remove('active'); }
-    filters.appendChild(c);
+  filters.innerHTML = '<option value="all">Tutte le Collezioni</option>';
+  const sorted = [...state.collections].sort((a, b) => a.title.localeCompare(b.title));
+  sorted.forEach(col => {
+    const opt = document.createElement('option');
+    opt.value = col.id;
+    opt.textContent = col.title;
+    filters.appendChild(opt);
   });
-  filters.querySelectorAll('.chip').forEach(c => {
-    c.addEventListener('click', async () => {
-      state.selectedCol = c.dataset.col;
-      filters.querySelectorAll('.chip').forEach(x => x.classList.toggle('active', x === c));
-      
-      // Fetch dinamico della collezione se non l'abbiamo già fatto
-      if (state.selectedCol !== 'all') {
-        if (!state.fetchedCollections) state.fetchedCollections = {};
-        if (!state.fetchedCollections[state.selectedCol]) {
-          const sentinel = $('catalog-sentinel');
-          const grid = $('catalog-products');
-          if (grid && !grid.innerHTML.includes('skeleton')) {
-            grid.innerHTML = SKELETON_HTML;
-            refreshIcons(grid);
-          }
-          
-          const data = await shopify.getCollectionProducts(state.selectedCol, 250);
-          state.fetchedCollections[state.selectedCol] = true;
-          
-          // Uniamo i nuovi prodotti a quelli esistenti senza duplicati
-          const existingIds = new Set(state.products.map(p => p.id));
-          const newProducts = data.products.filter(p => !existingIds.has(p.id));
-          state.products = [...state.products, ...newProducts];
+  filters.value = state.selectedCol || 'all';
+
+  filters.onchange = async (e) => {
+    state.selectedCol = e.target.value;
+    
+    // Sincronizza l'altra select (Home) se presente
+    const homeCols = $('home-collections');
+    if (homeCols) homeCols.value = state.selectedCol;
+
+    if (state.selectedCol !== 'all') {
+      if (!state.fetchedCollections) state.fetchedCollections = {};
+      if (!state.fetchedCollections[state.selectedCol]) {
+        const grid = $('catalog-products');
+        if (grid && !grid.innerHTML.includes('skeleton')) {
+          grid.innerHTML = SKELETON_HTML;
+          refreshIcons(grid);
         }
+        
+        const data = await shopify.getCollectionProducts(state.selectedCol, 250);
+        state.fetchedCollections[state.selectedCol] = true;
+        
+        const existingIds = new Set(state.products.map(p => p.id));
+        const newProducts = data.products.filter(p => !existingIds.has(p.id));
+        state.products = [...state.products, ...newProducts];
       }
-      
-      renderCatalog();
-    });
-  });
+    }
+    renderCatalog();
+  };
 }
 
 function renderCatalog() {
