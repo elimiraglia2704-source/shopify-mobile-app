@@ -273,11 +273,13 @@ export class ShopifyClient {
       // Fallback: se il negozio reale è vuoto, usa i dati finti per non rompere l'UI
       if (products.length === 0) {
         console.warn("Il negozio Shopify non ha restituito prodotti. Verifica il dominio e il token.");
+        alert("Shopify non ha restituito errori, ma l'elenco dei prodotti è VUOTO (0 prodotti). Assicurati di aver spuntato il canale 'Headless' su ogni prodotto.");
         products = MOCK_PRODUCTS;
       }
       return { products, pageInfo: data.products.pageInfo };
     } catch (error) {
       console.error("Chiamata API Shopify fallita in getProducts:", error);
+      alert("ERRORE SHOPIFY API: " + error.message);
       return { products: MOCK_PRODUCTS, pageInfo: { hasNextPage: false, endCursor: null } };
     }
   }
