@@ -8,7 +8,7 @@ export class ShopifyClient {
 
 
   // ── Credenziali reali di elisee.shop ──
-  static DEFAULT_DOMAIN  = 'eliseebrand.myshopify.com';
+  static DEFAULT_DOMAIN  = 'elisee.shop';
   static DEFAULT_TOKEN   = 'fd3d51862812c1f0c530dc83ac3f6685';
   static DEFAULT_VERSION = '2024-04';
 
