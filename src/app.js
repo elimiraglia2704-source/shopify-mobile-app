@@ -1240,12 +1240,9 @@ function bindEvents() {
           }
           
           let query = state.searchQuery;
-          const corrected = checkTypo(query, state.products);
-          if (corrected && corrected !== query.toLowerCase().trim()) {
-            query = corrected;
-            toast('Forse cercavi: ' + corrected);
-          }
-          
+          // Rimosso checkTypo locale: Shopify gestisce già la tolleranza agli errori
+          // e il controllo locale corrompeva le ricerche di articoli non ancora scaricati.
+
           const data = await shopify.searchProducts(query, 50);
           if (data && data.products) {
             const existingIds = new Set(state.products.map(p => p.id));
