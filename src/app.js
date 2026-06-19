@@ -1776,19 +1776,36 @@ document.addEventListener('DOMContentLoaded', () => {
 // ═══════════════════════════════════════════════════════════
 // ANGOLO LUDOPATICO
 // ═══════════════════════════════════════════════════════════
-const betMatches = [
-  { match: "Argentina - Spagna (Mondiale)", time: new Date("2026-06-20T18:00:00Z").getTime() },
-  { match: "Italia - Brasile (Mondiale)", time: new Date("2026-06-21T21:00:00Z").getTime() },
-  { match: "Francia - Inghilterra (Mondiale)", time: new Date("2026-06-22T18:00:00Z").getTime() },
-  { match: "Germania - Portogallo (Mondiale)", time: new Date("2026-06-23T21:00:00Z").getTime() },
-  { match: "Olanda - Belgio (Mondiale)", time: new Date("2026-06-24T18:00:00Z").getTime() },
-  { match: "Croazia - Uruguay (Mondiale)", time: new Date("2026-06-25T21:00:00Z").getTime() },
-  { match: "Usa - Messico (Mondiale)", time: new Date("2026-06-26T21:00:00Z").getTime() }
-];
+let betMatches = [];
+let betPollingInterval = null;
+
+async function fetchLiveMatches() {
+  try {
+    const res = await fetch('/betMatches.json?t=' + Date.now()); // cache-busting
+    if (!res.ok) throw new Error("Errore fetch matches");
+    betMatches = await res.json();
+    
+    // Se l'utente è attualmente nella schermata scommesse, ri-renderizza "live"
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen && activeScreen.id === 'screen-betting') {
+      renderBetting();
+    }
+  } catch (error) {
+    console.error("Errore fetchLiveMatches:", error);
+  }
+}
 
 function renderBetting() {
   const container = $('betting-list');
   if (!container) return;
+  
+  // Salva i valori attuali degli input per non cancellarli durante il polling live
+  const currentInputs = container.querySelectorAll('.bet-input');
+  const savedValues = {};
+  currentInputs.forEach((inp, idx) => {
+    savedValues[idx] = inp.value;
+  });
+
   container.innerHTML = '';
   
   const now = Date.now();
@@ -1810,7 +1827,7 @@ function renderBetting() {
         <span style="font-weight: 600; font-size: 14px; color: var(--text);">${index + 1}. ${item.match}</span>
         <span style="font-size: 11px; color: var(--text-muted);">${dateStr} ${isStarted ? '<span style="color:#ff3b30">(Iniziata)</span>' : ''}</span>
       </div>
-      <input type="text" class="bet-input" placeholder="Es: 1" maxlength="5" data-match="${index}" ${isStarted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+      <input type="text" class="bet-input" placeholder="Es: 1" maxlength="5" data-match="${index}" value="${savedValues[index] || ''}" ${isStarted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
     `;
     container.appendChild(row);
   });
@@ -1847,6 +1864,12 @@ function renderBetting() {
       }, 1000);
     };
   }
+}
+
+// Inizializza il live polling quando l'app parte
+fetchLiveMatches();
+if (!betPollingInterval) {
+  betPollingInterval = setInterval(fetchLiveMatches, 60000); // 1 Minuto
 }
 
 // ═══════════════════════════════════════════════════════════
