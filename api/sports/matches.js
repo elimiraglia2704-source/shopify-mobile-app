@@ -48,24 +48,14 @@ export default async function handler(req, res) {
   // spalmati nelle prossime 48 ore a partire dal momento in cui 
   // viene fatta la richiesta.
   
-  const now = new Date();
-  
-  const t1 = new Date(now); t1.setHours(t1.getHours() + 2);
-  const t2 = new Date(now); t2.setHours(t2.getHours() + 4);
-  const t3 = new Date(now); t3.setHours(t3.getHours() + 18);
-  const t4 = new Date(now); t4.setHours(t4.getHours() + 21);
-  const t5 = new Date(now); t5.setDate(t5.getDate() + 1); t5.setHours(18);
-  const t6 = new Date(now); t6.setDate(t6.getDate() + 1); t6.setHours(21);
-  const t7 = new Date(now); t7.setDate(t7.getDate() + 2); t7.setHours(18);
-
   const mockMatches = [
-    { id: 'm1', home: 'Inghilterra', away: 'Stati Uniti', info: 'Mondiale 2026 - Gruppo A', startTime: t1.toISOString() },
-    { id: 'm2', home: 'Spagna', away: 'Croazia', info: 'Mondiale 2026 - Gruppo B', startTime: t2.toISOString() },
-    { id: 'm3', home: 'Svizzera', away: 'Bosnia', info: 'Mondiale 2026 - Gruppo C', startTime: t3.toISOString() },
-    { id: 'm4', home: 'Olanda', away: 'Svezia', info: 'Mondiale 2026 - Gruppo D', startTime: t4.toISOString() },
-    { id: 'm5', home: 'Germania', away: "Costa d'Avorio", info: 'Mondiale 2026 - Gruppo E', startTime: t5.toISOString() },
-    { id: 'm6', home: 'Brasile', away: 'Haiti', info: 'Mondiale 2026 - Gruppo F', startTime: t6.toISOString() },
-    { id: 'm7', home: 'Ecuador', away: 'Curaçao', info: 'Mondiale 2026 - Gruppo G', startTime: t7.toISOString() }
+    { id: 'm1', home: 'USA', away: 'Australia', info: 'Mondiale 2026', startTime: '2026-06-19T19:00:00Z' },
+    { id: 'm2', home: 'Scozia', away: 'Marocco', info: 'Mondiale 2026', startTime: '2026-06-19T22:00:00Z' },
+    { id: 'm3', home: 'Brasile', away: 'Haiti', info: 'Mondiale 2026', startTime: '2026-06-20T00:30:00Z' },
+    { id: 'm4', home: 'Turchia', away: 'Paraguay', info: 'Mondiale 2026', startTime: '2026-06-20T03:00:00Z' },
+    { id: 'm5', home: 'Olanda', away: 'Svezia', info: 'Mondiale 2026', startTime: '2026-06-20T17:00:00Z' },
+    { id: 'm6', home: 'Germania', away: "Costa d'Avorio", info: 'Mondiale 2026', startTime: '2026-06-20T20:00:00Z' },
+    { id: 'm7', home: 'Ecuador', away: 'Curacao', info: 'Mondiale 2026', startTime: '2026-06-21T00:00:00Z' }
   ];
 
   res.status(200).json({ matches: mockMatches });
