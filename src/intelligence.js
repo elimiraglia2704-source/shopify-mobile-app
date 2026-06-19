@@ -231,6 +231,21 @@ export function smartSearch(products, query, profile) {
 }
 
 // ──────────────────────────────────────────────────────────────
+// OPTION PREFERENCES (Memory AI)
+// ──────────────────────────────────────────────────────────────
+export function saveOptionPreference(optionName, optionValue) {
+  const p = getProfile();
+  const prefs = p.optionPrefs || {};
+  prefs[optionName.toLowerCase()] = optionValue;
+  updateProfile({ optionPrefs: prefs });
+}
+
+export function getOptionPreference(optionName) {
+  const p = getProfile();
+  return p.optionPrefs ? p.optionPrefs[optionName.toLowerCase()] : null;
+}
+
+// ──────────────────────────────────────────────────────────────
 // BEHAVIOR TRACKER
 // Principio 5: più dati di qualità = più potenza percepita
 // ──────────────────────────────────────────────────────────────
@@ -309,4 +324,71 @@ export function exportUserData() {
 export function deleteUserData() {
   localStorage.removeItem(PROFILE_KEY);
   sessionStorage.clear();
+}
+
+// ──────────────────────────────────────────────────────────────
+// SMART TYPO AI (Levenshtein Distance)
+// ──────────────────────────────────────────────────────────────
+function levenshtein(a, b) {
+  const matrix = [];
+  for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j] + 1      // deletion
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
+export function checkTypo(query, products) {
+  if (!query || query.length < 3) return null;
+  const q = query.toLowerCase().trim();
+  
+  // Extract unique words from all product titles and vendors
+  const dictionary = new Set();
+  products.forEach(p => {
+    if (p.title) p.title.toLowerCase().split(/[\s-]+/).forEach(w => dictionary.add(w));
+    if (p.vendor) p.vendor.toLowerCase().split(/[\s-]+/).forEach(w => dictionary.add(w));
+  });
+  
+  // Aggiungiamo anche le collection al dizionario
+  products.forEach(p => {
+    if (p.collections && p.collections.edges) {
+      p.collections.edges.forEach(e => {
+        if (e.node.title) e.node.title.toLowerCase().split(/[\s-]+/).forEach(w => dictionary.add(w));
+      });
+    }
+  });
+
+  const words = q.split(/[\s-]+/);
+  const correctedWords = words.map(word => {
+    if (word.length < 3) return word; 
+    if (dictionary.has(word)) return word;
+    
+    let localBest = word;
+    let localMinDist = 3; // Correzione massima di 2 lettere
+    
+    dictionary.forEach(dictWord => {
+      if (Math.abs(dictWord.length - word.length) > 2) return;
+      const dist = levenshtein(word, dictWord);
+      if (dist < localMinDist) {
+        localMinDist = dist;
+        localBest = dictWord;
+      }
+    });
+    return localBest;
+  });
+  
+  const correctedQuery = correctedWords.join(' ');
+  return correctedQuery !== q ? correctedQuery : null;
 }

@@ -1409,3 +1409,31 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
   border-color: var(--gold);
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
+
+/* ════════ WHATSAPP CHATBOT WIDGET ════════ */
+.whatsapp-float {
+  position: fixed;
+  bottom: 80px; /* Sopra la navbar e il safe area */
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background-color: #25D366; /* Verde WhatsApp ufficiale */
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.whatsapp-float:active {
+  transform: scale(0.9);
+}
+
+.whatsapp-float svg {
+  width: 28px;
+  height: 28px;
+  fill: #fff;
+}

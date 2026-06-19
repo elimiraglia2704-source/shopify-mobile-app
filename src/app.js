@@ -18,10 +18,10 @@ import { cacheGet, cacheSet, prefetchImages } from './cache.js';
 import {
   getProfile, updateProfile, incrementSession,
   STYLE_QUIZ, isFirstLaunch, completeOnboarding,
-  rankProducts, smartSearch, trackView, trackViewEnd,
-  trackAddToCart, trackWishlist, trackSearch,
-  getContextualHeadline, getContext, getRecommendations,
+  rankProducts, smartSearch,  trackView, trackViewEnd, trackAddToCart, trackWishlist, trackSearch, track,
   exportUserData, deleteUserData,
+  getRecommendations, getContextualHeadline,
+  PROFILE_KEY, saveOptionPreference, getOptionPreference, checkTypo
 } from './intelligence.js';
 import {
   track, getInsights, getFlywheel, getPrivacySummary,
@@ -409,7 +409,10 @@ function openPDP(product) {
   trackViewEnd(); // salva durata prodotto precedente (P5)
   state.activeProduct = product;
   state.activeOptions = {};
-  product.options?.forEach(o => { state.activeOptions[o.name] = o.values[0]; });
+  product.options?.forEach(o => { 
+    const pref = getOptionPreference(o.name);
+    state.activeOptions[o.name] = (pref && o.values.includes(pref)) ? pref : o.values[0]; 
+  });
   syncVariant();
   renderPDP();
   trackView(product);
@@ -492,6 +495,7 @@ function renderPDP() {
         chip.textContent = val;
         chip.addEventListener('click', () => {
           state.activeOptions[opt.name] = val;
+          saveOptionPreference(opt.name, val);
           syncVariant();
           renderPDP();
         });
@@ -1189,7 +1193,15 @@ function bindEvents() {
              grid.innerHTML = SKELETON_HTML;
              refreshIcons(grid);
           }
-          const data = await shopify.searchProducts(state.searchQuery, 50);
+          
+          let query = state.searchQuery;
+          const corrected = checkTypo(query, state.products);
+          if (corrected && corrected !== query.toLowerCase().trim()) {
+            query = corrected;
+            toast('Forse cercavi: ' + corrected);
+          }
+          
+          const data = await shopify.searchProducts(query, 50);
           if (data && data.products) {
             const existingIds = new Set(state.products.map(p => p.id));
             const newProducts = data.products.filter(p => !existingIds.has(p.id));
@@ -1647,29 +1659,6 @@ document.addEventListener('DOMContentLoaded', () => {
       toast("Ricerca vocale AI in arrivo prossimamente!");
     });
   }
-    recognition.lang = 'it-IT';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    voiceBtn.addEventListener('click', () => {
-      toast('🎙️ In ascolto...');
-      recognition.start();
-    });
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      const searchInput = $('search-input');
-      if (searchInput) {
-        searchInput.value = transcript;
-        state.searchQuery = transcript.toLowerCase();
-        $('search-clear').style.display = 'flex';
-        toast('Hai detto: ' + transcript);
-        renderCatalog();
-      }
-    };
-
-
-
   $('btn-profile-betting')?.addEventListener('click', () => {
     go('betting');
     renderBetting();

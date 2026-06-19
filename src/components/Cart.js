@@ -153,32 +153,55 @@ export function renderCartBody() {
     // Filtra prodotti disponibili per l'upsell
     let availableUpsells = state.products.filter(p => !cartProductIds.has(p.id));
     
-    // Prova a fare un match intelligente (stesso vendor o stessa collezione)
-    let smartUpsells = availableUpsells.filter(p => {
-      if (cartVendors.has(p.vendor)) return true;
-      if (p.collections?.edges?.some(e => cartCollections.has(e.node.id))) return true;
-      return false;
-    });
-
-    // Fallback se non ci sono match intelligenti
-    if (smartUpsells.length === 0) smartUpsells = availableUpsells;
-    
-    if (smartUpsells.length > 0) {
-      // Scegliamo un prodotto contestuale
-      const rec = smartUpsells[Math.floor(Math.random() * smartUpsells.length)];
-      const variant = rec.variants?.edges[0]?.node;
+    if (availableUpsells.length > 0) {
+      const missingForFreeShipping = 50 - total;
       
-      if (variant) {
-        // Calcola una percentuale plausibile basata sull'intelligenza
+      let rec = null;
+      let upsellMessage = '';
+      let upsellIcon = 'sparkles';
+      
+      if (missingForFreeShipping > 0 && missingForFreeShipping <= 40) {
+        // Cerca un prodotto che costa più o meno quanto manca
+        const thresholdCandidates = availableUpsells.filter(p => {
+          const pPrice = parseFloat(p.variants?.edges[0]?.node?.price?.amount || 0);
+          return pPrice >= missingForFreeShipping && pPrice <= missingForFreeShipping + 15;
+        });
+        
+        if (thresholdCandidates.length > 0) {
+          rec = thresholdCandidates[Math.floor(Math.random() * thresholdCandidates.length)];
+        } else {
+          // Fallback al più economico che fa scattare la soglia
+          const sorted = [...availableUpsells].sort((a, b) => parseFloat(a.variants?.edges[0]?.node?.price?.amount || 0) - parseFloat(b.variants?.edges[0]?.node?.price?.amount || 0));
+          rec = sorted.find(p => parseFloat(p.variants?.edges[0]?.node?.price?.amount || 0) >= missingForFreeShipping) || sorted[0];
+        }
+        
+        upsellMessage = `Ti mancano solo <b>${fmt(missingForFreeShipping, state.cart[0]?.price?.currencyCode || 'EUR')}</b> per la spedizione gratuita! Aggiungi questo:`;
+        upsellIcon = 'truck';
+      } else {
+        // Upsell contestuale normale se ha già la spedizione gratis o il carrello è vuoto
+        let smartUpsells = availableUpsells.filter(p => {
+          if (cartVendors.has(p.vendor)) return true;
+          if (p.collections?.edges?.some(e => cartCollections.has(e.node.id))) return true;
+          return false;
+        });
+        if (smartUpsells.length === 0) smartUpsells = availableUpsells;
+        rec = smartUpsells[Math.floor(Math.random() * smartUpsells.length)];
         const isSmartMatch = smartUpsells !== availableUpsells;
         const perc = isSmartMatch ? Math.floor(Math.random() * (95 - 82) + 82) : Math.floor(Math.random() * (75 - 60) + 60);
-        
+        upsellMessage = `Comprato dal ${perc}% dei clienti insieme a questi articoli`;
+      }
+      
+      const variant = rec?.variants?.edges[0]?.node;
+      
+      if (rec && variant) {
         const upsellEl = document.createElement('div');
         upsellEl.className = 'cart-upsell';
+        if (upsellIcon === 'truck') upsellEl.style.borderColor = 'var(--gold)'; // Evidenzia il banner spedizione
+        
         upsellEl.innerHTML = `
-          <div class="cart-upsell-header">
-            <i data-lucide="sparkles"></i>
-            <span>Comprato dal ${perc}% dei clienti insieme a questi articoli</span>
+          <div class="cart-upsell-header" ${upsellIcon === 'truck' ? 'style="color:var(--gold)"' : ''}>
+            <i data-lucide="${upsellIcon}"></i>
+            <span>${upsellMessage}</span>
           </div>
           <div class="cart-upsell-body">
             <img src="${rec.images?.edges[0]?.node?.url || ''}" alt="${rec.title}" loading="lazy" decoding="async">
