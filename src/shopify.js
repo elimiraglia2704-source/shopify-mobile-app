@@ -194,7 +194,7 @@ export class ShopifyClient {
 
   async getProducts(limit = 250, afterCursor = null) {
     if (this.useMock || !this.isConfigured) {
-      return { products: [], pageInfo: { hasNextPage: false, endCursor: null } };
+      return { products: MOCK_PRODUCTS, pageInfo: { hasNextPage: false, endCursor: null } };
     }
 
     const query = `
@@ -271,18 +271,17 @@ export class ShopifyClient {
       // Fallback: se il negozio reale è vuoto, usa i dati finti per non rompere l'UI
       if (products.length === 0) {
         console.warn("Il negozio Shopify non ha restituito prodotti. Verifica il dominio e il token.");
-        // Non usiamo più i MOCK_PRODUCTS per evitare confusione se l'utente si aspetta la sincronizzazione.
-        // products = MOCK_PRODUCTS;
+        products = MOCK_PRODUCTS;
       }
       return { products, pageInfo: data.products.pageInfo };
     } catch (error) {
       console.error("Chiamata API Shopify fallita in getProducts:", error);
-      return { products: [], pageInfo: { hasNextPage: false, endCursor: null } };
+      return { products: MOCK_PRODUCTS, pageInfo: { hasNextPage: false, endCursor: null } };
     }
   }
   async getCollectionProducts(collectionId, limit = 250) {
     if (this.useMock || !this.isConfigured) {
-      return { products: [] };
+      return { products: MOCK_PRODUCTS };
     }
 
     const query = `
@@ -343,17 +342,17 @@ export class ShopifyClient {
 
     try {
       const data = await this.queryStorefront(query, { id: collectionId, first: limit });
-      if (!data.collection) return { products: [] };
+      if (!data.collection || data.collection.products.edges.length === 0) return { products: MOCK_PRODUCTS };
       return { products: data.collection.products.edges.map(e => e.node) };
     } catch (error) {
       console.error("Errore fetch getCollectionProducts:", error);
-      return { products: [] };
+      return { products: MOCK_PRODUCTS };
     }
   }
 
   async getCollections() {
     if (this.useMock || !this.isConfigured) {
-      return [];
+      return MOCK_COLLECTIONS;
     }
 
     const query = `
@@ -376,18 +375,18 @@ export class ShopifyClient {
       let collections = data.collections.edges.map(edge => edge.node);
       if (collections.length === 0) {
         console.warn("Il negozio Shopify non ha restituito collezioni.");
-        // collections = MOCK_COLLECTIONS;
+        collections = MOCK_COLLECTIONS;
       }
       return collections;
     } catch (error) {
       console.error("Errore fetch getCollections:", error);
-      return [];
+      return MOCK_COLLECTIONS;
     }
   }
 
   async searchProducts(searchQuery, limit = 50) {
     if (this.useMock || !this.isConfigured || !searchQuery) {
-      return { products: [] };
+      return { products: MOCK_PRODUCTS };
     }
 
     const query = `
@@ -428,10 +427,12 @@ export class ShopifyClient {
 
     try {
       const data = await this.queryStorefront(query, { query: searchQuery, first: limit });
-      return { products: data.products.edges.map(e => e.node) };
+      const products = data.products.edges.map(e => e.node);
+      if (products.length === 0) return { products: MOCK_PRODUCTS };
+      return { products };
     } catch (error) {
       console.error("Errore searchProducts:", error);
-      return { products: [] };
+      return { products: MOCK_PRODUCTS };
     }
   }
 
