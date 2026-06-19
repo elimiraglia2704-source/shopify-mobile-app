@@ -18,7 +18,7 @@ import { cacheGet, cacheSet, prefetchImages } from './cache.js';
 import {
   getProfile, updateProfile, incrementSession,
   STYLE_QUIZ, isFirstLaunch, completeOnboarding,
-  rankProducts, smartSearch,  trackView, trackViewEnd, trackAddToCart, trackWishlist, trackSearch, track,
+  rankProducts, smartSearch,  trackView, trackViewEnd, trackAddToCart, trackWishlist, trackSearch,
   exportUserData, deleteUserData,
   getRecommendations, getContextualHeadline,
   PROFILE_KEY, saveOptionPreference, getOptionPreference, checkTypo
