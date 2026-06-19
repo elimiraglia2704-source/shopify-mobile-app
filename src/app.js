@@ -1035,9 +1035,9 @@ async function renderBettingSection() {
       </div>
       <div class="bet-match-teams">${match.home} - ${match.away}</div>
       <div class="bet-options ${disableClass}">
-        <button class="bet-option-btn" data-match="${match.id}" data-val="1" ${isStarted ? 'disabled' : ''}>1<span>${match.home}</span></button>
-        <button class="bet-option-btn" data-match="${match.id}" data-val="X" ${isStarted ? 'disabled' : ''}>X<span>Pareggio</span></button>
-        <button class="bet-option-btn" data-match="${match.id}" data-val="2" ${isStarted ? 'disabled' : ''}>2<span>${match.away}</span></button>
+        <button class="bet-option-btn" data-match="${match.id}" data-val="1" ${isStarted ? 'disabled' : ''}>1</button>
+        <button class="bet-option-btn" data-match="${match.id}" data-val="X" ${isStarted ? 'disabled' : ''}>X</button>
+        <button class="bet-option-btn" data-match="${match.id}" data-val="2" ${isStarted ? 'disabled' : ''}>2</button>
       </div>
     `;
     container.appendChild(card);
@@ -1841,7 +1841,7 @@ function renderBetting() {
         <span style="font-weight: 600; font-size: 14px; color: var(--text);">${index + 1}. ${item.match}</span>
         <span style="font-size: 11px; color: var(--text-muted);">${dateStr} ${isStarted ? '<span style="color:#ff3b30">(Iniziata)</span>' : ''}</span>
       </div>
-      <input type="text" class="bet-input" placeholder="Es: 1" maxlength="5" data-match="${index}" value="${savedValues[index] || ''}" ${isStarted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+      <input type="text" class="bet-input" placeholder="1/X/2" maxlength="1" data-match="${index}" value="${savedValues[index] || ''}" ${isStarted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''} oninput="this.value = this.value.toUpperCase().replace(/[^1X2]/g, '')">
     `;
     container.appendChild(row);
   });
