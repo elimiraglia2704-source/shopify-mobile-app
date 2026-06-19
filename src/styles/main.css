@@ -1301,3 +1301,103 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
   50% { transform: scale(1.4); background-color: var(--gold); color: #000; }
   100% { transform: scale(1); }
 }
+
+/* ── L'ANGOLO LUDOPATICO (ELISEE CLUB 1X2) ────────────────────── */
+.bet-match-card {
+  background: rgba(20, 10, 30, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(155,89,208,0.2);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bet-match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bet-match-teams {
+  font-family: var(--font-d);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+.bet-match-info {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.bet-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.bet-option-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-sub);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.bet-option-btn span {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.bet-option-btn.selected {
+  background: rgba(155,89,208,0.2);
+  border-color: var(--purple-light);
+  color: var(--purple-light);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(155,89,208,0.3);
+}
+.bet-option-btn.selected span {
+  color: var(--purple-light);
+}
+
+.bet-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.bet-row span {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  flex: 1;
+}
+.bet-input {
+  width: 60px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--gold);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+.bet-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}

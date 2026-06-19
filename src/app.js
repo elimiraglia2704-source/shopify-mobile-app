@@ -1656,7 +1656,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  $('btn-profile-betting')?.addEventListener('click', () => {
+    go('betting');
+    renderBetting();
+  });
+
 });
+
+// ═══════════════════════════════════════════════════════════
+// ANGOLO LUDOPATICO
+// ═══════════════════════════════════════════════════════════
+const betMatches = [
+  "Juventus - Napoli",
+  "Inter - Milan",
+  "Roma - Lazio",
+  "Real Madrid - Barcellona",
+  "Arsenal - Chelsea",
+  "Bayern Monaco - B. Dortmund",
+  "PSG - Marsiglia"
+];
+
+function renderBetting() {
+  const container = $('betting-list');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  betMatches.forEach((match, index) => {
+    const row = document.createElement('div');
+    row.className = 'bet-row';
+    row.innerHTML = `
+      <span>${index + 1}. ${match}</span>
+      <input type="text" class="bet-input" placeholder="Es: 1" maxlength="5" data-match="${index}">
+    `;
+    container.appendChild(row);
+  });
+
+  const submitBtn = $('btn-submit-bets');
+  if (submitBtn) {
+    submitBtn.onclick = () => {
+      const inputs = container.querySelectorAll('.bet-input');
+      let allFilled = true;
+      inputs.forEach(input => {
+        if (!input.value.trim()) allFilled = false;
+      });
+
+      if (!allFilled) {
+        toast("Compila tutti i 7 pronostici prima di confermare!");
+        return;
+      }
+
+      toast("Scommessa confermata! In bocca al lupo 🍀");
+      setTimeout(() => {
+        alert("Pronostici salvati! Se indovinerai tutti i risultati, riceverai un buono sconto (valido 30 giorni) su articoli da 1€ a 35€ direttamente via email/notifica.");
+        go('profile');
+      }, 1000);
+    };
+  }
+}
 
 // ═══════════════════════════════════════════════════════════
 // SHOPIFY ANALYTICS SYNC

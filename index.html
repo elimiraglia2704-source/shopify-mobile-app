@@ -165,6 +165,9 @@
       </ul>
       <p class="side-menu-label" style="margin-top:20px">Altro</p>
       <ul class="side-nav-list">
+        <li class="side-nav-item" data-nav="betting">
+          <i data-lucide="dices"></i><span>Elisee Club 1X2</span>
+        </li>
         <li class="side-nav-item" data-nav="settings">
           <i data-lucide="settings-2"></i><span>Impostazioni</span>
         </li>
@@ -371,6 +374,19 @@
             <i data-lucide="chevron-right" style="color: rgba(255,255,255,0.2); width: 20px;"></i>
           </div>
 
+          <div id="btn-profile-betting" style="padding: 18px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,59,48,0.15); border: 1px solid rgba(255,59,48,0.3); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="target" style="width: 18px; height: 18px; color: #ff3b30;"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 2px; color: var(--text);">L'angolo ludopatico</h3>
+                <p style="font-size: 12px; color: var(--text-sub);">Indovina 7 partite e vinci</p>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" style="color: rgba(255,255,255,0.2); width: 20px;"></i>
+          </div>
+
           <div id="btn-profile-dir-clienti" style="padding: 18px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
             <div style="display: flex; align-items: center; gap: 16px;">
               <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(155,89,208,0.15); border: 1px solid rgba(155,89,208,0.3); display: flex; align-items: center; justify-content: center;">
@@ -427,6 +443,40 @@
         </div>
         <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Scansiona in cassa</h3>
         <p style="color: var(--text-muted); font-size: 14px; max-width: 280px;">Mostra questo QR Code nei nostri store fisici per accumulare Punti Stile.</p>
+      </div>
+    </section>
+
+
+    <!-- ── ANGOLO LUDOPATICO ── -->
+    <section class="screen" id="screen-betting">
+      <div class="simple-header">
+        <button class="back-row" onclick="go('profile')"><i data-lucide="arrow-left"></i><span>Profilo</span></button>
+        <h2 class="simple-title">L'angolo ludopatico</h2>
+      </div>
+      <div class="profile-body" style="padding: 16px; padding-bottom: 120px;">
+        
+        <!-- Header Info -->
+        <div style="text-align: center; margin-bottom: 24px; margin-top: 10px;">
+          <i data-lucide="dices" style="width: 48px; height: 48px; color: var(--gold); margin-bottom: 12px;"></i>
+          <h3 style="font-size: 20px; font-family: var(--font-d); margin-bottom: 8px;">Mettiti alla prova</h3>
+          <p style="color: var(--text-muted); font-size: 14px; line-height: 1.4; max-width: 300px; margin: 0 auto;">
+            Inserisci il pronostico (es. 1, X, 2 oppure risultato) per queste 7 partite di cartello.
+            Se fai en plein, ricevi un <strong>Buono Sconto</strong> da consumare entro 30 giorni sugli articoli tra 1€ e 35€!
+          </p>
+          <div style="margin-top: 12px; padding: 10px; background: rgba(255,59,48,0.1); border-radius: 8px; border: 1px solid rgba(255,59,48,0.2);">
+            <p style="color: #ff6b6b; font-size: 12px; font-weight: 500;">Ricorda: auguriamo a tutti buon divertimento senza eccedere troppo nell'azzardo.</p>
+          </div>
+        </div>
+
+        <!-- Partite Form -->
+        <div id="betting-list" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Generato via JS -->
+        </div>
+
+        <button id="btn-submit-bets" class="btn-primary" style="width: 100%; margin-top: 24px; padding: 16px; border-radius: 14px; font-weight: 700; background: var(--gold); color: #000; border: none; font-size: 16px; box-shadow: 0 4px 15px rgba(212,175,55,0.3);">
+          Conferma Scommessa
+        </button>
+
       </div>
     </section>
 
@@ -661,6 +711,39 @@
         <div style="display: flex; flex-direction: column; gap: 12px;" id="admin-customers-list">
           <!-- Popolato da JS -->
         </div>
+
+      </div>
+    </section>
+
+    <!-- ── L'ANGOLO LUDOPATICO (ELISEE CLUB 1X2) ── -->
+    <section class="screen" id="screen-betting">
+      <div class="simple-header">
+        <button class="back-row" onclick="go('home')"><i data-lucide="arrow-left"></i><span>Torna alla Home</span></button>
+        <h2 class="simple-title">Elisee Club 1X2</h2>
+      </div>
+      <div class="profile-body" style="padding: 24px 16px; padding-bottom: 120px; padding-top: 80px;">
+        
+        <!-- Disclaimer / Rules -->
+        <div style="background: rgba(20, 10, 30, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 24px;">
+          <h3 style="color: var(--gold); font-family: var(--font-d); font-size: 20px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="dices"></i> L'Angolo Ludopatico
+          </h3>
+          <p style="color: var(--text-sub); font-size: 13px; line-height: 1.5;">
+            Indovina il pronostico (1, X, 2) di queste 7 partite! Se fai en-plein, riceverai un <strong>buono spesa VIP</strong> da utilizzare entro 30 giorni su tutti gli articoli con un prezzo da 1€ a 35€.<br>
+            <em style="font-size: 11px; opacity: 0.7; display: block; margin-top: 8px;">Divertiti senza eccedere. Gioca responsabilmente!</em>
+          </p>
+        </div>
+
+        <!-- Matches Container -->
+        <div id="betting-matches-list" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Popolato dinamicamente da app.js -->
+        </div>
+
+        <button class="btn-primary" id="btn-submit-bet" style="width: 100%; height: 50px; margin-top: 24px; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;" disabled>
+          <i data-lucide="check-circle"></i> Invia la Schedina
+        </button>
+        
+        <p id="betting-error-msg" style="color: #ef4444; font-size: 13px; text-align: center; margin-top: 12px; display: none;">Devi compilare tutti e 7 i pronostici!</p>
 
       </div>
     </section>
