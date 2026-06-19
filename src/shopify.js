@@ -270,17 +270,94 @@ export class ShopifyClient {
       const data = await this.queryStorefront(query, variables);
       let products = data.products.edges.map(edge => edge.node);
       
-      // Fallback: se il negozio reale è vuoto, usa i dati finti per non rompere l'UI
       if (products.length === 0) {
         console.warn("Il negozio Shopify non ha restituito prodotti. Verifica il dominio e il token.");
-        alert("Shopify non ha restituito errori, ma l'elenco dei prodotti è VUOTO (0 prodotti). Assicurati di aver spuntato il canale 'Headless' su ogni prodotto.");
         products = MOCK_PRODUCTS;
       }
       return { products, pageInfo: data.products.pageInfo };
     } catch (error) {
       console.error("Chiamata API Shopify fallita in getProducts:", error);
-      alert("ERRORE SHOPIFY API: " + error.message);
       return { products: MOCK_PRODUCTS, pageInfo: { hasNextPage: false, endCursor: null } };
+    }
+  }
+
+  async searchProducts(searchQuery, limit = 50) {
+    if (this.useMock || !this.isConfigured) {
+      return { products: MOCK_PRODUCTS.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase())) };
+    }
+
+    const query = `
+      query searchProducts($first: Int!, $query: String!) {
+        products(first: $first, query: $query) {
+          edges {
+            node {
+              id
+              title
+              description
+              vendor
+              availableForSale
+              priceRange {
+                minVariantPrice {
+                  amount
+                  currencyCode
+                }
+              }
+              images(first: 5) {
+                edges {
+                  node {
+                    url
+                    altText
+                  }
+                }
+              }
+              options {
+                name
+                values
+              }
+              collections(first: 5) {
+                edges {
+                  node {
+                    id
+                    title
+                  }
+                }
+              }
+              variants(first: 20) {
+                edges {
+                  node {
+                    id
+                    title
+                    price {
+                      amount
+                      currencyCode
+                    }
+                    compareAtPrice {
+                      amount
+                      currencyCode
+                    }
+                    availableForSale
+                    selectedOptions {
+                      name
+                      value
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      // Shopify Storefront API uses query syntax like "title:Brasile" or just "Brasile"
+      const variables = { first: limit, query: searchQuery };
+      const data = await this.queryStorefront(query, variables);
+      const products = data.products.edges.map(edge => edge.node);
+      return { products };
+    } catch (error) {
+      console.error("Chiamata API Shopify fallita in searchProducts:", error);
+      return { products: [] };
     }
   }
   async getCollectionProducts(collectionId, limit = 250) {
