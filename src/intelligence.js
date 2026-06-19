@@ -171,7 +171,7 @@ export function scoreProduct(product, profile) {
   if (profile.wishHistory?.includes(product.id)) score += 25;
 
   // Penalità per prodotti già visti molte volte
-  const views = profile.viewHistory?.filter(v => v.id === product.id).length || 0;
+  const views = (profile.viewHistory || []).filter(v => v.id === product.id).length || 0;
   if (views > 3) score -= 10;
 
   // Boost per prodotti con sconto (disponibilità)

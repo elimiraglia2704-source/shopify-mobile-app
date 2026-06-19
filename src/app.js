@@ -225,7 +225,7 @@ function makeCard(product, showAIBadge = false) {
   const wished = isWished(product.id);
 
   const profile = getProfile();
-  const views = profile.viewHistory?.filter(v => v.id === product.id).length || 0;
+  const views = (profile.viewHistory || []).filter(v => v.id === product.id).length || 0;
   // Mix di dati reali e casualità fissa basata sull'ID per creare movimento
   const isHighDemand = views >= 2 || (parseInt(String(product.id).replace(/\D/g, '') || '0') % 7 === 0);
 
@@ -319,7 +319,7 @@ function renderHome() {
     grid.innerHTML = '';
     const ranked = rankProducts(state.products, profile, 6);
     // Prefetch immagini above-fold (P2)
-    prefetchImages(ranked.slice(0, 4).map(p => p.images.edges[0]?.node.url).filter(Boolean));
+    prefetchImages(ranked.slice(0, 4).map(p => p.images?.edges?.[0]?.node?.url).filter(Boolean));
     ranked.forEach(p => grid.appendChild(makeCard(p, true)));
   }
 
@@ -429,7 +429,7 @@ function openPDP(product) {
 function syncVariant() {
   const p = state.activeProduct;
   if (!p) return;
-  state.activeVariant = p.variants.edges.find(e =>
+  state.activeVariant = p.variants?.edges?.find(e =>
     e.node.selectedOptions.every(o => state.activeOptions[o.name] === o.value)
   )?.node || null;
 }
@@ -439,7 +439,7 @@ function renderPDP() {
   const v = state.activeVariant;
   if (!p) return;
 
-  const imgs = p.images.edges.map(e => e.node.url).filter(Boolean);
+  const imgs = (p.images?.edges || []).map(e => e.node?.url).filter(Boolean);
   const mainImg = $('pdp-img');
   if (mainImg) { 
     mainImg.src = imgs[0] || ''; 
