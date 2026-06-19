@@ -199,7 +199,7 @@ export class ShopifyClient {
 
     const query = `
       query getProducts($first: Int!, $after: String) {
-        products(first: $first, after: $after, sortKey: CREATED_AT, reverse: true) {
+        products(first: $first, after: $after) {
           pageInfo {
             hasNextPage
             endCursor
@@ -265,7 +265,9 @@ export class ShopifyClient {
     `;
 
     try {
-      const data = await this.queryStorefront(query, { first: limit, after: afterCursor });
+      const variables = { first: limit };
+      if (afterCursor) variables.after = afterCursor;
+      const data = await this.queryStorefront(query, variables);
       let products = data.products.edges.map(edge => edge.node);
       
       // Fallback: se il negozio reale è vuoto, usa i dati finti per non rompere l'UI
