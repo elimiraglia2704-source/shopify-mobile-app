@@ -991,6 +991,103 @@ export const updateDynamicHome = () => {
 };
 
 // ═══════════════════════════════════════════════════════════
+// ELISEE CLUB 1X2 - L'ANGOLO LUDOPATICO
+// ═══════════════════════════════════════════════════════════
+const BET_MATCHES = [
+  { id: 'm1', home: 'Italia', away: 'Spagna', info: 'Euro 2024 - Gruppo B' },
+  { id: 'm2', home: 'Germania', away: 'Svizzera', info: 'Euro 2024 - Gruppo A' },
+  { id: 'm3', home: 'Francia', away: 'Olanda', info: 'Euro 2024 - Gruppo D' },
+  { id: 'm4', home: 'Inghilterra', away: 'Danimarca', info: 'Euro 2024 - Gruppo C' },
+  { id: 'm5', home: 'Portogallo', away: 'Turchia', info: 'Euro 2024 - Gruppo F' },
+  { id: 'm6', home: 'Belgio', away: 'Romania', info: 'Euro 2024 - Gruppo E' },
+  { id: 'm7', home: 'Croazia', away: 'Albania', info: 'Euro 2024 - Gruppo B' }
+];
+
+let userBets = {};
+
+function renderBettingSection() {
+  const container = $('betting-matches-list');
+  if (!container) return;
+  container.innerHTML = '';
+  userBets = {};
+
+  BET_MATCHES.forEach((match, index) => {
+    const card = document.createElement('div');
+    card.className = 'bet-match-card';
+    card.innerHTML = `
+      <div class="bet-match-header">
+        <span class="bet-match-info">Partita ${index + 1} • ${match.info}</span>
+      </div>
+      <div class="bet-match-teams">${match.home} - ${match.away}</div>
+      <div class="bet-options">
+        <button class="bet-option-btn" data-match="${match.id}" data-val="1">1<span>${match.home}</span></button>
+        <button class="bet-option-btn" data-match="${match.id}" data-val="X">X<span>Pareggio</span></button>
+        <button class="bet-option-btn" data-match="${match.id}" data-val="2">2<span>${match.away}</span></button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  const submitBtn = $('btn-submit-bet');
+  const errorMsg = $('betting-error-msg');
+
+  // Gestione click sulle opzioni
+  container.querySelectorAll('.bet-option-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      haptic(15);
+      const matchId = btn.dataset.match;
+      const val = btn.dataset.val;
+      
+      // Deseleziona altri nello stesso match
+      container.querySelectorAll(`.bet-option-btn[data-match="${matchId}"]`).forEach(b => b.classList.remove('selected'));
+      // Seleziona cliccato
+      btn.classList.add('selected');
+      
+      userBets[matchId] = val;
+
+      // Abilita submit se tutte e 7 sono compilate
+      if (Object.keys(userBets).length === BET_MATCHES.length) {
+        submitBtn.disabled = false;
+        errorMsg.style.display = 'none';
+      }
+    });
+  });
+
+  // Gestione Invia
+  submitBtn.addEventListener('click', () => {
+    if (Object.keys(userBets).length < BET_MATCHES.length) {
+      errorMsg.style.display = 'block';
+      haptic([30, 50, 30]);
+      return;
+    }
+    
+    // Anima il bottone
+    submitBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Elaborazione...';
+    refreshIcons(submitBtn);
+    submitBtn.disabled = true;
+
+    setTimeout(() => {
+      // Success
+      submitBtn.innerHTML = '<i data-lucide="check-circle"></i> Schedina Registrata!';
+      submitBtn.style.background = '#10b981';
+      refreshIcons(submitBtn);
+      haptic([20, 50, 20]);
+      
+      toast('Schedina salvata! Buona fortuna 🍀');
+      
+      // Reset dopo 3 secondi
+      setTimeout(() => {
+        userBets = {};
+        container.querySelectorAll('.bet-option-btn').forEach(b => b.classList.remove('selected'));
+        submitBtn.innerHTML = '<i data-lucide="check-circle"></i> Invia la Schedina';
+        submitBtn.style.background = '';
+        submitBtn.disabled = true;
+      }, 3000);
+    }, 1500);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
 // EVENTS — bind everything
 // ═══════════════════════════════════════════════════════════
 function bindEvents() {
@@ -1018,9 +1115,9 @@ function bindEvents() {
 
   // Side menu backdrop
   $('menu-backdrop').addEventListener('click', closeMenu);
-  $$('[data-screen]').forEach(btn => {
+  $$('[data-screen], [data-nav]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const target = btn.dataset.screen;
+      const target = btn.dataset.screen || btn.dataset.nav;
       if (state.activeScreen !== target) go(target);
       if ($('menu-backdrop').classList.contains('open')) closeMenu();
     });
@@ -1496,6 +1593,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateCartBadge();
   renderCartBody();
+  renderBettingSection();
   bindEvents();
 
   // Onboarding (P4) — mostra se è il primo lancio
