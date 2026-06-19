@@ -1429,11 +1429,16 @@ Il Team Elisee`;
     const p = getProfile();
     if (avatarDisplay) {
       if (p.avatarUrl) {
+        avatarDisplay.style.display = 'block';
+        avatarDisplay.style.width = '100%';
+        avatarDisplay.style.height = '100%';
+        avatarDisplay.style.borderRadius = '50%';
         avatarDisplay.style.backgroundImage = `url(${p.avatarUrl})`;
         avatarDisplay.style.backgroundSize = 'cover';
         avatarDisplay.style.backgroundPosition = 'center';
         avatarDisplay.innerHTML = '';
       } else {
+        avatarDisplay.style.display = 'inline';
         avatarDisplay.innerHTML = `<span style="font-weight:bold; font-size:32px; color:var(--text);">${newName.charAt(0).toUpperCase()}</span>`;
         avatarDisplay.style.backgroundImage = 'none';
       }
@@ -1577,11 +1582,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarDisplay = $('profile-avatar-display'); 
     if (avatarDisplay) {
       if (p.avatarUrl) {
+        avatarDisplay.style.display = 'block';
+        avatarDisplay.style.width = '100%';
+        avatarDisplay.style.height = '100%';
+        avatarDisplay.style.borderRadius = '50%';
         avatarDisplay.style.backgroundImage = `url(${p.avatarUrl})`;
         avatarDisplay.style.backgroundSize = 'cover';
         avatarDisplay.style.backgroundPosition = 'center';
         avatarDisplay.innerHTML = '';
       } else {
+        avatarDisplay.style.display = 'inline';
         avatarDisplay.innerHTML = `<span style="font-weight:bold; font-size:32px; color:var(--text);">${p.name.charAt(0).toUpperCase()}</span>`;
       }
     }
