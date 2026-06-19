@@ -1634,70 +1634,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ════════ VISUAL SEARCH LOGIC (Camera feed) ════════
   const vsBtn = $('visual-search-btn');
-  const vsOverlay = $('vs-overlay');
-  const vsClose = $('vs-close');
-  const vsCapture = $('vs-capture-btn');
-  const vsStatus = $('vs-status');
-  const vsCameraFeed = $('vs-camera-feed');
-  let vsStream = null;
-
-  const stopCamera = () => {
-    if (vsStream) {
-      vsStream.getTracks().forEach(track => track.stop());
-      vsStream = null;
-    }
-  };
-
-  if (vsBtn && vsOverlay) {
-    vsBtn.addEventListener('click', async () => {
-      vsOverlay.classList.remove('hidden');
-      vsStatus.textContent = 'Inquadra un capo di abbigliamento...';
-      try {
-        vsStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        if (vsCameraFeed) {
-          vsCameraFeed.srcObject = vsStream;
-        }
-      } catch (err) {
-        console.error("Camera error:", err);
-        toast("Impossibile accedere alla fotocamera.");
-      }
-    });
-    vsClose.addEventListener('click', () => {
-      vsOverlay.classList.add('hidden');
-      stopCamera();
-    });
-    vsCapture.addEventListener('click', () => {
-      vsStatus.innerHTML = '<span class="spin" style="display:inline-block;">⏳</span> Analisi in corso...';
-      setTimeout(() => {
-        vsOverlay.classList.add('hidden');
-        stopCamera();
-        toast('Prodotto analizzato! Ricerca nel catalogo...');
-        const searchInput = $('search-input');
-        if (searchInput && state.products && state.products.length > 0) {
-          // Seleziona un prodotto casuale per simulare il risultato visivo corretto per la demo
-          const randomProduct = state.products[Math.floor(Math.random() * state.products.length)];
-          // Usa il tipo di prodotto (es. Camicia, Scarpe) o la prima parola del titolo
-          let keyword = randomProduct.productType || randomProduct.title.split(' ')[0];
-          if (!keyword) keyword = randomProduct.title;
-          
-          searchInput.value = keyword;
-          state.searchQuery = keyword.toLowerCase();
-          $('search-clear').style.display = 'flex';
-          renderCatalog();
-        } else if (searchInput) {
-          searchInput.value = '';
-          state.searchQuery = '';
-          renderCatalog();
-        }
-      }, 1000);
+  if (vsBtn) {
+    vsBtn.addEventListener('click', () => {
+      toast("Ricerca visiva AI in arrivo prossimamente!");
     });
   }
 
   // ════════ VOICE SEARCH LOGIC ════════
   const voiceBtn = $('voice-search-btn');
-  if (voiceBtn && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+  if (voiceBtn) {
+    voiceBtn.addEventListener('click', () => {
+      toast("Ricerca vocale AI in arrivo prossimamente!");
+    });
+  }
     recognition.lang = 'it-IT';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -1719,66 +1668,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    recognition.onerror = (event) => {
-      toast('Errore vocale o permesso negato.');
-    };
-  } else if (voiceBtn) {
-    voiceBtn.addEventListener('click', () => {
-      toast('Ricerca vocale non supportata sul tuo dispositivo.');
-    });
-  }
 
-  // ──────────────────────────────────────────────────────────────
-  // PWA INSTALL BANNER LOGIC
-  // ──────────────────────────────────────────────────────────────
-  let deferredPrompt;
-  const pwaBanner = document.getElementById('pwa-install-banner');
-  const pwaInstallBtn = document.getElementById('pwa-install-btn');
-  const pwaCloseBtn = document.getElementById('pwa-close-btn');
-
-  function showPwaBanner() {
-    if (!pwaBanner || sessionStorage.getItem('pwaPromptClosed') === 'true') return;
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) return;
-    
-    pwaBanner.classList.remove('hidden');
-    requestAnimationFrame(() => {
-      pwaBanner.classList.add('show');
-    });
-  }
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    setTimeout(showPwaBanner, 3000);
-  });
-
-  const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-  if (isIos() && !('standalone' in window.navigator && window.navigator.standalone)) {
-    const desc = document.getElementById('pwa-install-desc');
-    if (desc) desc.innerHTML = "Un'esperienza migliore. Tocca <b style='font-size:16px'>Condividi</b> in basso e poi <b>Aggiungi alla schermata Home</b>.";
-    if (pwaInstallBtn) pwaInstallBtn.style.display = 'none';
-    setTimeout(showPwaBanner, 3000);
-  }
-
-  pwaInstallBtn?.addEventListener('click', async () => {
-    if (pwaBanner) {
-      pwaBanner.classList.remove('show');
-      setTimeout(() => pwaBanner.classList.add('hidden'), 500);
-    }
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      deferredPrompt = null;
-    }
-  });
-
-  pwaCloseBtn?.addEventListener('click', () => {
-    if (pwaBanner) {
-      pwaBanner.classList.remove('show');
-      setTimeout(() => pwaBanner.classList.add('hidden'), 500);
-      sessionStorage.setItem('pwaPromptClosed', 'true');
-    }
-  });
 
   $('btn-profile-betting')?.addEventListener('click', () => {
     go('betting');
