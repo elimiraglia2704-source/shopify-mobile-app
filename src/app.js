@@ -1443,6 +1443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     () => { /* finishAuth callback */
       updateDynamicHome();
       renderHome();
+      syncShopifySession(); // Sincronizza sessione con Shopify Analytics
     },
     (route) => go(route)
   );
@@ -1478,6 +1479,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   updateDynamicHome();
+  syncShopifySession(); // Sincronizza sessione con Shopify Analytics
 
   // Controllo accessi Area Direzione (mostra solo all'Admin)
   const adminBtnClienti = $('btn-profile-dir-clienti');
@@ -1655,3 +1657,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
+// ═══════════════════════════════════════════════════════════
+// SHOPIFY ANALYTICS SYNC
+// ═══════════════════════════════════════════════════════════
+function syncShopifySession() {
+  if (sessionStorage.getItem('shopify_session_synced')) return;
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.src = 'https://elisee.shop/?source=app_session';
+  document.body.appendChild(iframe);
+  sessionStorage.setItem('shopify_session_synced', 'true');
+  setTimeout(() => iframe.remove(), 10000); // Rimuove iframe dopo 10s per pulizia
+}
