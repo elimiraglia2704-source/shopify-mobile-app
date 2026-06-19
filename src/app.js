@@ -994,13 +994,13 @@ export const updateDynamicHome = () => {
 // ELISEE CLUB 1X2 - L'ANGOLO LUDOPATICO
 // ═══════════════════════════════════════════════════════════
 const BET_MATCHES = [
-  { id: 'm1', home: 'Italia', away: 'Spagna', info: 'Euro 2024 - Gruppo B' },
-  { id: 'm2', home: 'Germania', away: 'Svizzera', info: 'Euro 2024 - Gruppo A' },
-  { id: 'm3', home: 'Francia', away: 'Olanda', info: 'Euro 2024 - Gruppo D' },
-  { id: 'm4', home: 'Inghilterra', away: 'Danimarca', info: 'Euro 2024 - Gruppo C' },
-  { id: 'm5', home: 'Portogallo', away: 'Turchia', info: 'Euro 2024 - Gruppo F' },
-  { id: 'm6', home: 'Belgio', away: 'Romania', info: 'Euro 2024 - Gruppo E' },
-  { id: 'm7', home: 'Croazia', away: 'Albania', info: 'Euro 2024 - Gruppo B' }
+  { id: 'm1', home: 'Canada', away: 'Qatar', info: 'Mondiale 2026 - Gruppo A', startTime: '2026-06-19T20:00:00+02:00' },
+  { id: 'm2', home: 'Messico', away: 'Corea del Sud', info: 'Mondiale 2026 - Gruppo B', startTime: '2026-06-19T22:30:00+02:00' },
+  { id: 'm3', home: 'Svizzera', away: 'Bosnia', info: 'Mondiale 2026 - Gruppo C', startTime: '2026-06-20T18:00:00+02:00' },
+  { id: 'm4', home: 'Olanda', away: 'Svezia', info: 'Mondiale 2026 - Gruppo D', startTime: '2026-06-20T21:00:00+02:00' },
+  { id: 'm5', home: 'Germania', away: "Costa d'Avorio", info: 'Mondiale 2026 - Gruppo E', startTime: '2026-06-21T18:00:00+02:00' },
+  { id: 'm6', home: 'Brasile', away: 'Haiti', info: 'Mondiale 2026 - Gruppo F', startTime: '2026-06-21T21:00:00+02:00' },
+  { id: 'm7', home: 'Ecuador', away: 'Curaçao', info: 'Mondiale 2026 - Gruppo G', startTime: '2026-06-22T18:00:00+02:00' }
 ];
 
 let userBets = {};
@@ -1011,18 +1011,25 @@ function renderBettingSection() {
   container.innerHTML = '';
   userBets = {};
 
+  const now = new Date();
+  const playableMatches = BET_MATCHES.filter(m => now < new Date(m.startTime));
+
   BET_MATCHES.forEach((match, index) => {
+    const isStarted = now >= new Date(match.startTime);
+    const disableClass = isStarted ? 'disabled' : '';
+    const statusText = isStarted ? '<span style="color:#ef4444;">Iniziata</span>' : 'In programma';
+
     const card = document.createElement('div');
-    card.className = 'bet-match-card';
+    card.className = `bet-match-card ${disableClass}`;
     card.innerHTML = `
       <div class="bet-match-header">
-        <span class="bet-match-info">Partita ${index + 1} • ${match.info}</span>
+        <span class="bet-match-info">Partita ${index + 1} • ${match.info} (${statusText})</span>
       </div>
       <div class="bet-match-teams">${match.home} - ${match.away}</div>
-      <div class="bet-options">
-        <button class="bet-option-btn" data-match="${match.id}" data-val="1">1<span>${match.home}</span></button>
-        <button class="bet-option-btn" data-match="${match.id}" data-val="X">X<span>Pareggio</span></button>
-        <button class="bet-option-btn" data-match="${match.id}" data-val="2">2<span>${match.away}</span></button>
+      <div class="bet-options ${disableClass}">
+        <button class="bet-option-btn" data-match="${match.id}" data-val="1" ${isStarted ? 'disabled' : ''}>1<span>${match.home}</span></button>
+        <button class="bet-option-btn" data-match="${match.id}" data-val="X" ${isStarted ? 'disabled' : ''}>X<span>Pareggio</span></button>
+        <button class="bet-option-btn" data-match="${match.id}" data-val="2" ${isStarted ? 'disabled' : ''}>2<span>${match.away}</span></button>
       </div>
     `;
     container.appendChild(card);
@@ -1030,6 +1037,11 @@ function renderBettingSection() {
 
   const submitBtn = $('btn-submit-bet');
   const errorMsg = $('betting-error-msg');
+
+  if (playableMatches.length === 0) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Nessuna partita disponibile';
+  }
 
   // Gestione click sulle opzioni
   container.querySelectorAll('.bet-option-btn').forEach(btn => {
@@ -1045,8 +1057,8 @@ function renderBettingSection() {
       
       userBets[matchId] = val;
 
-      // Abilita submit se tutte e 7 sono compilate
-      if (Object.keys(userBets).length === BET_MATCHES.length) {
+      // Abilita submit se tutte le partite giocabili sono compilate
+      if (Object.keys(userBets).length === playableMatches.length && playableMatches.length > 0) {
         submitBtn.disabled = false;
         errorMsg.style.display = 'none';
       }
@@ -1055,7 +1067,7 @@ function renderBettingSection() {
 
   // Gestione Invia
   submitBtn.addEventListener('click', () => {
-    if (Object.keys(userBets).length < BET_MATCHES.length) {
+    if (Object.keys(userBets).length < playableMatches.length) {
       errorMsg.style.display = 'block';
       haptic([30, 50, 30]);
       return;

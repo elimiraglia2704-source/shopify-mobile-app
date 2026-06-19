@@ -1367,7 +1367,15 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
 .bet-option-btn.selected span {
   color: var(--purple-light);
 }
-
+.bet-match-card.disabled {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+  pointer-events: none;
+}
+.bet-option-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 .bet-row {
   display: flex;
   justify-content: space-between;
