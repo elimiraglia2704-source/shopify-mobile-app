@@ -9,6 +9,5 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Lasciamo passare le richieste liberamente, il SW serve solo per far riconoscere la PWA installabile
-  event.respondWith(fetch(event.request).catch(() => new Response("Offline")));
+  event.respondWith(fetch(event.request));
 });
