@@ -255,6 +255,68 @@
           </button>
         </div>
       </div>
+      
+      <!-- ── SHOP LANDING PAGE (Stile Nike) ── -->
+      <div id="catalog-landing" class="catalog-landing">
+        
+        <!-- SEZIONE 1: Novità e in evidenza -->
+        <h3 class="shop-section-title">Novità e in evidenza</h3>
+        <div class="h-scrollable-cards">
+          <div class="highlight-card">
+            <div class="img-wrapper"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80" alt="The Breakout Pack"></div>
+            <p>The Breakout Pack</p>
+          </div>
+          <div class="highlight-card">
+            <div class="img-wrapper"><img src="https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=400&q=80" alt="Articoli estivi"></div>
+            <p>Articoli estivi</p>
+          </div>
+          <div class="highlight-card">
+            <div class="img-wrapper"><img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=400&q=80" alt="Il look"></div>
+            <p>Il look</p>
+          </div>
+        </div>
+
+        <!-- SEZIONE 2: Macro Categorie -->
+        <div class="shop-categories-list">
+          <div class="shop-cat-block" onclick="document.getElementById('search-input').value='Scarpe'; document.getElementById('search-input').dispatchEvent(new Event('input'))">
+            <h4>Scarpe</h4>
+            <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=300&q=80" alt="Scarpe">
+          </div>
+          <div class="shop-cat-block" onclick="document.getElementById('search-input').value='Abbigliamento'; document.getElementById('search-input').dispatchEvent(new Event('input'))">
+            <h4>Abbigliamento</h4>
+            <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80" alt="Abbigliamento">
+          </div>
+          <div class="shop-cat-block" onclick="document.getElementById('search-input').value='Sport'; document.getElementById('search-input').dispatchEvent(new Event('input'))">
+            <h4>Sport</h4>
+            <img src="https://images.unsplash.com/photo-1553531384-411a247ccd73?auto=format&fit=crop&w=300&q=80" alt="Sport">
+          </div>
+        </div>
+
+        <!-- SEZIONE 3: Acquista per nazionale -->
+        <h3 class="shop-section-title">Acquista per nazionale</h3>
+        <div class="h-scrollable-squares">
+          <div class="team-card" onclick="document.getElementById('search-input').value='Brasile'; document.getElementById('search-input').dispatchEvent(new Event('input'))">
+            <div class="square-bg">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2b9e4a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <p>Brasile</p>
+          </div>
+          <div class="team-card" onclick="document.getElementById('search-input').value='Francia'; document.getElementById('search-input').dispatchEvent(new Event('input'))">
+            <div class="square-bg">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#002395" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <p>Francia</p>
+          </div>
+          <div class="team-card" onclick="document.getElementById('search-input').value='Inghilterra'; document.getElementById('search-input').dispatchEvent(new Event('input'))">
+            <div class="square-bg">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ce1126" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <p>Inghilterra</p>
+          </div>
+        </div>
+        
+      </div>
+
       <div class="products-grid catalog-grid" id="catalog-products"></div>
       <div id="catalog-sentinel" class="loading-sentinel" style="height: 60px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 12px; opacity: 0; transition: opacity 0.2s;"></div>
     </section>
@@ -1055,7 +1117,7 @@
     </div>
   </div>
 
-  <script type="module" src="/src/app.js?v=10"></script>
+  <script type="module" src="/src/app.js?v=11"></script>
   <!-- ════════ VISUAL SEARCH OVERLAY (Laser Scan) ════════ -->
   <div class="visual-search-overlay hidden" id="vs-overlay">
     <video id="vs-camera-feed" autoplay playsinline style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;"></video>

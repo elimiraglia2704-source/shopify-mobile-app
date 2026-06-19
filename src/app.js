@@ -382,8 +382,22 @@ function renderCatalogFilters() {
 
 function renderCatalog() {
   const grid = $('catalog-products');
+  const landing = $('catalog-landing');
   if (!grid) return;
   const profile = getProfile();
+
+  const isDefaultView = (!state.searchQuery || state.searchQuery.trim() === '') && (!state.wishFilter) && (state.selectedCol === 'all' || !state.selectedCol);
+
+  if (landing) {
+    if (isDefaultView) {
+      landing.style.display = 'flex';
+      grid.style.display = 'none';
+      return; // Non renderizzare la griglia se siamo nella landing
+    } else {
+      landing.style.display = 'none';
+      grid.style.display = 'grid';
+    }
+  }
 
   let list = state.searchQuery.trim()
     ? smartSearch(state.products, state.searchQuery, profile)
@@ -393,7 +407,7 @@ function renderCatalog() {
   if (state.wishFilter) list = list.filter(p => isWished(p.id));
 
   // Filter by collection
-  if (state.selectedCol !== 'all') {
+  if (state.selectedCol && state.selectedCol !== 'all') {
     list = list.filter(p => p.collections?.edges?.some(e => e.node.id === state.selectedCol));
   }
 

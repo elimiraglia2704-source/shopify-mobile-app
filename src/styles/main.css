@@ -1116,6 +1116,117 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
   width: 12px;
   height: 12px;
 }
+
+/* ── SHOP LANDING PAGE (Stile Nike) ── */
+.catalog-landing {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.shop-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 16px 12px;
+  font-family: var(--font-heading);
+}
+
+/* Scroll Orizzontale Card Grandi (Novità) */
+.h-scrollable-cards {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 0 16px 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.h-scrollable-cards::-webkit-scrollbar { display: none; }
+.highlight-card {
+  flex: 0 0 280px;
+  scroll-snap-align: start;
+}
+.highlight-card .img-wrapper {
+  width: 100%;
+  height: 350px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.highlight-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.highlight-card p {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Banner Categorie Orizzontali */
+.shop-categories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* piccolo spazio tra i banner */
+}
+.shop-cat-block {
+  position: relative;
+  height: 140px;
+  background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.shop-cat-block h4 {
+  font-size: 24px;
+  font-weight: 600;
+  z-index: 2;
+  font-family: var(--font-heading);
+}
+.shop-cat-block img {
+  position: absolute;
+  right: -20px;
+  bottom: 0;
+  height: 120%;
+  width: auto;
+  object-fit: cover;
+  z-index: 1;
+  mask-image: linear-gradient(to left, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+}
+
+/* Scroll Orizzontale Nazioni */
+.h-scrollable-squares {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 0 16px 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.h-scrollable-squares::-webkit-scrollbar { display: none; }
+.team-card {
+  flex: 0 0 120px;
+  scroll-snap-align: start;
+  text-align: center;
+  cursor: pointer;
+}
+.team-card .square-bg {
+  width: 120px;
+  height: 120px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.team-card p {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
 .cart-upsell-body {
   display: flex;
   align-items: center;
