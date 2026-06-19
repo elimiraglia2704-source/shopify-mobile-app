@@ -361,7 +361,7 @@ export class ShopifyClient {
 
     const query = `
       query getCollections {
-        collections(first: 50) {
+        collections(first: 250) {
           edges {
             node {
               id
