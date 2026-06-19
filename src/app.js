@@ -441,7 +441,26 @@ function renderPDP() {
 
   const imgs = p.images.edges.map(e => e.node.url).filter(Boolean);
   const mainImg = $('pdp-img');
-  if (mainImg) { mainImg.src = imgs[0] || ''; mainImg.alt = p.title; }
+  if (mainImg) { 
+    mainImg.src = imgs[0] || ''; 
+    mainImg.alt = p.title; 
+    mainImg.crossOrigin = 'Anonymous';
+    
+    // Adaptive UI & Smart Color Extraction
+    const extractColor = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = 1; c.height = 1;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(mainImg, 0, 0, 1, 1);
+        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        // Crea un bagliore (glow) dinamico dietro l'immagine
+        mainImg.style.filter = `drop-shadow(0 20px 40px rgba(${r},${g},${b},0.6))`;
+      } catch(e) {}
+    };
+    if (mainImg.complete) extractColor();
+    else mainImg.addEventListener('load', extractColor, { once: true });
+  }
 
   // Thumbnails (P2: prefetch all images)
   const thumbs = $('pdp-thumbs');
