@@ -59,8 +59,8 @@ export default async function handler(req, res) {
   const t7 = new Date(now); t7.setDate(t7.getDate() + 2); t7.setHours(18);
 
   const mockMatches = [
-    { id: 'm1', home: 'Canada', away: 'Qatar', info: 'Mondiale 2026 - Gruppo A', startTime: t1.toISOString() },
-    { id: 'm2', home: 'Messico', away: 'Corea del Sud', info: 'Mondiale 2026 - Gruppo B', startTime: t2.toISOString() },
+    { id: 'm1', home: 'Inghilterra', away: 'Stati Uniti', info: 'Mondiale 2026 - Gruppo A', startTime: t1.toISOString() },
+    { id: 'm2', home: 'Spagna', away: 'Croazia', info: 'Mondiale 2026 - Gruppo B', startTime: t2.toISOString() },
     { id: 'm3', home: 'Svizzera', away: 'Bosnia', info: 'Mondiale 2026 - Gruppo C', startTime: t3.toISOString() },
     { id: 'm4', home: 'Olanda', away: 'Svezia', info: 'Mondiale 2026 - Gruppo D', startTime: t4.toISOString() },
     { id: 'm5', home: 'Germania', away: "Costa d'Avorio", info: 'Mondiale 2026 - Gruppo E', startTime: t5.toISOString() },
