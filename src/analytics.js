@@ -13,12 +13,14 @@ const AB_KEY        = 'elisee:ab';
 // EVENT STORE (locale, privacy-first)
 // ──────────────────────────────────────────────────────────────
 function loadEvents() {
-  try { return JSON.parse(localStorage.getItem(ANALYTICS_KEY) || '[]'); }
-  catch { return []; }
+  try { 
+    const parsed = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || '[]'); 
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
 }
 
 function saveEvents(events) {
-  try { localStorage.setItem(ANALYTICS_KEY, JSON.stringify(events.slice(-500))); }
+  try { localStorage.setItem(ANALYTICS_KEY, JSON.stringify((events || []).slice(-500))); }
   catch { /* quota */ }
 }
 
@@ -77,22 +79,26 @@ export const AB_TESTS = {
 const FLYWHEEL_KEY = 'elisee:flywheel';
 
 function loadFlywheel() {
-  try {
-    return JSON.parse(localStorage.getItem(FLYWHEEL_KEY) || JSON.stringify({
+  const defaultFw = {
+    productsViewed:  0,
+    productsWished:  0,
+    cartAdds:        0,
+    searchesRun:     0,
+    savedAmount:     0,
+    sessionDuration: 0,
+    lastReset:       Date.now(),
+    allTime: {
       productsViewed:  0,
-      productsWished:  0,
       cartAdds:        0,
-      searchesRun:     0,
-      savedAmount:     0,
-      sessionDuration: 0,
-      lastReset:       Date.now(),
-      allTime: {
-        productsViewed:  0,
-        cartAdds:        0,
-        ordersStarted:   0,
-      }
-    }));
-  } catch { return {}; }
+      ordersStarted:   0,
+    }
+  };
+  try {
+    const raw = localStorage.getItem(FLYWHEEL_KEY);
+    if (!raw) return defaultFw;
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === 'object') ? { ...defaultFw, ...parsed, allTime: { ...defaultFw.allTime, ...(parsed.allTime || {}) } } : defaultFw;
+  } catch { return defaultFw; }
 }
 
 function saveFlywheel(fw) {
