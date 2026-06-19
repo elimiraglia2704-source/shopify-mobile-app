@@ -1765,13 +1765,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // ANGOLO LUDOPATICO
 // ═══════════════════════════════════════════════════════════
 const betMatches = [
-  "Juventus - Napoli",
-  "Inter - Milan",
-  "Roma - Lazio",
-  "Real Madrid - Barcellona",
-  "Arsenal - Chelsea",
-  "Bayern Monaco - B. Dortmund",
-  "PSG - Marsiglia"
+  { match: "Argentina - Spagna (Mondiale)", time: new Date("2026-06-20T18:00:00Z").getTime() },
+  { match: "Italia - Brasile (Mondiale)", time: new Date("2026-06-21T21:00:00Z").getTime() },
+  { match: "Francia - Inghilterra (Mondiale)", time: new Date("2026-06-22T18:00:00Z").getTime() },
+  { match: "Germania - Portogallo (Mondiale)", time: new Date("2026-06-23T21:00:00Z").getTime() },
+  { match: "Olanda - Belgio (Mondiale)", time: new Date("2026-06-24T18:00:00Z").getTime() },
+  { match: "Croazia - Uruguay (Mondiale)", time: new Date("2026-06-25T21:00:00Z").getTime() },
+  { match: "Usa - Messico (Mondiale)", time: new Date("2026-06-26T21:00:00Z").getTime() }
 ];
 
 function renderBetting() {
@@ -1779,12 +1779,26 @@ function renderBetting() {
   if (!container) return;
   container.innerHTML = '';
   
-  betMatches.forEach((match, index) => {
+  const now = Date.now();
+  let hasPlayable = false;
+
+  betMatches.forEach((item, index) => {
+    const isStarted = now > item.time;
+    if (!isStarted) hasPlayable = true;
+
     const row = document.createElement('div');
     row.className = 'bet-row';
+    
+    // Formattazione data partita
+    const matchDate = new Date(item.time);
+    const dateStr = matchDate.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
     row.innerHTML = `
-      <span>${index + 1}. ${match}</span>
-      <input type="text" class="bet-input" placeholder="Es: 1" maxlength="5" data-match="${index}">
+      <div style="flex: 1; display: flex; flex-direction: column;">
+        <span style="font-weight: 600; font-size: 14px; color: var(--text);">${index + 1}. ${item.match}</span>
+        <span style="font-size: 11px; color: var(--text-muted);">${dateStr} ${isStarted ? '<span style="color:#ff3b30">(Iniziata)</span>' : ''}</span>
+      </div>
+      <input type="text" class="bet-input" placeholder="Es: 1" maxlength="5" data-match="${index}" ${isStarted ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
     `;
     container.appendChild(row);
   });
@@ -1793,19 +1807,30 @@ function renderBetting() {
   if (submitBtn) {
     submitBtn.onclick = () => {
       const inputs = container.querySelectorAll('.bet-input');
-      let allFilled = true;
-      inputs.forEach(input => {
-        if (!input.value.trim()) allFilled = false;
+      let allPlayableFilled = true;
+      let atLeastOne = false;
+
+      inputs.forEach((input, index) => {
+        const isStarted = now > betMatches[index].time;
+        if (!isStarted) {
+          atLeastOne = true;
+          if (!input.value.trim()) allPlayableFilled = false;
+        }
       });
 
-      if (!allFilled) {
-        toast("Compila tutti i 7 pronostici prima di confermare!");
+      if (!atLeastOne) {
+        toast("Tutte le partite sono già iniziate!");
+        return;
+      }
+
+      if (!allPlayableFilled) {
+        toast("Compila i pronostici per tutte le partite ancora disponibili!");
         return;
       }
 
       toast("Scommessa confermata! In bocca al lupo 🍀");
       setTimeout(() => {
-        alert("Pronostici salvati! Se indovinerai tutti i risultati, riceverai un buono sconto (valido 30 giorni) su articoli da 1€ a 35€ direttamente via email/notifica.");
+        alert("Pronostici salvati! Se indovinerai tutti i risultati giocati, riceverai un buono sconto (valido 30 giorni) su articoli da 1€ a 35€ direttamente via email/notifica.");
         go('profile');
       }, 1000);
     };
