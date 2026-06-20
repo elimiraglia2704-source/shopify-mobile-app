@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import React from "react";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import Header from "@/components/Header";
@@ -6,14 +7,18 @@ import GlobalOverlays from "@/components/GlobalOverlays";
 
 export const metadata: Metadata = {
   title: "Elisee Shop",
-  description: "Il tuo store ufficiale",
+  description: "Il tuo store ufficiale Elisee — Abbigliamento premium.",
   manifest: "/manifest.json",
-  themeColor: "#0f0f0f",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Elisee",
   },
+};
+
+// themeColor va ora esportato come `viewport` (Next.js 16+)
+export const viewport: Viewport = {
+  themeColor: "#0f0f0f",
 };
 
 export default function RootLayout({

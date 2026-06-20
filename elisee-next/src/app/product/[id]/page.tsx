@@ -1,46 +1,41 @@
+'use server';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { ArrowLeft, Share2, Heart, ShoppingBag } from 'lucide-react';
 import { queryStorefront } from '@/lib/shopify';
 
-// Function to fetch a specific product by ID
-async function getProductById(id: string) {
-  // If id doesn't start with gid://, format it correctly
+// ─── Tipi ────────────────────────────────────────────────────────────────────
+interface ProductVariant {
+  id: string;
+  title: string;
+  availableForSale: boolean;
+  price: { amount: string; currencyCode: string };
+}
+
+interface ShopifyProduct {
+  id: string;
+  title: string;
+  descriptionHtml: string;
+  vendor: string;
+  priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
+  images: { edges: { node: { url: string; altText: string | null } }[] };
+  variants: { edges: { node: ProductVariant }[] };
+}
+
+// ─── Fetch Prodotto ───────────────────────────────────────────────────────────
+async function getProductById(id: string): Promise<ShopifyProduct | null> {
   const formattedId = id.startsWith('gid://') ? id : `gid://shopify/Product/${id}`;
-  
+
   const query = `
     query getProduct($id: ID!) {
       product(id: $id) {
-        id
-        title
-        descriptionHtml
-        vendor
-        priceRange {
-          minVariantPrice {
-            amount
-            currencyCode
-          }
-        }
-        images(first: 5) {
-          edges {
-            node {
-              url
-              altText
-            }
-          }
-        }
+        id title descriptionHtml vendor
+        priceRange { minVariantPrice { amount currencyCode } }
+        images(first: 5) { edges { node { url altText } } }
         variants(first: 20) {
-          edges {
-            node {
-              id
-              title
-              availableForSale
-              price {
-                amount
-                currencyCode
-              }
-            }
-          }
+          edges { node { id title availableForSale price { amount currencyCode } } }
         }
       }
     }
@@ -48,84 +43,101 @@ async function getProductById(id: string) {
 
   try {
     const data = await queryStorefront(query, { id: formattedId });
-    return data.product;
+    return data.product ?? null;
   } catch (error) {
-    console.error("Failed to fetch product:", error);
+    console.error('Failed to fetch product:', error);
     return null;
   }
 }
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  // In Next.js 15 params is async, but we can treat it directly or await it based on Next.js 15 strict mode.
-  // We decode the URI component in case it was url-encoded.
-  const decodedId = decodeURIComponent(params.id);
-  const product = await getProductById(decodedId);
+// ─── Componente Dettagli (asincrono, wrappato in Suspense) ────────────────────
+async function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const decodedId = decodeURIComponent(id);
+  const product   = await getProductById(decodedId);
 
   if (!product) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <h2 className="text-white text-xl">Prodotto non trovato</h2>
-        <Link href="/explore" className="btn-primary mt-4">Torna al catalogo</Link>
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '60vh' }}>
+        <h2 style={{ color: 'white', fontSize: '20px', marginBottom: '16px' }}>
+          Prodotto non trovato
+        </h2>
+        <Link href="/explore" className="btn-primary">
+          Torna al catalogo
+        </Link>
       </div>
     );
   }
 
   const imageUrl = product.images?.edges[0]?.node?.url;
-  const price = parseFloat(product.priceRange?.minVariantPrice?.amount || '0').toFixed(2);
+  const price    = parseFloat(product.priceRange?.minVariantPrice?.amount || '0').toFixed(2);
 
   return (
-    <div className="bg-[#0f0f0f] min-h-screen pb-24">
-      {/* Header Modal/Page */}
-      <div className="sticky top-0 z-50 flex items-center justify-between p-4 bg-gradient-to-b from-[#0a0a0a]/90 to-transparent">
-        <Link href="/explore" className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/10 shadow-lg">
-          <ArrowLeft size={20} />
-        </Link>
-        <div className="flex gap-3">
-          <button className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/10 shadow-lg">
-            <Share2 size={18} />
-          </button>
-          <button className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/10 shadow-lg">
-            <Heart size={18} />
-          </button>
-        </div>
-      </div>
-
-      {/* Main Image Slider Area */}
-      <div className="relative w-full aspect-square -mt-16 z-0 bg-[#1a1a1a]">
+    <>
+      {/* Immagine principale */}
+      <div className="relative w-full aspect-square -mt-16 z-0" style={{ background: '#1a1a1a' }}>
         {imageUrl ? (
-          <Image 
-            src={imageUrl} 
-            alt={product.title} 
-            fill 
+          <Image
+            src={imageUrl}
+            alt={product.title}
+            fill
             sizes="100vw"
             priority
-            style={{ objectFit: 'cover' }} 
+            style={{ objectFit: 'cover' }}
           />
         ) : (
-          <div className="w-full h-full bg-gray-800" />
+          <div style={{ width: '100%', height: '100%', background: '#333' }} />
         )}
       </div>
 
-      {/* Product Details Area */}
-      <div className="p-4 bg-[#0f0f0f] -mt-6 relative z-10 rounded-t-3xl border-t border-white/10">
-        <div className="flex justify-between items-start mb-2 mt-2">
-          <h1 className="text-2xl font-bold text-white leading-tight pr-4">{product.title}</h1>
-          <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#ffd700] whitespace-nowrap">
+      {/* Dettagli prodotto */}
+      <div
+        className="p-4 -mt-6 relative z-10 rounded-t-3xl"
+        style={{ background: '#0f0f0f', borderTop: '1px solid rgba(255,255,255,0.1)' }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', marginTop: '8px' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'white', lineHeight: 1.3, paddingRight: '16px' }}>
+            {product.title}
+          </h1>
+          <div
+            style={{
+              fontSize: '22px',
+              fontWeight: 900,
+              background: 'linear-gradient(to right, #d4af37, #ffd700)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              whiteSpace: 'nowrap',
+            }}
+          >
             € {price}
           </div>
         </div>
-        
-        <p className="text-sm font-medium text-gray-400 mb-6 uppercase tracking-wider">{product.vendor}</p>
 
-        {/* Variants Selector */}
+        <p style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '2px' }}>
+          {product.vendor}
+        </p>
+
+        {/* Selezione variante */}
         {product.variants.edges.length > 1 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-bold text-white mb-3">Seleziona Modello</h3>
-            <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
-              {product.variants.edges.map((v: any, index: number) => (
-                <button 
-                  key={v.node.id} 
-                  className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition border ${index === 0 ? 'bg-white text-black border-white' : 'bg-[#1a1a1a] text-gray-300 border-white/20 hover:border-white/50'}`}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '13px', fontWeight: 700, color: 'white', marginBottom: '12px' }}>
+              Seleziona Modello
+            </h3>
+            <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', paddingBottom: '8px' }}>
+              {product.variants.edges.map((v, index) => (
+                <button
+                  key={v.node.id}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    border: index === 0 ? '1px solid white' : '1px solid rgba(255,255,255,0.2)',
+                    background: index === 0 ? 'white' : '#1a1a1a',
+                    color: index === 0 ? 'black' : '#d1d5db',
+                    cursor: 'pointer',
+                  }}
                 >
                   {v.node.title}
                 </button>
@@ -134,21 +146,154 @@ export default async function ProductPage({ params }: { params: { id: string } }
           </div>
         )}
 
-        <div className="mb-8">
-          <h3 className="text-sm font-bold text-white mb-2">Descrizione</h3>
-          <div 
-            className="text-gray-400 text-[14px] leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: product.descriptionHtml || 'Nessuna descrizione disponibile.' }}
+        {/* Descrizione */}
+        <div style={{ marginBottom: '120px' }}>
+          <h3 style={{ fontSize: '13px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
+            Descrizione
+          </h3>
+          <div
+            style={{ color: '#9ca3af', fontSize: '14px', lineHeight: 1.6 }}
+            dangerouslySetInnerHTML={{
+              __html: product.descriptionHtml || 'Nessuna descrizione disponibile.',
+            }}
           />
         </div>
+      </div>
+    </>
+  );
+}
 
-        {/* Add to Cart Button Sticky at Bottom */}
-        <div className="fixed bottom-16 left-0 right-0 p-4 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent z-40">
-          <button className="w-full h-14 bg-white text-black font-bold text-lg rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-transform">
-            <ShoppingBag size={22} />
-            Aggiungi al Carrello
+// ─── Skeleton di caricamento ──────────────────────────────────────────────────
+function ProductSkeleton() {
+  return (
+    <>
+      <div style={{ width: '100%', aspectRatio: '1', background: '#1a1a1a' }} />
+      <div style={{ padding: '16px', background: '#0f0f0f', marginTop: '-24px', borderRadius: '24px 24px 0 0' }}>
+        <div style={{ height: '24px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '12px', width: '70%' }} />
+        <div style={{ height: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '24px', width: '30%' }} />
+        <div style={{ height: '14px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', marginBottom: '8px', width: '100%' }} />
+        <div style={{ height: '14px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', width: '80%' }} />
+      </div>
+    </>
+  );
+}
+
+// ─── Pagina Prodotto (Page Component) ────────────────────────────────────────
+// In Next.js 16, params è una Promise: va passata direttamente ai componenti
+// che la risolvono internamente, garantendo streaming e navigazioni istantanee.
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <div style={{ background: '#0f0f0f', minHeight: '100vh', paddingBottom: '96px' }}>
+      {/* Header fisso */}
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px',
+          background: 'linear-gradient(to bottom, rgba(10,10,10,0.9) 0%, transparent 100%)',
+        }}
+      >
+        <Link
+          href="/explore"
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            background: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <ArrowLeft size={20} />
+        </Link>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.1)',
+              cursor: 'pointer',
+            }}
+          >
+            <Share2 size={18} />
+          </button>
+          <button
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.1)',
+              cursor: 'pointer',
+            }}
+          >
+            <Heart size={18} />
           </button>
         </div>
+      </div>
+
+      {/* Contenuto prodotto con Suspense per streaming */}
+      <Suspense fallback={<ProductSkeleton />}>
+        <ProductDetails params={params} />
+      </Suspense>
+
+      {/* Pulsante "Aggiungi al carrello" fisso */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '64px',
+          left: 0,
+          right: 0,
+          padding: '16px',
+          background: 'linear-gradient(to top, #0a0a0a 50%, transparent 100%)',
+          zIndex: 40,
+        }}
+      >
+        <button
+          style={{
+            width: '100%',
+            height: '56px',
+            background: 'white',
+            color: 'black',
+            fontWeight: 700,
+            fontSize: '16px',
+            borderRadius: '16px',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            cursor: 'pointer',
+            boxShadow: '0 0 20px rgba(255,255,255,0.15)',
+          }}
+        >
+          <ShoppingBag size={22} />
+          Aggiungi al Carrello
+        </button>
       </div>
     </div>
   );
