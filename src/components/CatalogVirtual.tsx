@@ -172,11 +172,12 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
                 >
                   {rowProducts.map((p, index) => {
                     const isHot = index === 1; // Fake hot badge for search results
+                    const imgUrl = p.images?.edges?.[0]?.node?.url || p.images?.[0]?.url || '';
                     return (
                       <div key={p.id} className="prod-card" style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                         <div className="prod-img-wrap" style={{ position: 'relative', height: '180px', width: '100%' }}>
-                          {p.images?.edges[0]?.node?.url ? (
-                            <Image src={p.images.edges[0].node.url} alt={p.title} fill className="prod-img" style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 50vw, 250px" loading={virtualRow.index < 4 ? "eager" : "lazy"} />
+                          {imgUrl ? (
+                            <Image src={imgUrl} alt={p.title} fill className="prod-img" style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 50vw, 250px" loading={virtualRow.index < 4 ? "eager" : "lazy"} />
                           ) : (
                             <div className="w-full h-full bg-gray-800" />
                           )}

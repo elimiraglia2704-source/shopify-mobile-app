@@ -214,38 +214,47 @@ export default function CartPage() {
             </div>
           </div>
 
-              {upsell && (
-                <div style={{ marginTop: '24px', padding: '16px', borderRadius: '16px', border: upsell.icon === 'truck' ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: upsell.icon === 'truck' ? 'var(--gold)' : 'white', marginBottom: '16px', fontSize: '14px', fontWeight: 600 }}>
-                    {upsell.icon === 'truck' ? <Truck size={18} /> : <Sparkles size={18} />}
-                    <span dangerouslySetInnerHTML={{ __html: upsell.message }}></span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <Image src={upsell.product.images?.edges[0]?.node?.url || ''} alt="" width={60} height={60} style={{ borderRadius: '8px', objectFit: 'cover' }} />
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '14px', fontWeight: 600 }}>{upsell.product.title}</p>
-                      <p style={{ fontSize: '14px', color: 'var(--gold)' }}>€{parseFloat(upsell.product.variants?.edges[0]?.node?.price?.amount || '0').toFixed(2)}</p>
+              {upsell && (() => {
+                const upsellImg = upsell.product.images?.edges?.[0]?.node?.url || upsell.product.images?.[0]?.url || '';
+                const upsellPrice = parseFloat(upsell.product.variants?.edges?.[0]?.node?.price?.amount || upsell.product.variants?.[0]?.price?.amount || '0').toFixed(2);
+                const variant = upsell.product.variants?.edges?.[0]?.node || upsell.product.variants?.[0] || {};
+                
+                return (
+                  <div style={{ marginTop: '24px', padding: '16px', borderRadius: '16px', border: upsell.icon === 'truck' ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: upsell.icon === 'truck' ? 'var(--gold)' : 'white', marginBottom: '16px', fontSize: '14px', fontWeight: 600 }}>
+                      {upsell.icon === 'truck' ? <Truck size={18} /> : <Sparkles size={18} />}
+                      <span dangerouslySetInnerHTML={{ __html: upsell.message }}></span>
                     </div>
-                    <button 
-                      onClick={() => {
-                        const variant = upsell.product.variants?.edges[0]?.node;
-                        setCart([...cart, {
-                          variantId: variant.id,
-                          productId: upsell.product.id,
-                          title: upsell.product.title,
-                          variantTitle: variant.title,
-                          price: variant.price,
-                          img: upsell.product.images?.edges[0]?.node?.url,
-                          qty: 1
-                        }]);
-                      }}
-                      style={{ background: 'var(--gold)', color: 'black', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
-                    >
-                      <Plus size={16} />
-                    </button>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      {upsellImg ? (
+                        <Image src={upsellImg} alt="" width={60} height={60} style={{ borderRadius: '8px', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)' }} />
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '14px', fontWeight: 600 }}>{upsell.product.title}</p>
+                        <p style={{ fontSize: '14px', color: 'var(--gold)' }}>€{upsellPrice}</p>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setCart([...cart, {
+                            variantId: variant.id || '',
+                            productId: upsell.product.id || '',
+                            title: upsell.product.title || '',
+                            variantTitle: variant.title || 'Default Title',
+                            price: variant.price || { amount: '0' },
+                            img: upsellImg,
+                            qty: 1
+                          }]);
+                        }}
+                        style={{ background: 'var(--gold)', color: 'black', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           )}
         </div>

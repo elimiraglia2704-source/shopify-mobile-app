@@ -17,11 +17,12 @@ async function HomeProducts() {
         <div className="products-grid">
           {showcaseProducts.map((p: any, index: number) => {
             const isHot = index === 2; // Add a hot badge to the 3rd item just like screenshot
+            const imgUrl = p.images?.edges?.[0]?.node?.url || p.images?.[0]?.url || '';
             return (
               <Link key={p.id} href={`/explore`} className="prod-card" style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div className="prod-img-wrap" style={{ position: 'relative', height: '180px', width: '100%' }}>
-                  {p.images?.edges[0]?.node?.url ? (
-                    <Image src={p.images.edges[0].node.url} alt={p.title} fill className="prod-img" style={{ objectFit: 'cover' }} />
+                  {imgUrl ? (
+                    <Image src={imgUrl} alt={p.title} fill className="prod-img" style={{ objectFit: 'cover' }} />
                   ) : (
                     <div className="w-full h-full bg-gray-800" />
                   )}

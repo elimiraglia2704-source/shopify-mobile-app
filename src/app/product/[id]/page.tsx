@@ -69,7 +69,9 @@ async function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
     );
   }
 
-  const imageUrl = product.images?.edges[0]?.node?.url;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const images   = product.images as any;
+  const imageUrl = images?.edges?.[0]?.node?.url || images?.[0]?.url || '';
   const price    = parseFloat(product.priceRange?.minVariantPrice?.amount || '0').toFixed(2);
 
   return (
