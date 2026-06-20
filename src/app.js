@@ -200,7 +200,7 @@ function makeCard(product, showAIBadge = false) {
 
   card.innerHTML = `
     <div class="prod-img-wrap">
-      <img src="${img}" alt="${product.title}" class="prod-img" loading="lazy" decoding="async">
+      <img src="${img}" alt="${product.title}" class="prod-img skeleton-img" loading="lazy" decoding="async" onload="this.classList.remove('skeleton-img')">
       ${badge}
       <button class="prod-wish ${wished ? 'wished' : ''}" data-id="${product.id}" aria-label="Preferiti">
         <i data-lucide="heart" style="fill:${wished ? 'var(--purple-light)' : 'none'};stroke:${wished ? 'var(--purple-light)' : '#fff'}"></i>

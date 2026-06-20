@@ -22,10 +22,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-      <body>
+      <body className="app-shell">
+        <div className="app-bg-pattern"></div>
         <Header />
-        <main className="main-content pb-24">
-          {children}
+        <main className="app-main">
+          <div className="screen active pb-24">
+            {children}
+          </div>
         </main>
         <Navigation />
       </body>

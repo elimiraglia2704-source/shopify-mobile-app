@@ -19,9 +19,9 @@ export default async function Home() {
       </div>
 
       <div className="hero mt-4">
-        <div className="hero-bg">
+        <div className="relative w-full h-full">
           <Image 
-            src="/hero-bg.webp" 
+            src="/cover.png" 
             alt="Hero Background" 
             fill 
             sizes="100vw"

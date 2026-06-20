@@ -34,7 +34,7 @@ export default function BettingPage() {
       {/* Header Visuale */}
       <div className="relative w-full h-[180px] rounded-3xl overflow-hidden mb-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10">
         <Image 
-          src="/hero-bg.webp" 
+          src="/pattern.jpg" 
           alt="Club 1x2" 
           fill 
           style={{ objectFit: 'cover', opacity: 0.5 }} 

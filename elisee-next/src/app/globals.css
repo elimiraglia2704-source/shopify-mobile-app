@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ================================================================
    ELISEE MOBILE APP — DESIGN SYSTEM
    Principio 6: Minimalista per tutti, profondo per power user
