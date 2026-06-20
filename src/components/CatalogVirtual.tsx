@@ -9,6 +9,7 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
   const [products, setProducts] = useState(initialProducts);
   const [search, setSearch] = useState('');
   const parentRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const columns = 2;
   const rowCount = Math.ceil(products.length / columns);
@@ -19,6 +20,17 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
     estimateSize: () => 320,
     overscan: 5,
   });
+
+  // Previene l'apertura automatica della tastiera all'apertura del catalogo
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.blur();
+      const timer = setTimeout(() => {
+        inputRef.current?.blur();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -40,6 +52,7 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
         <div className="search-wrap" style={{ position: 'relative', marginBottom: '12px' }}>
           <Search className="search-ico" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', width: '18px', height: '18px' }} />
           <input
+            ref={inputRef}
             type="text"
             id="search-input"
             className="search-field"
