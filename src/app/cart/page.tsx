@@ -1,16 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, ShoppingCart, CreditCard, Sparkles, Truck, Plus, Minus } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, ShoppingCart, CreditCard, Sparkles, Truck, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MOCK_PRODUCTS } from '@/lib/mock-data';
 
+// Type definitions for cart items and upsell
+interface CartItem {
+  variantId: string;
+  productId: string;
+  title: string;
+  variantTitle: string;
+  price: { amount: string };
+  img: string;
+  qty: number;
+}
+interface UpsellInfo {
+  product: any;
+  message: string;
+  icon: string;
+}
+
 export default function CartPage() {
   const router = useRouter();
-  const [cart, setCart] = useState<any[]>([]);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [upsell, setUpsell] = useState<any>(null);
+  const [upsell, setUpsell] = useState<UpsellInfo | null>(null);
 
   useEffect(() => {
     try {
@@ -19,13 +36,14 @@ export default function CartPage() {
         const parsed = JSON.parse(saved);
         setCart(parsed);
       }
-    } catch (e) {}
+    } catch {}
   }, []);
 
+  // Recalculate total whenever cart changes
   useEffect(() => {
     let t = 0;
     cart.forEach(item => {
-      t += parseFloat(item.price?.amount || 0) * item.qty;
+      t += parseFloat(item.price?.amount || '0') * item.qty;
     });
     setTotal(t);
     localStorage.setItem('elisee:cart', JSON.stringify(cart));
@@ -110,9 +128,75 @@ export default function CartPage() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Cart items carousel with auto-scroll, snapping, and navigation arrows */}
+          <div style={{ position: 'relative', padding: '0 40px' }}>
+            {/* Left arrow */}
+            <button onClick={() => carouselRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.5)',
+                borderRadius: '50%',
+                border: 'none',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 1,
+              }}
+            >
+              <ChevronLeft size={20} color="white" />
+            </button>
+            {/* Right arrow */}
+            <button onClick={() => carouselRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.5)',
+                borderRadius: '50%',
+                border: 'none',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 1,
+              }}
+            >
+              <ChevronRight size={20} color="white" />
+            </button>
+            {/* Carousel container */}
+            <div ref={carouselRef}
+              style={{
+                display: 'flex',
+                overflowX: 'auto',
+                scrollSnapType: 'x mandatory',
+                gap: '16px',
+                padding: '8px 0',
+                scrollbarWidth: 'none',
+              }}
+            >
               {cart.map(item => (
-                <div key={item.variantId} style={{ display: 'flex', gap: '16px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <img src={item.img} alt={item.title} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                <div key={item.variantId}
+                  style={{
+                    flex: '0 0 auto',
+                    scrollSnapAlign: 'center',
+                    display: 'flex',
+                    gap: '16px',
+                    background: 'rgba(255,255,255,0.02)',
+                    padding: '16px',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.05)'
+                  }}
+                >
+                  <Image src={item.img} alt={item.title} width={80} height={80} style={{ borderRadius: '8px' }} />
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <h4 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '4px' }}>{item.title}</h4>
                     <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>{item.variantTitle !== 'Default Title' ? item.variantTitle : ''}</p>
@@ -127,6 +211,8 @@ export default function CartPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
 
               {upsell && (
                 <div style={{ marginTop: '24px', padding: '16px', borderRadius: '16px', border: upsell.icon === 'truck' ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)' }}>
@@ -135,7 +221,7 @@ export default function CartPage() {
                     <span dangerouslySetInnerHTML={{ __html: upsell.message }}></span>
                   </div>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <img src={upsell.product.images?.edges[0]?.node?.url || ''} alt="" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+                    <Image src={upsell.product.images?.edges[0]?.node?.url || ''} alt="" width={60} height={60} style={{ borderRadius: '8px', objectFit: 'cover' }} />
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: '14px', fontWeight: 600 }}>{upsell.product.title}</p>
                       <p style={{ fontSize: '14px', color: 'var(--gold)' }}>€{parseFloat(upsell.product.variants?.edges[0]?.node?.price?.amount || '0').toFixed(2)}</p>

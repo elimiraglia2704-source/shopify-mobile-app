@@ -1,44 +1,24 @@
-import type { Metadata, Viewport } from "next";
-import React from "react";
-import "./globals.css";
-import Navigation from "@/components/Navigation";
-import Header from "@/components/Header";
-import GlobalOverlays from "@/components/GlobalOverlays";
+import "@shopify/polaris/build/esm/styles.css";
+import { Inter } from "next/font/google";
+import { cookies } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "Elisee Shop",
-  description: "Il tuo store ufficiale Elisee — Abbigliamento premium.",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Elisee",
-  },
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+
+export const metadata = {
+  title: "Shopify Mobile App",
+  description: "Embedded Shopify app with premium UI",
 };
 
-// themeColor va ora esportato come `viewport` (Next.js 16+)
-export const viewport: Viewport = {
-  themeColor: "#0f0f0f",
-};
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const shop = cookieStore.get("shopify_shop")?.value;
+  const host = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+  // AppProvider removed to avoid context errors in Next 16
   return (
-    <html lang="it">
-      <body className="app-shell">
-        <div className="app-bg-pattern"></div>
-        <Header />
-        <main className="app-main">
-          <div className="screen active pb-24">
-            {children}
-          </div>
-        </main>
-        <GlobalOverlays />
-        <Navigation />
-      </body>
+    <html lang="en" className={`${inter.variable} font-sans`}>
+      <head />
+      <body>{children}</body>
     </html>
   );
 }
