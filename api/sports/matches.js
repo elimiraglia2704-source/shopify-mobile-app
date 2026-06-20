@@ -49,14 +49,31 @@ export default async function handler(req, res) {
   // viene fatta la richiesta.
   
   const mockMatches = [
+    // --- Partite passate (verranno filtrate via in automatico) ---
+    { id: 'm1', home: 'USA', away: 'Australia', info: 'Mondiale 2026', startTime: '2026-06-19T19:00:00Z' },
+    { id: 'm2', home: 'Scozia', away: 'Marocco', info: 'Mondiale 2026', startTime: '2026-06-19T22:00:00Z' },
+    { id: 'm3', home: 'Brasile', away: 'Haiti', info: 'Mondiale 2026', startTime: '2026-06-20T00:30:00Z' },
+    { id: 'm4', home: 'Turchia', away: 'Paraguay', info: 'Mondiale 2026', startTime: '2026-06-20T03:00:00Z' },
+    // --- Partite attuali / future ---
     { id: 'm5', home: 'Olanda', away: 'Svezia', info: 'Mondiale 2026', startTime: '2026-06-20T17:00:00Z' },
     { id: 'm6', home: 'Germania', away: "Costa d'Avorio", info: 'Mondiale 2026', startTime: '2026-06-20T20:00:00Z' },
     { id: 'm7', home: 'Ecuador', away: 'Curacao', info: 'Mondiale 2026', startTime: '2026-06-21T00:00:00Z' },
     { id: 'm8', home: 'Spagna', away: 'Galles', info: 'Mondiale 2026', startTime: '2026-06-21T18:00:00Z' },
     { id: 'm9', home: 'Francia', away: 'Irlanda', info: 'Mondiale 2026', startTime: '2026-06-21T21:00:00Z' },
     { id: 'm10', home: 'Italia', away: 'Croazia', info: 'Mondiale 2026', startTime: '2026-06-22T17:00:00Z' },
-    { id: 'm11', home: 'Argentina', away: 'Messico', info: 'Mondiale 2026', startTime: '2026-06-22T20:00:00Z' }
+    { id: 'm11', home: 'Argentina', away: 'Messico', info: 'Mondiale 2026', startTime: '2026-06-22T20:00:00Z' },
+    { id: 'm12', home: 'Portogallo', away: 'Camerun', info: 'Mondiale 2026', startTime: '2026-06-23T17:00:00Z' },
+    { id: 'm13', home: 'Inghilterra', away: 'Giappone', info: 'Mondiale 2026', startTime: '2026-06-23T20:00:00Z' },
+    { id: 'm14', home: 'Belgio', away: 'Senegal', info: 'Mondiale 2026', startTime: '2026-06-24T17:00:00Z' },
+    { id: 'm15', home: 'Danimarca', away: 'Nigeria', info: 'Mondiale 2026', startTime: '2026-06-24T20:00:00Z' },
+    { id: 'm16', home: 'Svizzera', away: 'Corea del Sud', info: 'Mondiale 2026', startTime: '2026-06-25T17:00:00Z' },
+    { id: 'm17', home: 'Uruguay', away: 'Polonia', info: 'Mondiale 2026', startTime: '2026-06-25T20:00:00Z' }
   ];
 
-  res.status(200).json({ matches: mockMatches });
+  // Filtra solo le partite NON ancora iniziate rispetto all'ora attuale
+  const now = new Date();
+  const upcomingMatches = mockMatches.filter(m => new Date(m.startTime) > now);
+
+  // Ritorna esattamente le prossime 7 partite
+  res.status(200).json({ matches: upcomingMatches.slice(0, 7) });
 }
