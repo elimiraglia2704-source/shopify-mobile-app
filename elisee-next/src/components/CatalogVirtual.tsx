@@ -9,6 +9,7 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
   const [products, setProducts] = useState(initialProducts);
   const [search, setSearch] = useState('');
   const parentRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const columns = 2;
   const rowCount = Math.ceil(products.length / columns);
@@ -19,6 +20,17 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
     estimateSize: () => 320,
     overscan: 5,
   });
+
+  // Previene l'apertura automatica della tastiera all'apertura del catalogo
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.blur();
+      const timer = setTimeout(() => {
+        inputRef.current?.blur();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -40,6 +52,7 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
         <div className="search-wrap" style={{ position: 'relative', marginBottom: '12px' }}>
           <Search className="search-ico" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', width: '18px', height: '18px' }} />
           <input
+            ref={inputRef}
             type="text"
             id="search-input"
             className="search-field"
@@ -76,13 +89,13 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
           <div className="h-scrollable-cards" style={{ gap: '16px', marginBottom: '32px', display: 'flex', overflowX: 'auto', paddingBottom: '8px' }}>
             <div style={{ minWidth: '240px', borderRadius: '16px', overflow: 'hidden' }}>
               <div style={{ position: 'relative', width: '100%', height: '320px', borderRadius: '16px', overflow: 'hidden' }}>
-                <Image src="/ciabatte-esive.jpg" alt="Ciabatte Estive" fill style={{ objectFit: 'cover' }} />
+                <Image src="/ciabatte-esive.jpg" alt="Ciabatte Estive" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 80vw, 300px" />
               </div>
               <p style={{ marginTop: '12px', fontSize: '16px', fontWeight: 600 }}>Ciabatte Estive</p>
             </div>
             <div style={{ minWidth: '240px', borderRadius: '16px', overflow: 'hidden' }}>
               <div style={{ position: 'relative', width: '100%', height: '320px', borderRadius: '16px', overflow: 'hidden' }}>
-                <Image src="/camicie.jpg" alt="Camicie" fill style={{ objectFit: 'cover' }} />
+                <Image src="/camicie.jpg" alt="Camicie" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 80vw, 300px" />
               </div>
               <p style={{ marginTop: '12px', fontSize: '16px', fontWeight: 600 }}>Camicie</p>
             </div>
@@ -91,19 +104,19 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '32px' }}>
             <div onClick={() => setSearch('Cappelli Pescatore')} style={{ position: 'relative', height: '160px', overflow: 'hidden', cursor: 'pointer', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(30,30,30,1) 0%, rgba(0,0,0,0) 100%)', zIndex: 1 }} />
-              <Image src="/cappelli-pescatore.webp" alt="Cappelli Pescatore" fill style={{ objectFit: 'cover', objectPosition: 'right center' }} />
+              <Image src="/cappelli-pescatore.webp" alt="Cappelli Pescatore" fill style={{ objectFit: 'cover', objectPosition: 'right center' }} sizes="(max-width: 768px) 100vw, 600px" />
               <h4 style={{ position: 'absolute', left: '24px', top: '50%', transform: 'translateY(-50%)', zIndex: 2, fontSize: '20px', fontWeight: 600, color: '#fff' }}>Cappelli Pescatore</h4>
             </div>
             
             <div onClick={() => setSearch('Cappelli Bimbi')} style={{ position: 'relative', height: '160px', overflow: 'hidden', cursor: 'pointer' }}>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(30,30,30,1) 0%, rgba(0,0,0,0) 100%)', zIndex: 1 }} />
-              <Image src="/cappelli-bimbi.png" alt="Cappelli Bimbi" fill style={{ objectFit: 'cover', objectPosition: 'right center' }} />
+              <Image src="/cappelli-bimbi.png" alt="Cappelli Bimbi" fill style={{ objectFit: 'cover', objectPosition: 'right center' }} sizes="(max-width: 768px) 100vw, 600px" />
               <h4 style={{ position: 'absolute', left: '24px', top: '50%', transform: 'translateY(-50%)', zIndex: 2, fontSize: '20px', fontWeight: 600, color: '#fff' }}>Cappelli Bimbi</h4>
             </div>
             
             <div onClick={() => setSearch('Tazze da tè')} style={{ position: 'relative', height: '160px', overflow: 'hidden', cursor: 'pointer', borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px' }}>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(30,30,30,1) 0%, rgba(0,0,0,0) 100%)', zIndex: 1 }} />
-              <Image src="/tazze-da-tè.webp" alt="Tazze da tè" fill style={{ objectFit: 'cover', objectPosition: 'right center' }} />
+              <Image src="/tazze-da-tè.webp" alt="Tazze da tè" fill style={{ objectFit: 'cover', objectPosition: 'right center' }} sizes="(max-width: 768px) 100vw, 600px" />
               <h4 style={{ position: 'absolute', left: '24px', top: '50%', transform: 'translateY(-50%)', zIndex: 2, fontSize: '20px', fontWeight: 600, color: '#fff' }}>Tazze da tè</h4>
             </div>
           </div>
@@ -163,7 +176,7 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
                       <div key={p.id} className="prod-card" style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                         <div className="prod-img-wrap" style={{ position: 'relative', height: '180px', width: '100%' }}>
                           {p.images?.edges[0]?.node?.url ? (
-                            <Image src={p.images.edges[0].node.url} alt={p.title} fill className="prod-img" style={{ objectFit: 'cover' }} />
+                            <Image src={p.images.edges[0].node.url} alt={p.title} fill className="prod-img" style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 50vw, 250px" loading={virtualRow.index < 4 ? "eager" : "lazy"} />
                           ) : (
                             <div className="w-full h-full bg-gray-800" />
                           )}
