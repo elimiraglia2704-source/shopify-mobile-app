@@ -1051,7 +1051,7 @@ async function renderBettingSection() {
 
   let BET_MATCHES = [];
   try {
-    const response = await fetch('/api/sports/matches');
+    const response = await fetch('/api/sports/matches?_t=' + Date.now());
     const data = await response.json();
     BET_MATCHES = data.matches || [];
   } catch(e) {

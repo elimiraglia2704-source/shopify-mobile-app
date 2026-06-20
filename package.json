@@ -17,6 +17,7 @@
     "@langchain/google-genai": "^2.2.0",
     "@langchain/langgraph": "^1.4.4",
     "@vercel/kv": "^3.0.0",
+    "cheerio": "^1.2.0",
     "dotenv": "^17.4.2",
     "jimp": "^1.6.1",
     "playwright": "^1.61.0"
