@@ -87,7 +87,7 @@ function go(screen, pushToHistory = true) {
 
   $$('.nav-tab[data-screen]').forEach(b => b.classList.toggle('active', b.dataset.screen === screen));
 
-  if (screen === 'catalog') { /* autofocus rimosso intenzionalmente */ }
+  if (screen === 'catalog') $('search-input')?.focus();
   if (screen === 'home')    renderFlywheel();
   $('app-main').scrollTop = 0;
 
