@@ -670,6 +670,19 @@
             <i data-lucide="chevron-right" style="color: rgba(255,255,255,0.2); width: 20px;"></i>
           </div>
 
+          <div id="btn-profile-bet-history" style="padding: 18px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.3); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="history" style="width: 18px; height: 18px; color: #4caf50;"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 2px; color: var(--text);">Storico Scommesse</h3>
+                <p style="font-size: 12px; color: var(--text-sub);">Le tue schedine passate</p>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" style="color: rgba(255,255,255,0.2); width: 20px;"></i>
+          </div>
+
           <div id="btn-profile-dir-clienti" style="padding: 18px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
             <div style="display: flex; align-items: center; gap: 16px;">
               <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(155,89,208,0.15); border: 1px solid rgba(155,89,208,0.3); display: flex; align-items: center; justify-content: center;">
@@ -760,6 +773,26 @@
           Conferma Scommessa
         </button>
 
+      </div>
+    </section>
+
+    <!-- ── STORICO SCOMMESSE ── -->
+    <section class="screen" id="screen-bet-history">
+      <div class="simple-header">
+        <button class="back-row" onclick="go('profile')"><i data-lucide="arrow-left"></i><span>Profilo</span></button>
+        <h2 class="simple-title">Storico Scommesse</h2>
+      </div>
+      <div class="profile-body" style="padding: 16px; padding-bottom: 120px;">
+        <div style="text-align: center; margin-bottom: 24px; margin-top: 10px;">
+          <i data-lucide="history" style="width: 48px; height: 48px; color: #4caf50; margin-bottom: 12px;"></i>
+          <h3 style="font-size: 20px; font-family: var(--font-d); margin-bottom: 8px;">Le tue giocate</h3>
+          <p style="color: var(--text-muted); font-size: 14px; line-height: 1.4; max-width: 300px; margin: 0 auto;">
+            Qui trovi tutte le schedine che hai piazzato. Ricorda: in caso di vincita riceverai un buono sconto da consumare entro 30 giorni!
+          </p>
+        </div>
+        <div id="bet-history-list" style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Generato via JS -->
+        </div>
       </div>
     </section>
 
@@ -1246,6 +1279,22 @@
   </div>
 
   <script type="module" src="/src/app.js?v=36"></script>
+  
+  <!-- ════════ BET CONFIRMATION MODAL ════════ -->
+  <div class="visual-search-overlay hidden" id="bet-modal-overlay" style="z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+    <div style="background: var(--bg2); padding: 32px; border-radius: 24px; text-align: center; max-width: 320px; width: 90%; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(76,175,80,0.2); border: 2px solid #4caf50; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+        <i data-lucide="check" style="color: #4caf50; width: 32px; height: 32px;"></i>
+      </div>
+      <h3 style="font-family: var(--font-d); font-size: 22px; font-weight: 600; margin-bottom: 12px;">Scommessa Confermata!</h3>
+      <p style="color: var(--text-sub); font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
+        La tua schedina è stata salvata con successo. Ricorda: in caso di vincita riceverai un <strong>buono sconto</strong> da consumare entro 30 giorni sugli articoli compresi tra 1€ e 35€.
+      </p>
+      <button id="btn-close-bet-modal" class="btn-primary" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; background: #4caf50; color: #fff; border: none; font-size: 16px;">
+        OK, ho capito
+      </button>
+    </div>
+  </div>
   <!-- ════════ VISUAL SEARCH OVERLAY (Laser Scan) ════════ -->
   <div class="visual-search-overlay hidden" id="vs-overlay">
     <video id="vs-camera-feed" autoplay="" playsinline="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;"></video>

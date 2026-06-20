@@ -1804,48 +1804,107 @@ function renderBetting() {
         predictions.push(input.value.trim().toUpperCase());
       });
 
-      // Preparazione chiamata al server (la rendiamo asincrona chiudendo la funzione in un async IIFE o facendola async)
-      (async () => {
-        const btnText = submitBtn.innerText;
-        submitBtn.innerText = "Invio in corso...";
-        submitBtn.disabled = true;
-
-        try {
-          const profile = getProfile();
-          const payload = {
-            email: profile.email || 'guest@eliseemilano.com',
-            name: profile.name || 'Ospite',
-            predictions: predictions
-          };
-
-          const res = await fetch('/api/betting/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          const data = await res.json();
-
-          if (!res.ok) {
-            toast(data.error || "Errore nell'invio della scommessa.");
-          } else {
-            toast("Scommessa confermata! In bocca al lupo 🍀");
-            setTimeout(() => {
-              alert("Pronostici salvati sul server! Se indovinerai tutti i risultati, riceverai un buono sconto automatico via email entro 48h.");
-              go('profile');
-            }, 1000);
-          }
-        } catch (err) {
-          console.error(err);
-          toast("Errore di connessione al server.");
-        } finally {
-          submitBtn.innerText = btnText;
-          submitBtn.disabled = false;
-        }
-      })();
+      // Salvataggio nel localStorage invece di API esterna
+      let history = [];
+      try {
+        history = JSON.parse(localStorage.getItem('elisee_bet_history')) || [];
+      } catch(e){}
+      
+      const newBet = {
+        id: 'bet_' + Date.now(),
+        date: new Date().toISOString(),
+        status: 'in_corso', // in_corso, vinta, persa
+        predictions: predictions,
+        matches: betMatches.map(m => m.match)
+      };
+      
+      history.unshift(newBet);
+      localStorage.setItem('elisee_bet_history', JSON.stringify(history));
+      
+      // Salva i valori attuali come ultima schedina (manteniamo questa feature)
+      localStorage.setItem('elisee_bet_values', JSON.stringify(predictions));
+      
+      // Svuota gli input
+      inputs.forEach(input => input.value = '');
+      
+      // Mostra il modal di conferma
+      const modal = $('bet-modal-overlay');
+      if (modal) modal.classList.remove('hidden');
     };
   }
 }
+
+// ═══════════════════════════════════════════════════════════
+// BET HISTORY
+// ═══════════════════════════════════════════════════════════
+function renderBetHistory() {
+  const container = $('bet-history-list');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  let history = [];
+  try {
+    history = JSON.parse(localStorage.getItem('elisee_bet_history')) || [];
+  } catch(e){}
+  
+  if (history.length === 0) {
+    container.innerHTML = `<p style="text-align: center; color: var(--text-muted); font-size: 14px; padding: 20px;">Nessuna scommessa giocata finora.</p>`;
+    return;
+  }
+  
+  history.forEach(bet => {
+    const d = new Date(bet.date);
+    const dateStr = d.toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    
+    let statusColor = '#d4af37';
+    let statusText = 'In corso';
+    let statusIcon = 'clock';
+    
+    if (bet.status === 'vinta') { statusColor = '#4caf50'; statusText = 'Vinta'; statusIcon = 'check-circle'; }
+    if (bet.status === 'persa') { statusColor = '#ff3b30'; statusText = 'Persa'; statusIcon = 'x-circle'; }
+    
+    let detailsHtml = '';
+    bet.matches.forEach((match, i) => {
+      detailsHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+        <span style="color:var(--text-sub); flex: 1; padding-right: 8px;">${match}</span>
+        <span style="font-weight:bold; color:var(--text); width: 20px; text-align: right;">${bet.predictions[i]}</span>
+      </div>`;
+    });
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background: rgba(20,10,30,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);';
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+        <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">${dateStr}</span>
+        <span style="display:flex; align-items:center; gap:6px; font-size: 12px; font-weight:700; color: ${statusColor}; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 12px;">
+          <i data-lucide="${statusIcon}" style="width:14px; height:14px;"></i> ${statusText}
+        </span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:2px; margin-bottom: 12px;">
+        ${detailsHtml}
+      </div>
+      <div style="font-size: 10px; color: var(--text-muted); text-align: center; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px; margin-top: 4px;">
+        Possibile Vincita: <strong style="color: var(--text);">Buono sconto (1€-35€)</strong> entro 30gg
+      </div>
+    `;
+    container.appendChild(card);
+  });
+  
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// Initialize listeners for new bet buttons
+setTimeout(() => {
+  $('btn-profile-bet-history')?.addEventListener('click', () => {
+    renderBetHistory();
+    go('bet-history');
+  });
+
+  $('btn-close-bet-modal')?.addEventListener('click', () => {
+    $('bet-modal-overlay').classList.add('hidden');
+    go('home');
+  });
+}, 500);
 
 // Inizializza il live polling quando l'app parte
 fetchLiveMatches();
