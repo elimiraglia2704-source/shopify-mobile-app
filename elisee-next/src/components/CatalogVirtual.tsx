@@ -46,24 +46,24 @@ export default function CatalogVirtual({ initialProducts }: { initialProducts: a
             placeholder="Es. scarpe da running leggere..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ width: '100%', padding: '14px 16px 14px 44px', background: '#0a0010', border: '1px solid rgba(155,89,208,0.3)', borderRadius: '12px', color: 'var(--text)', fontSize: '14px' }}
+            style={{ width: '100%', background: '#0a0010', border: '1px solid rgba(155,89,208,0.3)', borderRadius: '12px', color: 'white', fontSize: '14px', height: '50px', padding: '0 16px 0 44px' }}
           />
         </div>
         
         <div style={{ marginBottom: '12px' }}>
-          <select className="sort-select" style={{ width: '100%', padding: '14px 16px', background: '#0a0010', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: 'var(--text)', fontSize: '14px', appearance: 'none' }}>
+          <select className="sort-select" style={{ width: '100%', background: '#0a0010', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: 'white', fontSize: '14px', appearance: 'none', height: '50px', padding: '0 16px' }}>
             <option>Tutte le Collezioni</option>
           </select>
         </div>
 
         <div className="catalog-bar" style={{ display: 'flex', gap: '8px' }}>
-          <select className="sort-select" style={{ flex: 1, padding: '14px 16px', background: '#0a0010', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: 'var(--text)', fontSize: '14px', appearance: 'none' }}>
+          <select className="sort-select" style={{ flex: 1, background: '#0a0010', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', color: 'white', fontSize: '14px', appearance: 'none', height: '40px', padding: '0 16px' }}>
             <option value="">Ordina</option>
             <option value="price-asc">Prezzo ↑</option>
             <option value="price-desc">Prezzo ↓</option>
             <option value="az">A → Z</option>
           </select>
-          <button className="wish-filter-btn" style={{ background: '#0a0010', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '0 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
+          <button className="wish-filter-btn" style={{ background: '#0a0010', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '0 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.8)', height: '40px' }}>
             <Heart size={14} /> Preferiti
           </button>
         </div>
