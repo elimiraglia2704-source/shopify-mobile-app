@@ -1,9 +1,16 @@
+'use client';
+
 import Link from 'next/link';
 import { Search, Bell, ShoppingBag } from 'lucide-react';
-
-import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
+  const pathname = usePathname();
+
+  if (pathname === '/cart') {
+    return null;
+  }
+
   return (
     <header className="header">
       <button className="icon-btn">

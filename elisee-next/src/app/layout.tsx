@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import Header from "@/components/Header";
+import GlobalOverlays from "@/components/GlobalOverlays";
 
 export const metadata: Metadata = {
   title: "Elisee Shop",
@@ -30,6 +31,7 @@ export default function RootLayout({
             {children}
           </div>
         </main>
+        <GlobalOverlays />
         <Navigation />
       </body>
     </html>

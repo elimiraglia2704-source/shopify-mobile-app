@@ -9,11 +9,15 @@ export default function Navigation() {
 
   const navItems = [
     { icon: Home, label: 'Home', href: '/' },
-    { icon: Tag, label: 'Esplora', href: '/explore' },
+    { icon: Tag, label: 'Shop', href: '/explore' },
     { icon: Video, label: 'Studio', href: '/studio' },
     { icon: ShoppingCart, label: 'Carrello', href: '/cart' },
     { icon: User, label: 'Profilo', href: '/profile' }
   ];
+
+  if (pathname === '/cart') {
+    return null;
+  }
 
   return (
     <nav className="bottom-nav">
