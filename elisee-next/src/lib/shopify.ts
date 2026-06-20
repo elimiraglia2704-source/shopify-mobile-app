@@ -40,53 +40,16 @@ export async function getProducts(limit = 250, afterCursor: string | null = null
           node {
             id
             title
-            description
-            vendor
-            availableForSale
             priceRange {
               minVariantPrice {
                 amount
                 currencyCode
               }
             }
-            images(first: 5) {
+            images(first: 1) {
               edges {
                 node {
                   url
-                  altText
-                }
-              }
-            }
-            options {
-              name
-              values
-            }
-            collections(first: 5) {
-              edges {
-                node {
-                  id
-                  title
-                }
-              }
-            }
-            variants(first: 20) {
-              edges {
-                node {
-                  id
-                  title
-                  price {
-                    amount
-                    currencyCode
-                  }
-                  compareAtPrice {
-                    amount
-                    currencyCode
-                  }
-                  availableForSale
-                  selectedOptions {
-                    name
-                    value
-                  }
                 }
               }
             }
