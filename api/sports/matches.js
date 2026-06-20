@@ -49,25 +49,22 @@ export default async function handler(req, res) {
   // viene fatta la richiesta.
   
   const mockMatches = [
-    // --- Partite passate (verranno filtrate via in automatico) ---
+    // --- Partite passate (verranno filtrate via in automatico se l'ora corrente è maggiore) ---
     { id: 'm1', home: 'USA', away: 'Australia', info: 'Mondiale 2026', startTime: '2026-06-19T19:00:00Z' },
     { id: 'm2', home: 'Scozia', away: 'Marocco', info: 'Mondiale 2026', startTime: '2026-06-19T22:00:00Z' },
     { id: 'm3', home: 'Brasile', away: 'Haiti', info: 'Mondiale 2026', startTime: '2026-06-20T00:30:00Z' },
     { id: 'm4', home: 'Turchia', away: 'Paraguay', info: 'Mondiale 2026', startTime: '2026-06-20T03:00:00Z' },
-    // --- Partite attuali / future ---
-    { id: 'm5', home: 'Olanda', away: 'Svezia', info: 'Mondiale 2026', startTime: '2026-06-20T17:00:00Z' },
-    { id: 'm6', home: 'Germania', away: "Costa d'Avorio", info: 'Mondiale 2026', startTime: '2026-06-20T20:00:00Z' },
-    { id: 'm7', home: 'Ecuador', away: 'Curacao', info: 'Mondiale 2026', startTime: '2026-06-21T00:00:00Z' },
-    { id: 'm8', home: 'Spagna', away: 'Galles', info: 'Mondiale 2026', startTime: '2026-06-21T18:00:00Z' },
-    { id: 'm9', home: 'Francia', away: 'Irlanda', info: 'Mondiale 2026', startTime: '2026-06-21T21:00:00Z' },
-    { id: 'm10', home: 'Italia', away: 'Croazia', info: 'Mondiale 2026', startTime: '2026-06-22T17:00:00Z' },
-    { id: 'm11', home: 'Argentina', away: 'Messico', info: 'Mondiale 2026', startTime: '2026-06-22T20:00:00Z' },
-    { id: 'm12', home: 'Portogallo', away: 'Camerun', info: 'Mondiale 2026', startTime: '2026-06-23T17:00:00Z' },
-    { id: 'm13', home: 'Inghilterra', away: 'Giappone', info: 'Mondiale 2026', startTime: '2026-06-23T20:00:00Z' },
-    { id: 'm14', home: 'Belgio', away: 'Senegal', info: 'Mondiale 2026', startTime: '2026-06-24T17:00:00Z' },
-    { id: 'm15', home: 'Danimarca', away: 'Nigeria', info: 'Mondiale 2026', startTime: '2026-06-24T20:00:00Z' },
-    { id: 'm16', home: 'Svizzera', away: 'Corea del Sud', info: 'Mondiale 2026', startTime: '2026-06-25T17:00:00Z' },
-    { id: 'm17', home: 'Uruguay', away: 'Polonia', info: 'Mondiale 2026', startTime: '2026-06-25T20:00:00Z' }
+    // --- Partite reali da screenshot ---
+    { id: 'm5', home: 'Olanda', away: 'Svezia', info: 'Mondiale 2026', startTime: '2026-06-20T17:00:00Z' }, // 19:00 CEST
+    { id: 'm6', home: 'Germania', away: "Costa d'Avorio", info: 'Mondiale 2026', startTime: '2026-06-20T20:00:00Z' }, // 22:00 CEST
+    { id: 'm7', home: 'Ecuador', away: 'Curacao', info: 'Mondiale 2026', startTime: '2026-06-21T00:00:00Z' }, // 02:00 CEST
+    { id: 'm8', home: 'Tunisia', away: 'Giappone', info: 'Mondiale 2026', startTime: '2026-06-21T04:00:00Z' }, // 06:00 CEST
+    { id: 'm9', home: 'Spagna', away: 'Arabia Saudita', info: 'Mondiale 2026', startTime: '2026-06-21T16:00:00Z' }, // 18:00 CEST
+    { id: 'm10', home: 'Belgio', away: 'Iran', info: 'Mondiale 2026', startTime: '2026-06-21T19:00:00Z' }, // 21:00 CEST
+    { id: 'm11', home: 'Uruguay', away: 'Capo Verde', info: 'Mondiale 2026', startTime: '2026-06-21T22:00:00Z' }, // 00:00 CEST (22.06)
+    { id: 'm12', home: 'Nuova Zelanda', away: 'Egitto', info: 'Mondiale 2026', startTime: '2026-06-22T01:00:00Z' }, // 03:00 CEST
+    { id: 'm13', home: 'Argentina', away: 'Austria', info: 'Mondiale 2026', startTime: '2026-06-22T17:00:00Z' }, // 19:00 CEST
+    { id: 'm14', home: 'Francia', away: 'Iraq', info: 'Mondiale 2026', startTime: '2026-06-22T21:00:00Z' } // 23:00 CEST
   ];
 
   // Filtra solo le partite NON ancora iniziate rispetto all'ora attuale
