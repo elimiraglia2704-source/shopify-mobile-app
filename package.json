@@ -1,25 +1,35 @@
 {
-  "name": "elisee-mobile-app",
+  "name": "elisee-next",
+  "version": "0.1.0",
   "private": true,
-  "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "deploy": "npx vercel --prod"
-  },
-  "devDependencies": {
-    "vite": "^5.2.0"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
   },
   "dependencies": {
     "@langchain/core": "^1.2.0",
     "@langchain/google-genai": "^2.2.0",
     "@langchain/langgraph": "^1.4.4",
-    "@vercel/kv": "^3.0.0",
-    "cheerio": "^1.2.0",
-    "dotenv": "^17.4.2",
-    "jimp": "^1.6.1",
-    "playwright": "^1.61.0"
+    "@tanstack/react-query": "^5.101.0",
+    "@tanstack/react-virtual": "^3.14.3",
+    "lucide-react": "^1.21.0",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.5.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.1",
+    "typescript": "^5"
   }
 }

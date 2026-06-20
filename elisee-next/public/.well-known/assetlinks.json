@@ -1,8 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "shop.elisee.app",
-        "sha256_cert_fingerprints": ["23:B5:44:E4:1E:4B:69:9C:97:8F:BA:3D:1C:64:71:DE:62:CA:A3:37:8D:9A:39:41:F3:84:33:CA:87:4B:8E:71"]
-      }
-    }]
