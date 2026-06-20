@@ -1,3 +1,5 @@
+import { MOCK_PRODUCTS, MOCK_COLLECTIONS } from './mock-data';
+
 export const DOMAIN = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || 'elisee.shop';
 export const STOREFRONT_TOKEN = process.env.NEXT_PUBLIC_SHOPIFY_TOKEN || 'fd3d51862812c1f0c530dc83ac3f6685';
 export const API_VERSION = '2024-04';
@@ -69,7 +71,10 @@ export async function getProducts(limit = 250, afterCursor: string | null = null
     };
   } catch (error) {
     console.error("Shopify getProducts failed:", error);
-    return { products: [{ id: 'gid://shopify/Product/1', title: 'Mock Product', priceRange: { minVariantPrice: { amount: '10.00', currencyCode: 'USD' } }, images: [{ url: 'https://via.placeholder.com/150' }] }], pageInfo: { hasNextPage: false, endCursor: null } };
+    return { 
+      products: MOCK_PRODUCTS, 
+      pageInfo: { hasNextPage: false, endCursor: null } 
+    };
   }
 }
 
@@ -93,7 +98,7 @@ export async function getCollections() {
     return data.collections.edges.map((edge: any) => edge.node);
   } catch (error) {
     console.error("Shopify getCollections failed:", error);
-    return [];
+    return MOCK_COLLECTIONS;
   }
 }
 

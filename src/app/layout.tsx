@@ -1,6 +1,7 @@
 import "@shopify/polaris/build/esm/styles.css";
+import "./globals.css";
 import { Inter } from "next/font/google";
-import { cookies } from "next/headers";
+import BottomNav from "./components/BottomNav";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -10,15 +11,18 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const shop = cookieStore.get("shopify_shop")?.value;
-  const host = process.env.NEXT_PUBLIC_APP_URL ?? "";
-
-  // AppProvider removed to avoid context errors in Next 16
   return (
     <html lang="en" className={`${inter.variable} font-sans`}>
       <head />
-      <body>{children}</body>
+      <body style={{ background: '#050008', margin: 0, padding: 0 }}>
+        <div className="app-shell" style={{ maxWidth: '400px', margin: '0 auto', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+          <div className="app-bg-pattern" />
+          <main style={{ flex: 1, height: '100%', overflowY: 'auto', paddingBottom: '96px', position: 'relative', zIndex: 1 }}>
+            {children}
+          </main>
+          <BottomNav />
+        </div>
+      </body>
     </html>
   );
 }
