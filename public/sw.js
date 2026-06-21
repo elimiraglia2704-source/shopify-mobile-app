@@ -1,12 +1,12 @@
-// ─── Elisee PWA Service Worker v7 ────────────────────────────────────────────
+// ─── Elisee PWA Service Worker v8 ────────────────────────────────────────────
 // Strategia: Network-first per navigazione, cache-first per assets statici.
 // La versione viene aggiornata ad ogni deploy (cambio CACHE_NAME).
-const CACHE_NAME = 'elisee-pwa-v7';
+const CACHE_NAME = 'elisee-pwa-v8';
 
 // Asset critici da precachare
 const PRECACHE_URLS = [
   '/',
-  '/explore',
+  '/shop',
   '/manifest.json',
 ];
 

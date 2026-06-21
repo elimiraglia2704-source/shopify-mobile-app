@@ -70,6 +70,7 @@ body::before {
   position:relative;
   width:100%;
   height:100vh;
+  height:100dvh;
   margin:0 auto;
   background:var(--bg);
   overflow:hidden;
@@ -564,7 +565,7 @@ body::before {
 
 /* ── BOTTOM NAV (Elisee Ultra-Premium) ───────────────────────── */
 .bottom-nav {
-  position:absolute; bottom:24px; left:50%; transform:translateX(-50%);
+  position:absolute; bottom:calc(24px + env(safe-area-inset-bottom, 0px)); left:50%; transform:translateX(-50%);
   width:calc(100% - 32px); max-width: 380px;
   height: 68px;
   background: rgba(8, 5, 12, 0.7); /* Deep dark purple-black */
@@ -1613,4 +1614,47 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
 }
 .faq-content p {
   margin-bottom: 8px;
+}
+
+/* ════════ PAGE TRANSITIONS / SLIDE-IN ════════ */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0.95;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-right {
+  animation: slideInFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* ── FLY HEART ANIMATION ── */
+.flying-heart {
+  animation: flyHeart 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes flyHeart {
+  0% {
+    top: 50%;
+    right: 50%;
+    transform: translate(50%, -50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    top: 40%;
+    right: 40%;
+    transform: translate(50%, -50%) scale(1.6);
+    opacity: 0.8;
+  }
+  100% {
+    top: 8px;
+    right: 8px;
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
 }

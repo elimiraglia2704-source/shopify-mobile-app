@@ -62,7 +62,7 @@ async function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
         <h2 style={{ color: 'white', fontSize: '20px', marginBottom: '16px' }}>
           Prodotto non trovato
         </h2>
-        <Link href="/explore" className="btn-primary">
+        <Link href="/shop" className="btn-primary">
           Torna al catalogo
         </Link>
       </div>
@@ -95,7 +95,7 @@ async function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
       {/* Dettagli prodotto */}
       <div
         className="p-4 -mt-6 relative z-10 rounded-t-3xl"
-        style={{ background: '#0f0f0f', borderTop: '1px solid rgba(255,255,255,0.1)' }}
+        style={{ background: 'rgba(10, 0, 16, 0.65)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.1)' }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', marginTop: '8px' }}>
           <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'white', lineHeight: 1.3, paddingRight: '16px' }}>
@@ -103,11 +103,9 @@ async function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
           </h1>
           <div
             style={{
-              fontSize: '22px',
-              fontWeight: 900,
-              background: 'linear-gradient(to right, #d4af37, #ffd700)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              fontSize: '20px',
+              fontWeight: 600,
+              color: 'var(--gold)',
               whiteSpace: 'nowrap',
             }}
           >
@@ -189,7 +187,7 @@ export default async function ProductPage({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <div style={{ background: '#0f0f0f', minHeight: '100vh', paddingBottom: '96px' }}>
+    <div style={{ background: 'transparent', minHeight: '100vh', paddingBottom: '96px' }}>
       {/* Header fisso */}
       <div
         style={{
@@ -200,11 +198,11 @@ export default async function ProductPage({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '16px',
-          background: 'linear-gradient(to bottom, rgba(10,10,10,0.9) 0%, transparent 100%)',
+          background: 'linear-gradient(to bottom, rgba(10,0,16,0.85) 0%, transparent 100%)',
         }}
       >
         <Link
-          href="/explore"
+          href="/shop"
           style={{
             width: '40px',
             height: '40px',
@@ -271,7 +269,7 @@ export default async function ProductPage({
           left: 0,
           right: 0,
           padding: '16px',
-          background: 'linear-gradient(to top, #0a0a0a 50%, transparent 100%)',
+          background: 'linear-gradient(to top, rgba(10, 0, 16, 0.95) 50%, transparent 100%)',
           zIndex: 40,
         }}
       >

@@ -29,69 +29,153 @@ export default function BettingPage() {
     }, 1000);
   };
 
+  const glassStyle: React.CSSProperties = {
+    background: 'rgba(20, 10, 30, 0.45)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+    borderRadius: '24px',
+    padding: '20px 16px',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+    marginBottom: '20px'
+  };
+
   return (
-    <div className="bg-[#0f0f0f] min-h-screen pt-[60px] pb-24 px-4">
+    <div style={{ background: 'transparent', minHeight: '100vh', padding: '24px 16px 100px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      
       {/* Header Visuale */}
-      <div className="relative w-full h-[180px] rounded-3xl overflow-hidden mb-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10">
+      <div style={{ 
+        position: 'relative', 
+        width: '100%', 
+        height: '180px', 
+        borderRadius: '24px', 
+        overflow: 'hidden', 
+        marginBottom: '24px', 
+        boxShadow: '0 10px 30px rgba(0,0,0,0.5)', 
+        border: '1px solid rgba(255, 255, 255, 0.1)' 
+      }}>
         <Image 
           src="/pattern.jpg" 
-          alt="Club 1x2" 
+          alt="L'Angolo Ludopatico" 
           fill 
-          style={{ objectFit: 'cover', opacity: 0.5 }} 
+          style={{ objectFit: 'cover', opacity: 0.25 }} 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+        <div style={{ 
+          position: 'absolute', 
+          inset: 0, 
+          background: 'linear-gradient(to top, rgba(10, 0, 16, 0.95), transparent)' 
+        }} />
+        <div style={{ 
+          position: 'absolute', 
+          bottom: '16px', 
+          left: '16px', 
+          right: '16px', 
+          display: 'flex', 
+          alignItems: 'end', 
+          justifyContent: 'space-between' 
+        }}>
           <div>
-            <h1 className="text-3xl font-black text-white italic tracking-tight">CLUB 1X2</h1>
-            <p className="text-gray-300 font-medium text-sm">Pronostica e Vinci Sconti</p>
+            <h1 style={{ fontFamily: 'var(--font-d)', fontSize: '28px', fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>
+              L&apos;Angolo Ludopatico
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 500 }}>
+              Pronostica e Vinci Punti Stile
+            </p>
           </div>
-          <Trophy className="text-[#ffd700]" size={40} />
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            background: 'rgba(212, 175, 55, 0.1)',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Trophy className="text-[#ffd700]" size={22} />
+          </div>
         </div>
       </div>
 
       {/* Selezione Partita */}
-      <div className="mb-6">
-        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Seleziona Evento</h3>
-        <select 
-          className="w-full bg-[#1a1a1a] border border-white/20 text-white rounded-xl p-4 font-medium appearance-none focus:outline-none focus:border-[#d4af37]"
-          value={selectedMatch}
-          onChange={(e) => {
-            setSelectedMatch(Number(e.target.value));
-            setPrediction(null);
-          }}
-        >
-          {MOCK_MATCHES.map(m => (
-            <option key={m.id} value={m.id}>{m.home} vs {m.away}</option>
-          ))}
-        </select>
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', paddingLeft: '4px' }}>
+          Seleziona Evento
+        </h3>
+        <div style={{ position: 'relative' }}>
+          <select 
+            style={{ 
+              width: '100%', 
+              background: 'rgba(20, 10, 30, 0.65)', 
+              border: '1px solid rgba(255, 255, 255, 0.1)', 
+              color: 'white', 
+              borderRadius: '16px', 
+              padding: '16px', 
+              fontSize: '15px',
+              fontWeight: 500, 
+              appearance: 'none', 
+              outline: 'none' 
+            }}
+            value={selectedMatch}
+            onChange={(e) => {
+              setSelectedMatch(Number(e.target.value));
+              setPrediction(null);
+            }}
+          >
+            {MOCK_MATCHES.map(m => (
+              <option key={m.id} value={m.id} style={{ background: '#0f0020' }}>{m.home} vs {m.away}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Quote */}
-      <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-white/10 shadow-lg mb-6">
-        <h3 className="text-center font-bold text-lg mb-4">{currentMatch?.home} <span className="text-gray-500 font-normal">vs</span> {currentMatch?.away}</h3>
-        <div className="flex gap-2">
-          {(['1', 'X', '2'] as const).map(sign => (
-            <button
-              key={sign}
-              onClick={() => setPrediction(sign)}
-              className={`flex-1 flex flex-col items-center justify-center py-3 rounded-xl border transition-all ${prediction === sign ? 'bg-gradient-to-b from-[#d4af37] to-[#b8860b] border-[#ffd700] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-[#0f0f0f] border-white/10 text-white hover:bg-[#222]'}`}
-            >
-              <span className={`text-xl font-black mb-1 ${prediction === sign ? 'text-black' : 'text-[#d4af37]'}`}>{sign}</span>
-              <span className={`text-sm font-medium ${prediction === sign ? 'text-black/80' : 'text-gray-400'}`}>{currentMatch?.odds[sign].toFixed(2)}</span>
-            </button>
-          ))}
+      <div style={glassStyle}>
+        <h3 style={{ textAlign: 'center', fontWeight: 700, fontSize: '16px', marginBottom: '16px', fontFamily: 'var(--font-d)' }}>
+          {currentMatch?.home} <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>vs</span> {currentMatch?.away}
+        </h3>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {(['1', 'X', '2'] as const).map(sign => {
+            const isSelected = prediction === sign;
+            return (
+              <button
+                key={sign}
+                onClick={() => setPrediction(sign)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '12px 8px',
+                  borderRadius: '16px',
+                  border: isSelected ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.06)',
+                  background: isSelected ? 'linear-gradient(135deg, var(--gold), #b8860b)' : 'rgba(255,255,255,0.02)',
+                  color: isSelected ? '#000' : '#fff',
+                  cursor: 'pointer',
+                  boxShadow: isSelected ? '0 0 15px rgba(212,175,55,0.25)' : 'none',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <span style={{ fontSize: '18px', fontWeight: 900, marginBottom: '2px', color: isSelected ? '#000' : 'var(--gold)' }}>{sign}</span>
+                <span style={{ fontSize: '13px', fontWeight: 500, color: isSelected ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.5)' }}>{currentMatch?.odds[sign].toFixed(2)}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Puntata */}
-      <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-white/10 shadow-lg mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Puntata Elisee Points</h3>
-          <div className="flex items-center gap-1 text-[#d4af37] font-bold">
-            <Coins size={16} /> 150 <span className="text-gray-500 font-normal text-xs ml-1">Disponibili</span>
+      <div style={glassStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3 style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Puntata Elisee Points
+          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--gold)', fontWeight: 700, fontSize: '14px' }}>
+            <Coins size={14} /> 150 <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 400, fontSize: '11px', marginLeft: '2px' }}>Disponibili</span>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <input 
             type="range" 
             min="10" 
@@ -99,27 +183,57 @@ export default function BettingPage() {
             step="10" 
             value={points} 
             onChange={(e) => setPoints(Number(e.target.value))}
-            className="flex-1 accent-[#d4af37]"
+            style={{ flex: 1, accentColor: 'var(--gold)', cursor: 'pointer' }}
           />
-          <div className="w-16 text-center bg-[#0f0f0f] py-2 rounded-lg font-bold text-white border border-white/10">{points}</div>
+          <div style={{ 
+            width: '60px', 
+            textAlign: 'center', 
+            background: 'rgba(0,0,0,0.4)', 
+            padding: '8px 0', 
+            borderRadius: '12px', 
+            fontWeight: 700, 
+            color: 'white', 
+            border: '1px solid rgba(255,255,255,0.06)' 
+          }}>{points}</div>
         </div>
       </div>
 
       {/* Recap & Button */}
-      <div className="bg-gradient-to-r from-[#1a1a1a] to-[#0a0a0a] rounded-2xl p-5 border border-white/10 shadow-lg mb-6 flex justify-between items-center">
+      <div style={{
+        ...glassStyle,
+        background: 'linear-gradient(135deg, rgba(20, 10, 30, 0.6), rgba(10, 0, 16, 0.8))',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '20px'
+      }}>
         <div>
-          <p className="text-gray-400 text-sm font-medium">Vincita Potenziale</p>
-          <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#ffd700] flex items-center gap-2">
-            <Coins size={20} className="text-[#d4af37]" />
-            {prediction ? potentialWin : 0} <span className="text-sm font-normal text-gray-500">EP</span>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 500, marginBottom: '4px' }}>Vincita Potenziale</p>
+          <div style={{ fontSize: '22px', fontWeight: 900, color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Coins size={18} />
+            {prediction ? potentialWin : 0} <span style={{ fontSize: '12px', fontWeight: 400, color: 'rgba(255,255,255,0.4)', marginLeft: '2px' }}>EP</span>
           </div>
         </div>
         <button 
           disabled={!prediction || loading}
           onClick={handleBet}
-          className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${prediction && !loading ? 'bg-white text-black hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+          style={{ 
+            padding: '12px 24px', 
+            borderRadius: '16px', 
+            fontWeight: 700, 
+            fontSize: '14px',
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            border: 'none',
+            background: prediction && !loading ? 'white' : 'rgba(255,255,255,0.08)', 
+            color: prediction && !loading ? 'black' : 'rgba(255,255,255,0.3)', 
+            cursor: prediction && !loading ? 'pointer' : 'not-allowed',
+            boxShadow: prediction && !loading ? '0 4px 15px rgba(255,255,255,0.15)' : 'none',
+            transition: 'all 0.2s'
+          }}
         >
-          {loading ? 'Piazzando...' : 'GIOCA'} <ArrowRight size={18} />
+          {loading ? 'Piazzando...' : 'GIOCA'} <ArrowRight size={16} />
         </button>
       </div>
     </div>

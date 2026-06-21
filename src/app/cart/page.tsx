@@ -96,14 +96,14 @@ export default function CartPage() {
   };
 
   return (
-    <div style={{ display: 'flex', width: '100%', height: '100vh', background: 'var(--bg2)', color: 'var(--text)' }}>
+    <div className="slide-in-right" style={{ display: 'flex', width: '100%', height: '100vh', background: 'transparent', color: 'var(--text)' }}>
       <div 
         className="backdrop" 
         style={{ flex: 1, background: 'rgba(0,0,0,0.6)', cursor: 'pointer', display: 'none' }}
         onClick={() => router.back()}
       ></div>
 
-      <div style={{ width: '100%', maxWidth: '400px', margin: '0 auto', background: 'var(--bg2)', display: 'flex', flexDirection: 'column', height: '100%', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
+      <div style={{ width: '100%', background: 'rgba(10, 0, 16, 0.65)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', height: '100%', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <h3 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', fontWeight: 600 }}>Carrello</h3>
           <button 
@@ -120,7 +120,7 @@ export default function CartPage() {
               <ShoppingCart size={48} color="rgba(255,255,255,0.2)" style={{ marginBottom: '24px' }} />
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', marginBottom: '32px' }}>Il carrello è vuoto</p>
               <button 
-                onClick={() => router.push('/explore')}
+                onClick={() => router.push('/shop')}
                 style={{ background: 'var(--gold)', color: '#111', padding: '14px 24px', borderRadius: '12px', fontWeight: 700, fontSize: '15px', border: 'none', boxShadow: '0 4px 20px rgba(212,175,55,0.3)', cursor: 'pointer' }}
               >
                 Inizia lo Shopping

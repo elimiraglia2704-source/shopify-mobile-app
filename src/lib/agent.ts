@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { SystemMessage, ToolMessage, BaseMessage } from '@langchain/core/messages';
 import { MOCK_PRODUCTS } from './mock-data';
 
-const SHOP_DOMAIN = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || 'eliseebrand.myshopify.com';
+const SHOP_DOMAIN = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || 'elisee.shop';
 const SHOP_TOKEN  = process.env.NEXT_PUBLIC_SHOPIFY_TOKEN  || 'fd3d51862812c1f0c530dc83ac3f6685';
 
 // ─── LLM ──────────────────────────────────────────────────────────────────────

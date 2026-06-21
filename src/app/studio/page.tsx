@@ -56,7 +56,7 @@ export default function StudioPage() {
           
           {/* Card 1 */}
           <div style={{ position: 'relative', minWidth: '280px', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Image src="/cover.png" alt="Antica Panetteria" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+            <Image src="/banner-antica-panetteria-del-corso.png" alt="Antica Panetteria" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', marginBottom: '4px', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 Collaborazione Elisee Graphic con Antica Panetteria del Corso
@@ -67,7 +67,7 @@ export default function StudioPage() {
 
           {/* Card 2 */}
           <div style={{ position: 'relative', minWidth: '280px', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Image src="/ciabatte-esive.jpg" alt="PranziAmo" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+            <Image src="/banner-pranziamo.png" alt="PranziAmo" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', marginBottom: '4px', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 Collaborazione Elisee Graphic con PranziAmo
