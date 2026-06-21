@@ -109,6 +109,7 @@ export default function ProfilePage() {
     notifications: true,
     sounds: true,
     faceId: false,
+    theme: 'classic',
     language: 'Italiano',
     currency: 'EUR'
   });
@@ -403,10 +404,19 @@ export default function ProfilePage() {
     localStorage.setItem('elisee:settings', JSON.stringify(updated));
   };
 
-  const handleSelectSetting = (key: 'language' | 'currency', value: string) => {
+  const handleSelectSetting = (key: 'language' | 'currency' | 'theme', value: string) => {
     const updated = { ...settings, [key]: value };
     setSettings(updated);
     localStorage.setItem('elisee:settings', JSON.stringify(updated));
+
+    if (key === 'theme') {
+      localStorage.setItem('elisee:theme', value);
+      if (value === 'damask') {
+        document.body.classList.add('theme-damask');
+      } else {
+        document.body.classList.remove('theme-damask');
+      }
+    }
   };
 
   const handleLogout = () => {
@@ -1066,6 +1076,18 @@ export default function ProfilePage() {
 
           {/* Selector options */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '14px', color: 'white', fontWeight: 600 }}>Tema Applicazione</span>
+              <select 
+                value={settings.theme || 'classic'} 
+                onChange={(e) => handleSelectSetting('theme', e.target.value)}
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '6px 12px', borderRadius: '10px', fontSize: '13px', outline: 'none' }}
+              >
+                <option value="classic" style={{ background: '#0a0010' }}>Classico (Viola)</option>
+                <option value="damask" style={{ background: '#0a0010' }}>Damascato (Oro/Rame)</option>
+              </select>
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '14px', color: 'white', fontWeight: 600 }}>Lingua Applicazione</span>
               <select 

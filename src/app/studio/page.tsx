@@ -8,7 +8,7 @@ export default function StudioPage() {
       {/* Header Studio */}
       <div style={{ marginTop: '10px' }}>
         <h1 style={{ fontFamily: 'var(--font-d)', fontSize: '28px', fontWeight: 700, marginBottom: '8px', lineHeight: '1.2' }}>
-          Studio <span style={{ color: 'var(--gold)' }}>Elisee Graphics</span>
+          Studio <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '1.5px', textTransform: 'uppercase', fontSize: '26px' }}>Elisee Graphics</span>
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
           Il tuo partner creativo. Foto, Video, Brand Identity.
@@ -40,13 +40,12 @@ export default function StudioPage() {
         }}>
           <Sparkles size={28} />
         </div>
-        <h2 style={{ fontFamily: 'var(--font-d)', fontSize: '22px', fontWeight: 600 }}>Agente Elisee</h2>
+        <h2 style={{ fontFamily: 'var(--font-d)', fontSize: '22px', fontWeight: 600 }}>
+          Agente <span style={{ fontFamily: 'var(--font-tech)', letterSpacing: '1px', textTransform: 'uppercase', fontSize: '20px' }}>Elisee</span>
+        </h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.5, marginBottom: '8px' }}>
           Chiedimi un preventivo per i tuoi progetti visivi. Genererò idee, moodboard e pacchetti su misura per te.
         </p>
-        <button className="btn-primary" style={{ width: '100%', background: '#9b59d0', color: '#fff', border: 'none', padding: '14px', fontSize: '14px', fontWeight: 600, borderRadius: '12px' }}>
-          Crea Progetto con AI
-        </button>
       </div>
 
       {/* Portfolio */}
@@ -58,8 +57,8 @@ export default function StudioPage() {
           <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
             <Image src="/banner-antica-panetteria-del-corso.png" alt="Antica Panetteria" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                Collaborazione Elisee Graphic con Antica Panetteria del Corso
+              <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
+                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Antica Panetteria del Corso
               </h4>
             </div>
           </div>
@@ -68,8 +67,8 @@ export default function StudioPage() {
           <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
             <Image src="/portfolio-pranziamo.jpg" alt="PranziAmo" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                Collaborazione Elisee Graphic con PranziAmo
+              <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
+                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con PranziAmo
               </h4>
             </div>
           </div>
@@ -78,8 +77,8 @@ export default function StudioPage() {
           <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
             <Image src="/portfolio-macelleria.jpg" alt="Macelleria" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                Collaborazione Elisee Graphic con Macelleria da Carmine
+              <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
+                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Macelleria da Carmine
               </h4>
             </div>
           </div>
@@ -88,8 +87,8 @@ export default function StudioPage() {
           <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
             <Image src="/shop-cat-sport.jpg" alt="Sport Shop" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                Collaborazione Elisee Graphic con Sport Shop
+              <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
+                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Sport Shop
               </h4>
             </div>
           </div>
@@ -98,8 +97,8 @@ export default function StudioPage() {
           <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
             <Image src="/shop-cat-scarpe.jpg" alt="Accessori Moda" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                Collaborazione Elisee Graphic con Accessori Moda
+              <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
+                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Accessori Moda
               </h4>
             </div>
           </div>
