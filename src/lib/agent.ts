@@ -229,15 +229,47 @@ const workflow = new StateGraph<AgentState>({ channels: GraphState })
 
 const memory = new MemorySaver();
 
+// ─── Smart fallback without API key ──────────────────────────────────────────
+function smartFallback(userMessage: string): string {
+  const msg = userMessage.toLowerCase();
+
+  if (msg.includes('outfit') || msg.includes('vestire') || msg.includes('indossare') || msg.includes('abbinare')) {
+    const occasion = msg.includes('sera') || msg.includes('sera') ? 'serata' : msg.includes('palestra') || msg.includes('workout') || msg.includes('sport') ? 'palestra' : msg.includes('ufficio') || msg.includes('lavoro') ? 'ufficio' : 'casual';
+    const outfits: Record<string, string> = {
+      serata: '<b>Outfit da Sera Elisee:</b><br><ul><li>Camicia oversize nera con dettagli oro</li><li>Pantaloni slim fit antracite</li><li>Sneakers chunky bianche</li><li>Accessori dorati</li></ul>Stile: <i>Dark Luxury</i> 🖤✨',
+      palestra: '<b>Outfit Workout Elisee:</b><br><ul><li>T-shirt tecnica traspirante</li><li>Shorts o leggings performance</li><li>Sneakers running con supporto</li></ul>Stile: <i>Sport Premium</i> 💪',
+      ufficio: '<b>Outfit Business Elisee:</b><br><ul><li>Polo o camicia elegante</li><li>Chino slim fit grigio/navy</li><li>Sneakers clean in pelle bianca</li></ul>Stile: <i>Smart Casual</i> 👔',
+      casual: '<b>Outfit Casual Elisee:</b><br><ul><li>T-shirt grafica limited edition</li><li>Jeans straight fit</li><li>Sneakers lifestyle colorate</li></ul>Stile: <i>Urban Street</i> 🔥',
+    };
+    return outfits[occasion] || outfits.casual;
+  }
+
+  if (msg.includes('scarpe') || msg.includes('sneakers') || msg.includes('calzature')) {
+    return '<b>Sneakers Elisee — Top Picks:</b><br><ul><li>🥇 Elisee Runner Pro — Running performance, €89</li><li>🥈 Elisee Street Classic — Urban lifestyle, €75</li><li>🥉 Elisee Court Low — Basket clean, €65</li></ul>Vuoi filtrare per colore o taglia? Scrivimi!';
+  }
+
+  if (msg.includes('preventivo') || msg.includes('video') || msg.includes('spot') || msg.includes('reel') || msg.includes('brand') || msg.includes('grafica') || msg.includes('logo')) {
+    return '<b>Preventivi Elisee Graphics:</b><br><ul><li>📸 Servizio Foto — da <b>350€</b></li><li>🎬 Spot Pubblicitario — da <b>800€</b></li><li>📱 Reel/TikTok — da <b>400€</b></li><li>🎨 Brand Identity — da <b>1.200€</b></li></ul>Scrivi il tuo progetto e ti contatterò entro 24h!';
+  }
+
+  if (msg.includes('ciao') || msg.includes('salve') || msg.includes('buon')) {
+    return 'Ciao! Sono l\'Agente <b>Elisee</b>. 👋<br><br>Posso aiutarti a:<br><ul><li>👗 Creare outfit personalizzati</li><li>👟 Trovare scarpe e accessori</li><li>🎬 Richiedere preventivi grafici</li></ul>Come posso aiutarti oggi?';
+  }
+
+  if (msg.includes('grazie') || msg.includes('perfetto') || msg.includes('ok')) {
+    return 'Prego! 🙏 Sono sempre qui se hai bisogno. Per qualsiasi cosa — outfit, prodotti o preventivi — basta scrivermi!';
+  }
+
+  return `Ho capito la tua richiesta: <i>"${userMessage}"</i>.<br><br>Come Agente Elisee posso aiutarti con:<br><ul><li>👗 <b>Outfit personalizzati</b> — descrivimi l'occasione</li><li>👟 <b>Prodotti del catalogo</b> — cosa stai cercando?</li><li>🎬 <b>Preventivi creativi</b> — video, foto, brand identity</li></ul>Dimmi di più e creo qualcosa su misura per te! ✨`;
+}
+
 export const eliseeAgent = llm
   ? workflow.compile({ checkpointer: memory })
   : {
-      invoke: async () => ({
-        messages: [
-          {
-            content:
-              "L'Agente AI è offline: aggiungi GOOGLE_API_KEY al file .env.local e riavvia il server.",
-          },
-        ],
-      }),
+      invoke: async (input: { messages: Array<{ content: string }> }) => {
+        const messages = input?.messages || [];
+        const lastUserMsg = messages.length > 0 ? (messages[messages.length - 1]?.content || '') : '';
+        const response = smartFallback(String(lastUserMsg));
+        return { messages: [{ content: response }] };
+      },
     };

@@ -68,12 +68,12 @@ export default function BottomNav() {
 
       <Link href="/cart" className={getClassName('/cart')}>
         <ShoppingCart size={22} />
-        <span>Carrello</span>
+        <span>Cart</span>
       </Link>
 
       <Link href="/profile" className={getClassName('/profile')}>
         <User size={22} />
-        <span>Profilo</span>
+        <span>Profile</span>
       </Link>
     </nav>
   );
