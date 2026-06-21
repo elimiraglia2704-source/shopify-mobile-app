@@ -7,7 +7,7 @@ export default function StudioPage() {
       
       {/* Header Studio */}
       <div style={{ marginTop: '10px' }}>
-        <h1 style={{ fontFamily: 'var(--font-d)', fontSize: '36px', fontWeight: 700, marginBottom: '8px' }}>
+        <h1 style={{ fontFamily: 'var(--font-d)', fontSize: '28px', fontWeight: 700, marginBottom: '8px', lineHeight: '1.2' }}>
           Studio <span style={{ color: 'var(--gold)' }}>Elisee Graphics</span>
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>

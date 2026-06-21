@@ -61,8 +61,7 @@ export default function HomeProductsClient({ products, title = "Ultimi arrivi" }
         <h2 className="section-title">{title}</h2>
       </div>
       <div className="products-grid">
-        {products.map((p: Product, index: number) => {
-          const isHot = index === 2;
+        {products.map((p: Product) => {
           const imgUrl = p.images?.edges?.[0]?.node?.url || '';
           const isFav = favorites.includes(p.id);
           const isAnimating = animatingHearts[p.id];
@@ -126,12 +125,6 @@ export default function HomeProductsClient({ products, title = "Ultimi arrivi" }
                     height: '28px'
                   }}>
                     <Heart size={14} color="#e53e3e" fill="#e53e3e" />
-                  </div>
-                )}
-
-                {isHot && (
-                  <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'linear-gradient(90deg, #ff3b30, #ff9500)', color: 'white', fontSize: '9px', fontWeight: 800, padding: '4px 8px', borderRadius: '8px', letterSpacing: '0.5px' }}>
-                    🔥 MOLTO RICHIESTO
                   </div>
                 )}
               </div>

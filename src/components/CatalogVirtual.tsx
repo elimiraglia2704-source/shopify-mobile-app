@@ -333,8 +333,7 @@ export default function CatalogVirtual({
                     padding: '0 14px'
                   }}
                 >
-                  {rowProducts.map((p, index) => {
-                    const isHot = index === 1 && !showFavoritesOnly;
+                  {rowProducts.map((p) => {
                     const imgUrl = p.images?.edges?.[0]?.node?.url || p.images?.[0]?.url || '';
                     const isFav = favorites.includes(p.id);
                     const isAnimating = animatingHearts[p.id];
@@ -398,12 +397,6 @@ export default function CatalogVirtual({
                               height: '28px'
                             }}>
                               <Heart size={14} color="#e53e3e" fill="#e53e3e" />
-                            </div>
-                          )}
-
-                          {isHot && (
-                            <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'linear-gradient(90deg, #ff3b30, #ff9500)', color: 'white', fontSize: '9px', fontWeight: 800, padding: '4px 8px', borderRadius: '8px', letterSpacing: '0.5px' }}>
-                              🔥 MOLTO RICHIESTO
                             </div>
                           )}
                         </div>
