@@ -1,22 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, Plus } from 'lucide-react';
 
-export default function HomeProductsClient({ products }: { products: any[] }) {
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [animatingHearts, setAnimatingHearts] = useState<{ [productId: string]: boolean }>({});
+interface Product {
+  id: string;
+  title: string;
+  priceRange?: {
+    minVariantPrice?: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
+  images?: {
+    edges?: {
+      node: {
+        url: string;
+      };
+    }[];
+  };
+}
 
-  useEffect(() => {
+export default function HomeProductsClient({ products, title = "Ultimi arrivi" }: { products: Product[]; title?: string }) {
+  const [favorites, setFavorites] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('elisee:favorites');
-      if (saved) {
-        setFavorites(JSON.parse(saved));
-      }
-    } catch {}
-  }, []);
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('elisee:favorites') : null;
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [animatingHearts, setAnimatingHearts] = useState<{ [productId: string]: boolean }>({});
 
   const toggleFavorite = (productId: string) => {
     const isFav = favorites.includes(productId);
@@ -42,12 +58,12 @@ export default function HomeProductsClient({ products }: { products: any[] }) {
   return (
     <div className="home-section">
       <div className="section-head">
-        <h2 className="section-title">Ultimi arrivi</h2>
+        <h2 className="section-title">{title}</h2>
       </div>
       <div className="products-grid">
-        {products.map((p: any, index: number) => {
+        {products.map((p: Product, index: number) => {
           const isHot = index === 2;
-          const imgUrl = p.images?.edges?.[0]?.node?.url || p.images?.[0]?.url || '';
+          const imgUrl = p.images?.edges?.[0]?.node?.url || '';
           const isFav = favorites.includes(p.id);
           const isAnimating = animatingHearts[p.id];
 

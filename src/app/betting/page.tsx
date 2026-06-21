@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Trophy, Coins, CheckCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Trophy, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface Match {
   id: string;
@@ -21,6 +21,21 @@ const FALLBACK_MATCHES: Match[] = [
   { id: 'm10', home: 'Italia', away: 'Croazia', info: 'Mondiale 2026', startTime: '2026-06-22T17:00:00Z' },
   { id: 'm13', home: 'Argentina', away: 'Messico', info: 'Mondiale 2026', startTime: '2026-06-22T20:00:00Z' }
 ];
+
+function getMatchStats(matchId: string) {
+  let hash = 0;
+  for (let i = 0; i < matchId.length; i++) {
+    hash = matchId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const rand1 = Math.abs((Math.sin(hash + 1) * 10000) % 1);
+  const rand2 = Math.abs((Math.sin(hash + 2) * 10000) % 1);
+  
+  const p1 = Math.floor(35 + rand1 * 25);
+  const pX = Math.floor(15 + rand2 * 15);
+  const p2 = 100 - p1 - pX;
+  
+  return { p1, pX, p2 };
+}
 
 export default function BettingPage() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -194,6 +209,33 @@ export default function BettingPage() {
                     <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
                       {dateStr}
                     </span>
+                    {(() => {
+                      const { p1, pX, p2 } = getMatchStats(match.id);
+                      return (
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          flexWrap: 'wrap',
+                          gap: '6px', 
+                          marginTop: '6px', 
+                          fontSize: '11px', 
+                          color: 'rgba(255,255,255,0.3)'
+                        }}>
+                          <span>Voti utenti:</span>
+                          <span style={{ color: 'var(--gold)', fontWeight: 500 }}>
+                            {match.home} {p1}%
+                          </span>
+                          <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
+                          <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
+                            Pareggio {pX}%
+                          </span>
+                          <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
+                          <span style={{ color: 'var(--purple-light)', fontWeight: 500 }}>
+                            {match.away} {p2}%
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <input 
                     type="text" 
