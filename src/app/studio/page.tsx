@@ -65,7 +65,7 @@ export default function StudioPage() {
 
           {/* Card 2 */}
           <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
-            <Image src="/portfolio-pranziamo.jpg" alt="PranziAmo" fill style={{ objectFit: 'cover' }} />
+            <Image src="/banner-pranziamo.png" alt="PranziAmo" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
                 Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con PranziAmo
@@ -75,30 +75,40 @@ export default function StudioPage() {
 
           {/* Card 3 */}
           <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
-            <Image src="/portfolio-macelleria.jpg" alt="Macelleria" fill style={{ objectFit: 'cover' }} />
+            <Image src="/banner-garofalo-barberia.png" alt="Barberia Garofalo" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
-                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Macelleria da Carmine
+                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Barberia Garofalo
               </h4>
             </div>
           </div>
 
           {/* Card 4 */}
           <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
-            <Image src="/shop-cat-sport.jpg" alt="Sport Shop" fill style={{ objectFit: 'cover' }} />
+            <Image src="/banner-antincendio-sicurezza.jpg" alt="Antincendio & Sicurezza" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
-                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Sport Shop
+                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Antincendio & Sicurezza
               </h4>
             </div>
           </div>
 
           {/* Card 5 */}
           <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
-            <Image src="/shop-cat-scarpe.jpg" alt="Accessori Moda" fill style={{ objectFit: 'cover' }} />
+            <Image src="/shop-cat-scarpe.jpg" alt="Marcos Lab" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
-                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Accessori Moda
+                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Marcos Lab
+              </h4>
+            </div>
+          </div>
+
+          {/* Card 6 */}
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
+            <Image src="/banner-nervos-beer.jpg" alt="Nervös Beer" fill style={{ objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
+              <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', lineHeight: '1.4' }}>
+                Collaborazione <span style={{ fontFamily: 'var(--font-tech)', color: 'var(--gold)', letterSpacing: '0.5px' }}>Elisee Graphic</span> con Nervös Beer
               </h4>
             </div>
           </div>

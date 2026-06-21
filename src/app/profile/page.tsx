@@ -84,6 +84,73 @@ interface MockBet {
   color: string;
 }
 
+interface Match {
+  id: string;
+  home: string;
+  away: string;
+  info: string;
+  startTime: string;
+  status: 'scheduled' | 'live' | 'finished';
+  label: string;
+  homeScore: number;
+  awayScore: number;
+  elapsedMins?: number;
+}
+
+interface BetHistoryItem {
+  id: string;
+  date?: string;
+  status?: string;
+  matchIds?: string[];
+  predictions?: string[];
+  matches?: string[];
+}
+
+function getBetOutcome(bet: BetHistoryItem, matchesList: Match[]) {
+  if (!bet.matchIds || bet.matchIds.length === 0) {
+    const isPending = bet.status === 'in_corso';
+    return {
+      statusLabel: isPending ? 'In Corso' : 'Completata',
+      statusColor: isPending ? 'var(--gold)' : '#4caf50'
+    };
+  }
+
+  let allFinished = true;
+  let hasLost = false;
+
+  for (let i = 0; i < bet.matchIds.length; i++) {
+    const matchId = bet.matchIds[i];
+    const prediction = bet.predictions?.[i];
+    const match = matchesList.find(m => m.id === matchId);
+
+    if (!match) {
+      allFinished = false;
+      continue;
+    }
+
+    if (match.status !== 'finished') {
+      allFinished = false;
+    } else {
+      let outcome = '';
+      if (match.homeScore > match.awayScore) outcome = '1';
+      else if (match.homeScore === match.awayScore) outcome = 'X';
+      else outcome = '2';
+
+      if (prediction !== outcome) {
+        hasLost = true;
+      }
+    }
+  }
+
+  if (hasLost) {
+    return { statusLabel: 'Perdente', statusColor: '#ff4d4d' };
+  }
+  if (allFinished) {
+    return { statusLabel: 'Vincente', statusColor: '#4caf50' };
+  }
+  return { statusLabel: 'In Corso', statusColor: 'var(--gold)' };
+}
+
 // ─── Componente Principale ───────────────────────────────────────────────────
 export default function ProfilePage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -119,7 +186,9 @@ export default function ProfilePage() {
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
 
   // Storico Scommesse Reali
-  const [realBets, setRealBets] = useState<any[]>([]);
+  const [realBets, setRealBets] = useState<BetHistoryItem[]>([]);
+  // Matches state for live result checking in profile page
+  const [matches, setMatches] = useState<Match[]>([]);
 
   const fetchCustomerDetails = async (token: string) => {
     setIsOrdersLoading(true);
@@ -341,6 +410,26 @@ export default function ProfilePage() {
         }
       }, 0);
       return () => clearTimeout(timer);
+    }
+  }, [activeDrawer]);
+
+  // Fetch real matches to calculate results when bet-history drawer is open
+  useEffect(() => {
+    if (activeDrawer === 'bet-history') {
+      const fetchMatches = async () => {
+        try {
+          const res = await fetch('/api/sports/matches');
+          if (res.ok) {
+            const data = await res.json();
+            setMatches(data.matches || []);
+          }
+        } catch (err) {
+          console.error("Errore fetch matches in profile:", err);
+        }
+      };
+      fetchMatches();
+      const interval = setInterval(fetchMatches, 15000);
+      return () => clearInterval(interval);
     }
   }, [activeDrawer]);
 
@@ -1352,9 +1441,7 @@ export default function ProfilePage() {
           ) : (
             realBets.map((bet) => {
               const displayId = bet.id ? (bet.id.startsWith('bet_') ? bet.id.slice(4).slice(-6) : bet.id.slice(-6)) : 'N/D';
-              const isPending = bet.status === 'in_corso';
-              const statusColor = isPending ? 'var(--gold)' : '#4caf50';
-              const statusLabel = isPending ? 'In Corso' : 'Completata';
+              const { statusLabel, statusColor } = getBetOutcome(bet, matches);
               
               return (
                 <div 
@@ -1375,6 +1462,12 @@ export default function ProfilePage() {
                       {statusLabel}
                     </span>
                   </div>
+
+                  {bet.date && (
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '-8px' }}>
+                      Effettuata: <span style={{ color: 'rgba(255,255,255,0.7)' }}>{bet.date}</span>
+                    </div>
+                  )}
 
                   {/* List of matches in this bet ticket */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.15)', padding: '12px', borderRadius: '12px' }}>

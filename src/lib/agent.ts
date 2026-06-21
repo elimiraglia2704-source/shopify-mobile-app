@@ -2,7 +2,7 @@ import { StateGraph, START, END, MemorySaver } from '@langchain/langgraph';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { SystemMessage, ToolMessage, BaseMessage } from '@langchain/core/messages';
+import { SystemMessage, ToolMessage, BaseMessage, AIMessage } from '@langchain/core/messages';
 import { MOCK_PRODUCTS } from './mock-data';
 
 const SHOP_DOMAIN = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || 'elisee.shop';
@@ -266,10 +266,11 @@ function smartFallback(userMessage: string): string {
 export const eliseeAgent = llm
   ? workflow.compile({ checkpointer: memory })
   : {
-      invoke: async (input: { messages: Array<{ content: string }> }) => {
+      invoke: async (input: { messages: BaseMessage[]; profile?: Record<string, string> | null }, _config?: unknown) => {
+        void _config;
         const messages = input?.messages || [];
         const lastUserMsg = messages.length > 0 ? (messages[messages.length - 1]?.content || '') : '';
         const response = smartFallback(String(lastUserMsg));
-        return { messages: [{ content: response }] };
+        return { messages: [new AIMessage({ content: response })] };
       },
     };

@@ -10,6 +10,11 @@ interface Match {
   away: string;
   info: string;
   startTime: string;
+  status?: 'scheduled' | 'live' | 'finished';
+  label?: string;
+  homeScore?: number;
+  awayScore?: number;
+  elapsedMins?: number;
 }
 
 const FALLBACK_MATCHES: Match[] = [
@@ -119,43 +124,18 @@ function getMatchStats(matchId: string) {
   return { p1, pX, p2 };
 }
 
-function getLiveScore(matchId: string, startTimeStr: string, now: Date) {
-  const startTime = new Date(startTimeStr);
-  const elapsedMs = now.getTime() - startTime.getTime();
-  const elapsedMins = Math.floor(elapsedMs / 60000);
-
-  let hash = 0;
-  for (let i = 0; i < matchId.length; i++) {
-    hash = matchId.charCodeAt(i) + ((hash << 5) - hash);
+function getLiveScore(matchId: string, matches: Match[]) {
+  const match = matches.find(m => m.id === matchId);
+  if (!match) {
+    return { status: 'scheduled' as const, label: 'Non Iniziata', homeScore: 0, awayScore: 0, elapsedMins: 0 };
   }
-  hash = Math.abs(hash);
-
-  const homeMax = (hash % 3) + (hash % 2 === 0 ? 1 : 0);
-  const awayMax = ((hash >> 2) % 3);
-
-  const homeGoalTimes = [15, 42, 65, 82].slice(0, homeMax);
-  const awayGoalTimes = [28, 55, 78].slice(0, awayMax);
-
-  if (elapsedMins < 0) return { status: 'scheduled', label: 'Non Iniziata', homeScore: 0, awayScore: 0, elapsedMins };
-  if (elapsedMins >= 105) return { status: 'finished', label: 'FT', homeScore: homeMax, awayScore: awayMax, elapsedMins };
-
-  let displayMin = '';
-  let activeMin = 0;
-  if (elapsedMins <= 45) {
-    activeMin = elapsedMins;
-    displayMin = `${elapsedMins}'`;
-  } else if (elapsedMins > 45 && elapsedMins <= 60) {
-    activeMin = 45;
-    displayMin = 'HT';
-  } else {
-    activeMin = Math.min(90, elapsedMins - 15);
-    displayMin = `${activeMin}'`;
-  }
-
-  const currentHomeScore = homeGoalTimes.filter(t => t <= activeMin).length;
-  const currentAwayScore = awayGoalTimes.filter(t => t <= activeMin).length;
-
-  return { status: 'live', label: displayMin, homeScore: currentHomeScore, awayScore: currentAwayScore, elapsedMins };
+  return {
+    status: match.status || 'scheduled',
+    label: match.label || 'Non Iniziata',
+    homeScore: match.homeScore !== undefined ? match.homeScore : 0,
+    awayScore: match.awayScore !== undefined ? match.awayScore : 0,
+    elapsedMins: match.elapsedMins || 0
+  };
 }
 
 // ── Notification helpers ──────────────────────────────────────────────────────
@@ -219,7 +199,7 @@ export default function BettingPage() {
     matches
       .filter(m => bettedMatchIds.includes(m.id))
       .forEach(m => {
-        const info = getLiveScore(m.id, m.startTime, now);
+        const info = getLiveScore(m.id, matches);
         const prev = prevStateRef.current[m.id];
         const matchLabel = `${m.home} - ${m.away}`;
 
@@ -256,7 +236,7 @@ export default function BettingPage() {
       });
   }, [now, matches, notificationsOn, bettedMatchIds]);
 
-  // Fetch matches
+  // Fetch matches with polling every 15s
   useEffect(() => {
     const fetchMatches = async () => {
       try {
@@ -274,6 +254,8 @@ export default function BettingPage() {
       }
     };
     fetchMatches();
+    const interval = setInterval(fetchMatches, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleInputChange = (matchId: string, value: string) => {
@@ -284,7 +266,7 @@ export default function BettingPage() {
 
   // Only require predictions for non-live, non-finished matches
   const bettableMatches = matches.filter(m => {
-    const state = getLiveScore(m.id, m.startTime, now);
+    const state = getLiveScore(m.id, matches);
     return state.status === 'scheduled';
   });
 
@@ -312,7 +294,7 @@ export default function BettingPage() {
         // Save bet to history including match IDs for notifications
         const newBet = {
           id: 'bet_' + Date.now(),
-          date: new Date().toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+          date: new Date().toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
           status: 'in_corso',
           matchIds: bettableMatches.map(m => m.id),
           predictions: bettableMatches.map(m => predictions[m.id]),
@@ -525,7 +507,7 @@ export default function BettingPage() {
 
             {(() => {
               const liveOrFinished = matches.filter(m => {
-                const state = getLiveScore(m.id, m.startTime, now);
+                const state = getLiveScore(m.id, matches);
                 return state.status === 'live' || state.status === 'finished';
               });
 
@@ -540,7 +522,7 @@ export default function BettingPage() {
               return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {liveOrFinished.map(m => {
-                    const info = getLiveScore(m.id, m.startTime, now);
+                    const info = getLiveScore(m.id, matches);
                     return (
                       <div
                         key={m.id}
@@ -589,7 +571,7 @@ export default function BettingPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {matches.map((match, index) => {
-              const liveInfo = getLiveScore(match.id, match.startTime, now);
+              const liveInfo = getLiveScore(match.id, matches);
               const isLive = liveInfo.status === 'live';
               const isFinished = liveInfo.status === 'finished';
               const isLocked = isLive || isFinished;
