@@ -64,10 +64,9 @@ export default function AppInitializer() {
 
     // ─── 1. Inizializzazione Tema ───────────────────────────────────────────
     const savedTheme = localStorage.getItem('elisee:theme');
-    if (savedTheme === 'damask') {
-      document.body.classList.add('theme-damask');
-    } else {
-      document.body.classList.remove('theme-damask');
+    document.body.classList.remove('theme-damask', 'theme-graffiti', 'theme-mimetico');
+    if (savedTheme && savedTheme !== 'classic') {
+      document.body.classList.add(`theme-${savedTheme}`);
     }
   }, []);
 

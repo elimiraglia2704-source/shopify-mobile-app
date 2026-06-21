@@ -18,7 +18,10 @@ import {
   Trash2, 
   Volume2, 
   Bell, 
-  Fingerprint 
+  Fingerprint,
+  ShoppingCart,
+  Gift,
+  Trophy
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -157,6 +160,9 @@ export default function ProfilePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  
+  // Stato del simulatore EliClub (indice dell'array [5, 25, 50, 100, 150])
+  const [simIndex, setSimIndex] = useState(1);
   
   // Dati Profilo
   const [profileName, setProfileName] = useState('Enea Miraglia');
@@ -530,10 +536,9 @@ export default function ProfilePage() {
 
     if (key === 'theme') {
       localStorage.setItem('elisee:theme', value);
-      if (value === 'damask') {
-        document.body.classList.add('theme-damask');
-      } else {
-        document.body.classList.remove('theme-damask');
+      document.body.classList.remove('theme-damask', 'theme-graffiti', 'theme-mimetico');
+      if (value !== 'classic') {
+        document.body.classList.add(`theme-${value}`);
       }
     }
   };
@@ -592,7 +597,7 @@ export default function ProfilePage() {
             Accedi al Profilo
           </h2>
           <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.5', maxWidth: '280px' }}>
-            Accedi al tuo account Elisee per visualizzare i tuoi ordini, i vantaggi VIP, i preferiti ed altro.
+            Accedi al tuo account Elisee per visualizzare i tuoi ordini, i vantaggi EliClub, i preferiti ed altro.
           </p>
         </div>
         <button
@@ -735,7 +740,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Grid Quick Actions */}
-      <div style={{ background: 'rgba(20, 10, 30, 0.45)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '24px', padding: '20px 12px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }}>
+      <div style={{ background: 'var(--panel-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid var(--panel-border)', borderRadius: '24px', padding: '20px 12px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
           
           <div id="btn-profile-orders" onClick={() => setActiveDrawer('orders')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
@@ -770,12 +775,12 @@ export default function ProfilePage() {
       </div>
 
       {/* List Menus */}
-      <div style={{ background: 'rgba(20, 10, 30, 0.45)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '24px', padding: '6px 18px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }}>
+      <div style={{ background: 'var(--panel-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid var(--panel-border)', borderRadius: '24px', padding: '6px 18px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
         
         {/* Posta in arrivo */}
-        <div id="btn-profile-inbox" onClick={() => setActiveDrawer('inbox')} style={{ padding: '18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div id="btn-profile-inbox" onClick={() => setActiveDrawer('inbox')} style={{ padding: '18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid var(--panel-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.03)' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--panel-border)' }}>
               <Mail style={{ width: '18px', height: '18px', color: 'var(--text)' }} />
             </div>
             <div>
@@ -783,25 +788,25 @@ export default function ProfilePage() {
               <p style={{ fontSize: '12px', color: 'var(--text-sub)' }}>Visualizza i tuoi messaggi</p>
             </div>
           </div>
-          <ChevronRight style={{ color: 'rgba(255,255,255,0.2)', width: '20px' }} />
+          <ChevronRight style={{ color: 'var(--chevron-color)', width: '20px' }} />
         </div>
         
-        {/* VIP Benefits */}
-        <div id="btn-profile-vip" onClick={() => setActiveDrawer('vip')} style={{ padding: '18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        {/* VIP Benefits -> EliClub */}
+        <div id="btn-profile-vip" onClick={() => setActiveDrawer('vip')} style={{ padding: '18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid var(--panel-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(212,175,55,0.1)' }}>
               <Award style={{ width: '18px', height: '18px', color: 'var(--gold)' }} />
             </div>
             <div>
-              <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '2px', color: 'var(--text)' }}>Vantaggi VIP Elisee</h3>
-              <p style={{ fontSize: '12px', color: 'var(--gold-light)' }}>1.250 Punti Stile sbloccati</p>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '2px', color: 'var(--text)' }}>EliClub</h3>
+              <p style={{ fontSize: '12px', color: 'var(--gold-light)' }}>{totalPoints.toLocaleString('it-IT')} Punti Elisee accumulati</p>
             </div>
           </div>
-          <ChevronRight style={{ color: 'rgba(255,255,255,0.2)', width: '20px' }} />
+          <ChevronRight style={{ color: 'var(--chevron-color)', width: '20px' }} />
         </div>
 
         {/* L'Angolo Ludopatico */}
-        <Link href="/betting" style={{ display: 'block', textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <Link href="/betting" style={{ display: 'block', textDecoration: 'none', borderBottom: '1px solid var(--panel-border)' }}>
           <div id="btn-profile-betting" style={{ padding: '18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,59,48,0.15)', border: '1px solid rgba(255,59,48,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -812,12 +817,12 @@ export default function ProfilePage() {
                 <p style={{ fontSize: '12px', color: 'var(--text-sub)' }}>Indovina 7 partite e vinci</p>
               </div>
             </div>
-            <ChevronRight style={{ color: 'rgba(255,255,255,0.2)', width: '20px' }} />
+            <ChevronRight style={{ color: 'var(--chevron-color)', width: '20px' }} />
           </div>
         </Link>
 
         {/* Storico Scommesse */}
-        <div id="btn-profile-bet-history" onClick={() => setActiveDrawer('bet-history')} style={{ padding: '18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div id="btn-profile-bet-history" onClick={() => setActiveDrawer('bet-history')} style={{ padding: '18px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid var(--panel-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(76,175,80,0.15)', border: '1px solid rgba(76,175,80,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <History style={{ width: '18px', height: '18px', color: '#4caf50' }} />
@@ -827,7 +832,7 @@ export default function ProfilePage() {
               <p style={{ fontSize: '12px', color: 'var(--text-sub)' }}>Le tue schedine passate</p>
             </div>
           </div>
-          <ChevronRight style={{ color: 'rgba(255,255,255,0.2)', width: '20px' }} />
+          <ChevronRight style={{ color: 'var(--chevron-color)', width: '20px' }} />
         </div>
 
         {/* Log Out */}
@@ -841,7 +846,7 @@ export default function ProfilePage() {
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>Esci dal tuo account</p>
             </div>
           </div>
-          <ChevronRight style={{ color: 'rgba(255,77,77,0.2)', width: '20px' }} />
+          <ChevronRight style={{ color: 'var(--chevron-color)', width: '20px' }} />
         </div>
 
       </div>
@@ -1255,6 +1260,8 @@ export default function ProfilePage() {
               >
                 <option value="classic" style={{ background: '#0a0010' }}>Classico (Viola)</option>
                 <option value="damask" style={{ background: '#0a0010' }}>Damascato (Oro/Rame)</option>
+                <option value="graffiti" style={{ background: '#ffffff', color: '#000000' }}>Graffiti</option>
+                <option value="mimetico" style={{ background: '#fafafc', color: '#000000' }}>Mimetico</option>
               </select>
             </div>
 
@@ -1326,11 +1333,11 @@ export default function ProfilePage() {
         </div>
       </ProfileDrawer>
 
-      {/* 7. Vantaggi VIP Drawer */}
+      {/* 7. EliClub Drawer */}
       <ProfileDrawer 
         isOpen={activeDrawer === 'vip'} 
         onClose={() => setActiveDrawer('none')} 
-        title="Club VIP Elisee"
+        title="EliClub"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* Progress Section */}
@@ -1340,7 +1347,7 @@ export default function ProfilePage() {
                 <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px' }}>Livello Attuale</span>
                 <h4 style={{ fontSize: '18px', fontWeight: 800, color: vipLevelColor }}>{vipLevelName}</h4>
               </div>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: 'white' }}>{totalPoints.toLocaleString('it-IT')} <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>pt</span></div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)' }}>{totalPoints.toLocaleString('it-IT')} <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>pt</span></div>
             </div>
             
             {/* Progress bar */}
@@ -1353,57 +1360,163 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Benefits list */}
-          <div>
-            <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', paddingLeft: '4px' }}>
-              Vantaggi Sbloccati
+          {/* Simulator Widget */}
+          <div style={{
+            background: 'var(--panel-bg)',
+            border: '1px solid var(--panel-border)',
+            borderRadius: '20px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Gift size={16} color="var(--gold)" />
+              Simula il tuo Risparmio
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[
-                { title: 'Spedizione Standard Gratuita', desc: 'Nessun costo di spedizione su tutti i prodotti.', active: true },
-                { title: 'Accesso all\'Angolo Ludopatico', desc: 'Gioca le tue schedine per vincere punti fedeltà.', active: true },
-                { title: 'Anteprime ed Edizioni Limitate', desc: 'Acquista le nuove collezioni 48h prima degli altri.', active: totalPoints >= 1500, level: 'Platinum' }
-              ].map((ben, idx) => (
-                <div 
-                  key={idx}
-                  style={{ 
-                    background: 'rgba(255,255,255,0.02)', 
-                    border: '1px solid rgba(255,255,255,0.04)', 
-                    borderRadius: '16px', 
-                    padding: '14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    opacity: ben.active ? 1 : 0.4
-                  }}
-                >
-                  <div style={{ 
-                    width: '24px', 
-                    height: '24px', 
-                    borderRadius: '50%', 
-                    background: ben.active ? 'rgba(76,175,80,0.15)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${ben.active ? 'rgba(76,175,80,0.3)' : 'rgba(255,255,255,0.1)'}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: ben.active ? '#4caf50' : 'rgba(255,255,255,0.3)',
-                    flexShrink: 0
-                  }}>
-                    {ben.active ? <Check size={12} /> : <span style={{ fontSize: '10px', fontWeight: 800 }}>P</span>}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <h5 style={{ fontSize: '13px', fontWeight: 700, color: 'white' }}>{ben.title}</h5>
-                      {!ben.active && (
-                        <span style={{ fontSize: '9px', fontWeight: 700, background: 'rgba(212,175,55,0.1)', color: 'var(--gold)', border: '1px solid rgba(212,175,55,0.2)', padding: '2px 6px', borderRadius: '6px', textTransform: 'uppercase' }}>
-                          {ben.level}
-                        </span>
-                      )}
-                    </div>
-                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>{ben.desc}</p>
-                  </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Spesa Stimata</span>
+                <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text)' }}>€{[5, 25, 50, 100, 150][simIndex]}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Punti Guadagnati</span>
+                <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--gold)' }}>{[5, 25, 50, 100, 150][simIndex]} Punti</div>
+              </div>
+            </div>
+
+            {/* Range input */}
+            <div style={{ position: 'relative', padding: '8px 0' }}>
+              <input 
+                type="range" 
+                min="0" 
+                max="4" 
+                step="1"
+                value={simIndex} 
+                onChange={(e) => setSimIndex(parseInt(e.target.value))}
+                style={{
+                  width: '100%',
+                  accentColor: 'var(--gold)',
+                  background: 'rgba(255,255,255,0.1)',
+                  height: '6px',
+                  borderRadius: '3px',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              />
+              {/* Ticks */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 2px 0', fontSize: '10px', color: 'var(--text-muted)' }}>
+                <span>€5</span>
+                <span>€25</span>
+                <span>€50</span>
+                <span>€100</span>
+                <span>€150</span>
+              </div>
+            </div>
+
+            {/* Discount status badge */}
+            <div style={{
+              background: [5, 25, 50, 100, 150][simIndex] >= 50 ? 'rgba(76,175,80,0.1)' : 'rgba(255,255,255,0.02)',
+              border: `1px solid ${[5, 25, 50, 100, 150][simIndex] >= 50 ? 'rgba(76,175,80,0.2)' : 'var(--panel-border)'}`,
+              borderRadius: '12px',
+              padding: '12px 14px',
+              textAlign: 'center',
+              transition: 'all 0.2s'
+            }}>
+              {[5, 25, 50, 100, 150][simIndex] >= 50 ? (
+                <div>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#4caf50', display: 'block', marginBottom: '4px' }}>
+                    🎉 Sconto 20% Sbloccato!
+                  </span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-sub)' }}>
+                    Usa il codice: <strong style={{ color: 'var(--gold)', letterSpacing: '1px' }}>CLUB20</strong> nel carrello
+                  </span>
                 </div>
-              ))}
+              ) : (
+                <span style={{ fontSize: '11px', color: 'var(--text-sub)' }}>
+                  Accumula <strong>50 Punti</strong> per sbloccare lo <strong>Sconto 20%</strong> (ti mancano {50 - [5, 25, 50, 100, 150][simIndex]} punti)
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Rules and benefits Section */}
+          <div>
+            <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px', paddingLeft: '4px' }}>
+              Regole e Vantaggi EliClub
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              
+              {/* Regola 1 */}
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
+                <div style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(155,89,208,0.15), rgba(212,175,55,0.08))',
+                  border: '1px solid var(--panel-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <ShoppingCart size={18} style={{ color: 'var(--gold)' }} />
+                </div>
+                <div>
+                  <h5 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>1. Guadagna Punti</h5>
+                  <p style={{ fontSize: '12px', color: 'var(--text-sub)', lineHeight: '1.4' }}>
+                    Ottieni 1 Punto Elisee per ogni 1€ speso. Più acquisti, più accumuli (es. 25€ spesi = 25 punti, 50€ spesi = 50 punti).
+                  </p>
+                </div>
+              </div>
+
+              {/* Regola 2 */}
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
+                <div style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(155,89,208,0.15), rgba(212,175,55,0.08))',
+                  border: '1px solid var(--panel-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Gift size={18} style={{ color: 'var(--gold)' }} />
+                </div>
+                <div>
+                  <h5 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>2. Sconto del 20%</h5>
+                  <p style={{ fontSize: '12px', color: 'var(--text-sub)', lineHeight: '1.4' }}>
+                    Al raggiungimento di 50 Punti, sblocchi immediatamente un codice sconto del 20% utilizzabile per l&apos;acquisto della tua prossima cover.
+                  </p>
+                </div>
+              </div>
+
+              {/* Regola 3 */}
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
+                <div style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(155,89,208,0.15), rgba(212,175,55,0.08))',
+                  border: '1px solid var(--panel-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Trophy size={18} style={{ color: 'var(--gold)' }} />
+                </div>
+                <div>
+                  <h5 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>3. Accesso Esclusivo</h5>
+                  <p style={{ fontSize: '12px', color: 'var(--text-sub)', lineHeight: '1.4' }}>
+                    Fai parte della nostra community e ricevi promozioni dedicate, punti extra per il tuo compleanno e priorità sui nuovi lanci.
+                  </p>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -1414,6 +1527,8 @@ export default function ProfilePage() {
         isOpen={activeDrawer === 'bet-history'} 
         onClose={() => setActiveDrawer('none')} 
         title="Storico Scommesse"
+        disableOverlayClose={true}
+        hideCloseButton={true}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {realBets.length === 0 ? (
@@ -1599,9 +1714,18 @@ interface DrawerProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  disableOverlayClose?: boolean;
+  hideCloseButton?: boolean;
 }
 
-function ProfileDrawer({ isOpen, onClose, title, children }: DrawerProps) {
+function ProfileDrawer({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children,
+  disableOverlayClose = false,
+  hideCloseButton = false
+}: DrawerProps) {
   const [mounted, setMounted] = useState(false);
   const [translateY, setTranslateY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -1661,16 +1785,17 @@ function ProfileDrawer({ isOpen, onClose, title, children }: DrawerProps) {
         pointerEvents: 'auto',
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget && !disableOverlayClose) onClose();
       }}
     >
       <div
         style={{
           width: '100%',
           maxHeight: '80vh',
-          background: 'linear-gradient(180deg, #140320 0%, #06000a 100%)',
+          background: 'var(--drawer-bg)',
+          color: 'var(--text)',
           borderRadius: '24px 24px 0 0',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
+          borderTop: '1px solid var(--panel-border)',
           boxShadow: '0 -10px 40px rgba(0,0,0,0.8)',
           display: 'flex',
           flexDirection: 'column',
@@ -1703,29 +1828,31 @@ function ProfileDrawer({ isOpen, onClose, title, children }: DrawerProps) {
             background: 'transparent'
           }}
         >
-          <div style={{ width: '42px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.18)' }} />
+          <div style={{ width: '42px', height: '4px', borderRadius: '2px', background: 'var(--chevron-color)' }} />
         </div>
         
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'white', fontFamily: 'var(--font-d)' }}>{title}</h3>
-          <button 
-            onClick={onClose} 
-            style={{ 
-              background: 'rgba(255,255,255,0.06)', 
-              border: 'none', 
-              color: 'white', 
-              width: '32px', 
-              height: '32px', 
-              borderRadius: '50%', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              cursor: 'pointer' 
-            }}
-          >
-            ✕
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--panel-border)' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-d)' }}>{title}</h3>
+          {!hideCloseButton && (
+            <button 
+              onClick={onClose} 
+              style={{ 
+                background: 'var(--panel-bg)', 
+                border: '1px solid var(--panel-border)', 
+                color: 'var(--text)', 
+                width: '32px', 
+                height: '32px', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                cursor: 'pointer' 
+              }}
+            >
+              ✕
+            </button>
+          )}
         </div>
         
         {/* Content */}

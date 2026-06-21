@@ -36,6 +36,12 @@
   --font-tech: 'Audiowide', 'Orbitron', sans-serif;
   --header-h: 54px;
   --nav-h:    62px;
+  
+  /* Variabili adattive */
+  --panel-bg: rgba(20, 10, 30, 0.45);
+  --panel-border: rgba(255, 255, 255, 0.06);
+  --chevron-color: rgba(255, 255, 255, 0.2);
+  --drawer-bg: linear-gradient(180deg, #121214 0%, #060607 100%);
 }
 
 /* ── THEME OVERRIDES ─────────────────────────────────────── */
@@ -52,6 +58,58 @@ body.theme-damask {
   --text-muted:   #b0a080; /* Tan */
   --border:       rgba(212,175,55,.16);
   --glass:        rgba(18,2,2,.9);
+  
+  --panel-bg:     rgba(26, 4, 4, 0.45);
+  --panel-border: rgba(212, 175, 55, 0.12);
+  --chevron-color: rgba(212, 175, 55, 0.3);
+  --drawer-bg: linear-gradient(180deg, #121212 0%, #000000 100%);
+}
+
+body.theme-graffiti {
+  --bg:    #ffffff;
+  --bg2:   #f7f7f9;
+  --bg3:   #ededf2;
+  --purple:       #6a2fa0;
+  --purple-light: #9b59d0;
+  --purple-dark:  #4a157d;
+  --gold:         #b8860b;
+  --gold-light:   #d4af37;
+  --text:         #0a0510;
+  --text-sub:     #332540;
+  --text-muted:   #605070;
+  --border:       rgba(10, 5, 16, 0.12);
+  --glass:        rgba(255, 255, 255, 0.9);
+  
+  --panel-bg:     rgba(237, 237, 242, 0.7);
+  --panel-border: rgba(10, 5, 16, 0.08);
+  --chevron-color: rgba(10, 5, 16, 0.4);
+  --drawer-bg: linear-gradient(180deg, #ffffff 0%, #f3f3f6 100%);
+}
+
+body.theme-mimetico {
+  --bg:    #fafafc;
+  --bg2:   #f0f0f4;
+  --bg3:   #e4e4eb;
+  --purple:       #6a2fa0;
+  --purple-light: #9b59d0;
+  --purple-dark:  #4a157d;
+  --gold:         #b8860b;
+  --gold-light:   #d4af37;
+  --text:         #111115;
+  --text-sub:     #3d3d45;
+  --text-muted:   #6d6d75;
+  --border:       rgba(17, 17, 21, 0.12);
+  --glass:        rgba(250, 250, 252, 0.9);
+  
+  --panel-bg:     rgba(240, 240, 244, 0.7);
+  --panel-border: rgba(17, 17, 21, 0.08);
+  --chevron-color: rgba(17, 17, 21, 0.4);
+  --drawer-bg: linear-gradient(180deg, #fafafc 0%, #f0f0f4 100%);
+}
+
+/* Rimuove text shadow per temi chiari */
+body.theme-graffiti, body.theme-mimetico {
+  text-shadow: none !important;
 }
 
 /* ── RESET ─────────────────────────────────────────────── */
@@ -66,7 +124,7 @@ input, select { font-family:var(--font-b); border:none; outline:none; }
 html, body {
   height: 100%;
   overflow: hidden;
-  background: #050008;
+  background: var(--bg);
   color: var(--text);
   font-family: var(--font-b);
   -webkit-font-smoothing: antialiased;
@@ -85,6 +143,16 @@ body.theme-damask::before {
   background:
     radial-gradient(ellipse 60% 40% at 20% -10%, rgba(212,175,55,.14) 0%, transparent 60%),
     radial-gradient(ellipse 50% 35% at 90% 110%, rgba(211,84,0,.08) 0%, transparent 55%);
+}
+body.theme-graffiti::before {
+  background:
+    radial-gradient(ellipse 60% 40% at 20% -10%, rgba(155,89,208,.1) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 90% 110%, rgba(106,47,160,.04) 0%, transparent 55%);
+}
+body.theme-mimetico::before {
+  background:
+    radial-gradient(ellipse 60% 40% at 20% -10%, rgba(155,89,208,.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 90% 110%, rgba(106,47,160,.04) 0%, transparent 55%);
 }
 
 /* ── APP SHELL ──────────────────────────────────────────── */
@@ -113,6 +181,16 @@ body.theme-damask .app-bg-pattern {
   background-image:url('/damask.jpg');
   opacity:.15;
   mix-blend-mode:color-dodge;
+}
+body.theme-graffiti .app-bg-pattern {
+  background-image:url('/graffiti.png');
+  opacity:.15;
+  mix-blend-mode:multiply;
+}
+body.theme-mimetico .app-bg-pattern {
+  background-image:url('/mimetico_light.png');
+  opacity:.12;
+  mix-blend-mode:multiply;
 }
 
 @media (min-width:600px) {

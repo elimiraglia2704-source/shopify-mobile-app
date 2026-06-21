@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 const teamNameMap: Record<string, string> = {
   'Spain': 'Spagna',
   'Saudi Arabia': 'Arabia Saudita',
@@ -16,7 +18,17 @@ const teamNameMap: Record<string, string> = {
   'Norway': 'Norvegia',
   'Senegal': 'Senegal',
   'Tunisia': 'Tunisia',
-  'Japan': 'Giappone'
+  'Japan': 'Giappone',
+  'Uzbekistan': 'Uzbekistan',
+  'Portugal': 'Portogallo',
+  'Ghana': 'Ghana',
+  'England': 'Inghilterra',
+  'Croatia': 'Croazia',
+  'Panama': 'Panama',
+  'Congo DR': 'Repubblica Democratica del Congo',
+  'Colombia': 'Colombia',
+  'Jordan': 'Giordania',
+  'Algeria': 'Algeria'
 };
 
 interface EspnCompetitor {
@@ -53,30 +65,39 @@ interface EspnScoreboardData {
   events?: EspnEvent[];
 }
 
-let cachedData: EspnScoreboardData | null = null;
-let lastFetchTime = 0;
-const CACHE_TTL = 10000; // 10 seconds cache
+// Memory caching per evitare di saturare l'API di ESPN ad ogni richiesta client
+interface CacheEntry {
+  data: EspnScoreboardData;
+  timestamp: number;
+}
+const dateCache: Record<string, CacheEntry> = {};
+const CACHE_TTL = 15000; // 15 secondi di cache per data
 
-async function getEspnScoreboard(): Promise<EspnScoreboardData | null> {
+async function fetchEspnScoreboard(dateStr: string): Promise<EspnScoreboardData | null> {
   const now = Date.now();
-  if (cachedData && (now - lastFetchTime < CACHE_TTL)) {
-    return cachedData;
+  const cached = dateCache[dateStr];
+  if (cached && (now - cached.timestamp < CACHE_TTL)) {
+    return cached.data;
   }
+
   try {
-    const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard', {
+    const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateStr}`;
+    const res = await fetch(url, {
+      cache: 'no-store',
       headers: { 'Cache-Control': 'no-cache' }
     });
     if (res.ok) {
-      cachedData = await res.json() as EspnScoreboardData;
-      lastFetchTime = now;
-      return cachedData;
+      const data = await res.json() as EspnScoreboardData;
+      dateCache[dateStr] = { data, timestamp: now };
+      return data;
     }
   } catch (err) {
-    console.error("Errore fetch ESPN Scoreboard:", err);
+    console.error(`Errore fetch ESPN per data ${dateStr}:`, err);
   }
-  return cachedData; // fallback to stale cache if request fails
+  return cached ? cached.data : null;
 }
 
+// Simulatore di ripiego per generare punteggi dinamici live se ESPN non ha match
 function getMockLiveScore(matchId: string, startTimeStr: string, now: Date) {
   const startTime = new Date(startTimeStr);
   const elapsedMs = now.getTime() - startTime.getTime();
@@ -116,8 +137,112 @@ function getMockLiveScore(matchId: string, startTimeStr: string, now: Date) {
   return { status: 'live' as const, label: displayMin, homeScore: currentHomeScore, awayScore: currentAwayScore, elapsedMins };
 }
 
+function getMatchId(home: string, away: string, espnId: string): string {
+  const h = home.toLowerCase();
+  const a = away.toLowerCase();
+  if ((h === 'spagna' && a === 'arabia saudita') || (h === 'arabia saudita' && a === 'spagna')) return 'm1';
+  if ((h === 'belgio' && a === 'iran') || (h === 'iran' && a === 'belgio')) return 'm2';
+  if ((h === 'uruguay' && a === 'capo verde') || (h === 'capo verde' && a === 'uruguay')) return 'm3';
+  if ((h === 'nuova zelanda' && a === 'egitto') || (h === 'egitto' && a === 'nuova zelanda')) return 'm4';
+  if ((h === 'argentina' && a === 'austria') || (h === 'austria' && a === 'argentina')) return 'm5';
+  if ((h === 'francia' && a === 'iraq') || (h === 'iraq' && a === 'francia')) return 'm6';
+  if ((h === 'norvegia' && a === 'senegal') || (h === 'senegal' && a === 'norvegia')) return 'm7';
+  return `m_${espnId}`;
+}
+
 export async function GET() {
-  const upcomingMatches = [
+  const now = new Date();
+  
+  // Genera le date da ieri fino a 4 giorni futuri (totale 5 giorni scansionati)
+  const datesToScan: string[] = [];
+  const startDay = new Date();
+  startDay.setDate(startDay.getDate() - 1); // partiamo da ieri
+
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(startDay);
+    d.setDate(d.getDate() + i);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    datesToScan.push(`${yyyy}${mm}${dd}`);
+  }
+
+  const mappedMatches: any[] = [];
+  const processedEventIds = new Set<string>();
+
+  // Esegue il fetch sequenziale dei dati ESPN per ciascun giorno
+  for (const dateStr of datesToScan) {
+    const espnData = await fetchEspnScoreboard(dateStr);
+    if (espnData && espnData.events) {
+      espnData.events.forEach((event: EspnEvent) => {
+        if (processedEventIds.has(event.id)) return;
+        processedEventIds.add(event.id);
+
+        const comp = event.competitions?.[0];
+        if (!comp) return;
+
+        const homeCompetitor = comp.competitors?.find((c: EspnCompetitor) => c.homeAway === 'home');
+        const awayCompetitor = comp.competitors?.find((c: EspnCompetitor) => c.homeAway === 'away');
+
+        const rawHomeName = homeCompetitor?.team?.displayName || '';
+        const rawAwayName = awayCompetitor?.team?.displayName || '';
+
+        const homeName = teamNameMap[rawHomeName] || rawHomeName;
+        const awayName = teamNameMap[rawAwayName] || rawAwayName;
+
+        const homeScore = parseInt(homeCompetitor?.score || '0', 10);
+        const awayScore = parseInt(awayCompetitor?.score || '0', 10);
+
+        const statusObj = comp.status;
+        const completed = statusObj?.type?.completed;
+        const isScheduled = statusObj?.type?.name === 'STATUS_SCHEDULED' || statusObj?.type?.state === 'pre';
+
+        let status: 'scheduled' | 'live' | 'finished' = 'live';
+        let label = statusObj?.displayClock || '';
+
+        if (completed) {
+          status = 'finished';
+          label = 'FT';
+        } else if (isScheduled) {
+          status = 'scheduled';
+          label = 'Non Iniziata';
+        } else {
+          status = 'live';
+          if (statusObj?.type?.name === 'STATUS_HALFTIME' || statusObj?.type?.detail === 'Halftime' || statusObj?.type?.shortDetail === 'HT') {
+            label = 'HT';
+          }
+        }
+
+        // Calcola minuti trascorsi con fallback sul clock reale di ESPN
+        const startTime = new Date(event.date);
+        const elapsedMs = now.getTime() - startTime.getTime();
+        const fallbackElapsedMins = Math.max(0, Math.floor(elapsedMs / 60000));
+        
+        // Se il match è in corso e ESPN ha un clock, usa quello!
+        const elapsedMins = (status === 'live' && statusObj?.clock !== undefined) 
+          ? Math.floor(statusObj.clock) 
+          : fallbackElapsedMins;
+
+        const id = getMatchId(homeName, awayName, event.id);
+
+        mappedMatches.push({
+          id,
+          home: homeName,
+          away: awayName,
+          info: 'Mondiale 2026',
+          startTime: event.date,
+          status,
+          label: label || (status === 'live' ? `${elapsedMins}'` : 'Non Iniziata'),
+          homeScore,
+          awayScore,
+          elapsedMins
+        });
+      });
+    }
+  }
+
+  // Fallback statico originale per garantire retrocompatibilità ed avere sempre almeno 7 match
+  const fallbackMatches = [
     { id: 'm1', home: 'Spagna', away: 'Arabia Saudita', info: 'Mondiale 2026', startTime: '2026-06-21T16:00:00Z' },
     { id: 'm2', home: 'Belgio', away: 'Iran', info: 'Mondiale 2026', startTime: '2026-06-21T19:00:00Z' },
     { id: 'm3', home: 'Uruguay', away: 'Capo Verde', info: 'Mondiale 2026', startTime: '2026-06-21T22:00:00Z' },
@@ -127,92 +252,22 @@ export async function GET() {
     { id: 'm7', home: 'Norvegia', away: 'Senegal', info: 'Mondiale 2026', startTime: '2026-06-23T00:00:00Z' }
   ];
 
-  const espnData = await getEspnScoreboard();
-  const now = new Date();
-
-  const matchesWithLive = upcomingMatches.map(match => {
-    let liveInfo = null;
-
-    if (espnData && espnData.events) {
-      // Try to find the match in the ESPN events
-      const event = espnData.events.find((e: EspnEvent) => {
-        const comp = e.competitions?.[0];
-        if (!comp) return false;
-        const homeName = comp.competitors?.find((c: EspnCompetitor) => c.homeAway === 'home')?.team?.displayName;
-        const awayName = comp.competitors?.find((c: EspnCompetitor) => c.homeAway === 'away')?.team?.displayName;
-
-        if (!homeName || !awayName) return false;
-
-        const mappedHome = teamNameMap[homeName] || homeName;
-        const mappedAway = teamNameMap[awayName] || awayName;
-
-        return (mappedHome.toLowerCase() === match.home.toLowerCase() && mappedAway.toLowerCase() === match.away.toLowerCase()) ||
-               (mappedHome.toLowerCase() === match.away.toLowerCase() && mappedAway.toLowerCase() === match.home.toLowerCase());
+  // Aggiunge elementi dal fallback solo se non sono già presenti (per ID) e finché non arriviamo ad almeno 7 match
+  const finalMatches = [...mappedMatches];
+  for (const fb of fallbackMatches) {
+    if (finalMatches.length >= 7) break;
+    const exists = finalMatches.some(m => m.id === fb.id);
+    if (!exists) {
+      const liveInfo = getMockLiveScore(fb.id, fb.startTime, now);
+      finalMatches.push({
+        ...fb,
+        ...liveInfo
       });
-
-      if (event) {
-        const comp = event.competitions?.[0];
-        if (comp) {
-          const homeCompetitor = comp.competitors?.find((c: EspnCompetitor) => c.homeAway === 'home');
-          const awayCompetitor = comp.competitors?.find((c: EspnCompetitor) => c.homeAway === 'away');
-
-          const homeScore = parseInt(homeCompetitor?.score || '0', 10);
-          const awayScore = parseInt(awayCompetitor?.score || '0', 10);
-
-          const espnHomeDisplayName = homeCompetitor?.team?.displayName || '';
-          const isHomeMapped = (teamNameMap[espnHomeDisplayName] || espnHomeDisplayName).toLowerCase() === match.home.toLowerCase();
-
-          // Map scores to home/away as defined in our match (e.g. Spain is home in match, but might be away in ESPN)
-          const finalHomeScore = isHomeMapped ? homeScore : awayScore;
-          const finalAwayScore = isHomeMapped ? awayScore : homeScore;
-
-          const statusObj = comp.status;
-          const completed = statusObj?.type?.completed;
-          const isScheduled = statusObj?.type?.name === 'STATUS_SCHEDULED' || statusObj?.type?.state === 'pre';
-
-          let status: 'scheduled' | 'live' | 'finished' = 'live';
-          let label = statusObj?.displayClock || '';
-
-          if (completed) {
-            status = 'finished';
-            label = 'FT';
-          } else if (isScheduled) {
-            status = 'scheduled';
-            label = 'Non Iniziata';
-          } else {
-            status = 'live';
-            if (statusObj?.type?.name === 'STATUS_HALFTIME' || statusObj?.type?.detail === 'Halftime' || statusObj?.type?.shortDetail === 'HT') {
-              label = 'HT';
-            }
-          }
-
-          // Calculate elapsedMins
-          const startTime = new Date(match.startTime);
-          const elapsedMs = now.getTime() - startTime.getTime();
-          const elapsedMins = Math.max(0, Math.floor(elapsedMs / 60000));
-
-          liveInfo = {
-            status,
-            label,
-            homeScore: finalHomeScore,
-            awayScore: finalAwayScore,
-            elapsedMins
-          };
-        }
-      }
     }
+  }
 
-    if (!liveInfo) {
-      // Fallback to local simulator
-      liveInfo = getMockLiveScore(match.id, match.startTime, now);
-    }
+  // Ordina per data di inizio per visualizzazione ordinata
+  finalMatches.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-    return {
-      ...match,
-      ...liveInfo
-    };
-  });
-
-  return NextResponse.json({ matches: matchesWithLive });
+  return NextResponse.json({ matches: finalMatches });
 }
-
