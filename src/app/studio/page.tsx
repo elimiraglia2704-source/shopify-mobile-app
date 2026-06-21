@@ -8,7 +8,7 @@ export default function StudioPage() {
       {/* Header Studio */}
       <div style={{ marginTop: '10px' }}>
         <h1 style={{ fontFamily: 'var(--font-d)', fontSize: '36px', fontWeight: 700, marginBottom: '8px' }}>
-          Studio <span style={{ color: 'var(--gold)' }}>Elisee</span>
+          Studio <span style={{ color: 'var(--gold)' }}>Elisee Graphics</span>
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
           Il tuo partner creativo. Foto, Video, Brand Identity.
@@ -52,27 +52,55 @@ export default function StudioPage() {
       {/* Portfolio */}
       <div>
         <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', fontFamily: 'var(--font-d)' }}>Ultimi Lavori (Portfolio)</h3>
-        <div className="h-scrollable-cards" style={{ gap: '16px', paddingBottom: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
           {/* Card 1 */}
-          <div style={{ position: 'relative', minWidth: '280px', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
             <Image src="/banner-antica-panetteria-del-corso.png" alt="Antica Panetteria" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', marginBottom: '4px', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 Collaborazione Elisee Graphic con Antica Panetteria del Corso
               </h4>
-              <p style={{ color: 'var(--gold)', fontSize: '11px', fontWeight: 500 }}>Visual Branding</p>
             </div>
           </div>
 
           {/* Card 2 */}
-          <div style={{ position: 'relative', minWidth: '280px', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Image src="/banner-pranziamo.png" alt="PranziAmo" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <Image src="/portfolio-pranziamo.jpg" alt="PranziAmo" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', marginBottom: '4px', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 Collaborazione Elisee Graphic con PranziAmo
               </h4>
-              <p style={{ color: 'var(--gold)', fontSize: '11px', fontWeight: 500 }}>Sport Videography</p>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <Image src="/portfolio-macelleria.jpg" alt="Macelleria" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                Collaborazione Elisee Graphic con Macelleria da Carmine
+              </h4>
+            </div>
+          </div>
+
+          {/* Card 4 */}
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <Image src="/shop-cat-sport.jpg" alt="Sport Shop" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                Collaborazione Elisee Graphic con Sport Shop
+              </h4>
+            </div>
+          </div>
+
+          {/* Card 5 */}
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <Image src="/shop-cat-scarpe.jpg" alt="Accessori Moda" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                Collaborazione Elisee Graphic con Accessori Moda
+              </h4>
             </div>
           </div>
 
