@@ -414,7 +414,7 @@ export default function ProfilePage() {
               const updated = { ...settings, faceId: true };
               setSettings(updated);
               localStorage.setItem('elisee:settings', JSON.stringify(updated));
-              alert("Sblocco FaceID abilitato con successo!");
+              alert("Sblocco Face ID o Impronta Digitale abilitato con successo!");
             }
           } catch (err: any) {
             console.error("Errore attivazione biometria:", err);
@@ -635,7 +635,24 @@ export default function ProfilePage() {
             <Image src={profileAvatar} alt={profileName} fill style={{ objectFit: 'cover' }} />
           </div>
         </div>
-        <h2 id="profile-name-display" style={{ fontFamily: 'var(--font-d)', fontSize: '28px', marginBottom: '8px', fontWeight: 600, letterSpacing: '0.5px' }}>{profileName}</h2>
+        <h2 
+          id="profile-name-display" 
+          style={{ 
+            fontFamily: 'var(--font-d)', 
+            fontSize: '22px', 
+            lineHeight: '1.35', 
+            marginTop: '12px',
+            marginBottom: '16px', 
+            fontWeight: 600, 
+            letterSpacing: '0.5px',
+            color: 'white',
+            maxWidth: '300px',
+            textAlign: 'center',
+            wordBreak: 'break-word'
+          }}
+        >
+          {profileName}
+        </h2>
         <button 
           id="go-edit-profile-btn" 
           onClick={() => setActiveDrawer('edit-profile')}
@@ -1137,7 +1154,7 @@ export default function ProfilePage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Fingerprint size={18} color="rgba(255,255,255,0.6)" />
                 <div>
-                  <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'white' }}>Sblocco FaceID</h4>
+                  <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'white' }}>Sblocco Face ID o Impronta Digitale</h4>
                   <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Accesso rapido con biometria</p>
                 </div>
               </div>
