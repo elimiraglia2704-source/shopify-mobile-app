@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronRight, ArrowLeft, Loader, Eye, EyeOff, Sparkles } from 'lucide-react';
 
 // ─── Tipi ────────────────────────────────────────────────────────────────────
@@ -59,6 +60,7 @@ function OverlayWrapper({ children, onClose }: { children: React.ReactNode; onCl
         alignItems: 'flex-end',
         background: 'rgba(0,0,0,0.7)',
         backdropFilter: 'blur(4px)',
+        pointerEvents: 'auto',
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
@@ -122,6 +124,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
   const [showPass, setShowPass]         = useState(false);
+  const [mounted, setMounted]           = useState(false);
 
   const [loginEmail, setLoginEmail]     = useState('');
   const [loginPass, setLoginPass]       = useState('');
@@ -130,6 +133,13 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
   const [signupPass, setSignupPass]     = useState('');
   const [adminUser, setAdminUser]       = useState('');
   const [adminPass, setAdminPass]       = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -255,181 +265,189 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
 
   // (CloseBtn è definito fuori per evitare re-create during render)
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // VISTA: LOGIN
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (view === 'login') {
-    return (
-      <OverlayWrapper onClose={onClose}>
-        <SheetHandle />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-          <div>
-            <h2 style={{ fontSize: '26px', fontWeight: 700, color: 'white', marginBottom: '4px', fontFamily: 'var(--font-d)' }}>Bentornato</h2>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Accedi al tuo account Elisee</p>
+  const renderContent = () => {
+    // ═══════════════════════════════════════════════════════════════════════════
+    // VISTA: LOGIN
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (view === 'login') {
+      return (
+        <OverlayWrapper onClose={onClose}>
+          <SheetHandle />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+            <div>
+              <h2 style={{ fontSize: '26px', fontWeight: 700, color: 'white', marginBottom: '4px', fontFamily: 'var(--font-d)' }}>Bentornato</h2>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Accedi al tuo account Elisee</p>
+            </div>
+            <CloseBtn onClose={onClose} />
           </div>
-          <CloseBtn onClose={onClose} />
-        </div>
 
-        {error && <ErrorBanner message={error} />}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-          <input
-            type="email" placeholder="Email" value={loginEmail}
-            onChange={(e) => { setLoginEmail(e.target.value); clearError(); }}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-            style={inputStyle}
-          />
-          <div style={{ position: 'relative' }}>
-            <input
-              type={showPass ? 'text' : 'password'} placeholder="Password" value={loginPass}
-              onChange={(e) => { setLoginPass(e.target.value); clearError(); }}
-              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-              style={{ ...inputStyle, paddingRight: '48px' }}
-            />
-            <button onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
-              {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button style={btnPrimary} onClick={handleLogin} disabled={loading}>
-            {loading && <Loader size={18} className="spin" />}
-            {loading ? 'Accesso...' : 'Accedi'}
-          </button>
-          <button
-            style={{ ...btnSecondary, color: 'var(--gold)', borderColor: 'rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-            onClick={() => setView('spid-gateway')}
-          >
-            <Sparkles size={16} /> Accedi con SPID
-          </button>
-          <button style={btnSecondary} onClick={() => { setError(''); setView('signup'); }}>
-            Non hai un account? <strong>Registrati</strong>
-          </button>
-        </div>
-      </OverlayWrapper>
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // VISTA: SIGNUP
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (view === 'signup') {
-    return (
-      <OverlayWrapper onClose={onClose}>
-        <SheetHandle />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-          <div>
-            <h2 style={{ fontSize: '26px', fontWeight: 700, color: 'white', marginBottom: '4px', fontFamily: 'var(--font-d)' }}>Crea Account</h2>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Unisciti alla community Elisee</p>
-          </div>
-          <CloseBtn onClose={onClose} />
-        </div>
-
-        {error && <ErrorBanner message={error} />}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-          <input type="text" placeholder="Nome completo" value={signupName} onChange={(e) => { setSignupName(e.target.value); clearError(); }} style={inputStyle} />
-          <input type="email" placeholder="Email" value={signupEmail} onChange={(e) => { setSignupEmail(e.target.value); clearError(); }} style={inputStyle} />
-          <div style={{ position: 'relative' }}>
-            <input
-              type={showPass ? 'text' : 'password'} placeholder="Password (min. 8 caratteri)" value={signupPass}
-              onChange={(e) => { setSignupPass(e.target.value); clearError(); }}
-              style={{ ...inputStyle, paddingRight: '48px' }}
-            />
-            <button onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
-              {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button style={btnPrimary} onClick={handleSignup} disabled={loading}>
-            {loading && <Loader size={18} className="spin" />}
-            {loading ? 'Registrazione...' : 'Crea Account'}
-          </button>
-          <button style={btnSecondary} onClick={() => { setError(''); setView('login'); }}>
-            Hai già un account? <strong>Accedi</strong>
-          </button>
-        </div>
-      </OverlayWrapper>
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // VISTA: SPID
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (view === 'spid-gateway' || view === 'spid-credentials' || view === 'spid-loading') {
-    return (
-      <div style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 10000, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-        <div style={{ background: '#0066cc', padding: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => setView('login')} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'flex' }}><ArrowLeft size={22} /></button>
-          <span style={{ color: 'white', fontWeight: 600, fontSize: '16px' }}>
-            {view === 'spid-gateway' ? 'Scegli il tuo Provider SPID' : view === 'spid-credentials' ? `Accedi con ${spidProvider}` : 'Autenticazione in corso'}
-          </span>
-          <button onClick={onClose} style={{ marginLeft: 'auto', color: 'white', background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
-        </div>
-
-        {view === 'spid-gateway' && (
-          <div style={{ padding: '24px', display: 'grid', gap: '12px', flex: 1, background: '#f9fafb' }}>
-            {[
-              { name: 'Poste ID', color: '#004d99' },
-              { name: 'Aruba ID', color: '#ff6600' },
-              { name: 'InfoCert ID', color: '#00a651' },
-              { name: 'Sielte ID', color: '#0099cc' },
-            ].map((p) => (
-              <button key={p.name} onClick={() => { setSpidProvider(p.name); setView('spid-credentials'); }}
-                style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
-                <span style={{ fontWeight: 700, color: p.color, fontSize: '16px' }}>{p.name}</span>
-                <ChevronRight style={{ color: '#9ca3af' }} />
-              </button>
-            ))}
-          </div>
-        )}
-
-        {view === 'spid-credentials' && (
-          <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <input type="text" placeholder="Nome Utente SPID" style={{ padding: '12px 16px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '16px' }} />
-            <input type="password" placeholder="Password" style={{ padding: '12px 16px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '16px' }} />
-            <button onClick={() => { setView('spid-loading'); setTimeout(onClose, 2000); }}
-              style={{ background: '#0066cc', color: 'white', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '16px', fontWeight: 700, cursor: 'pointer' }}>
-              Entra con SPID
-            </button>
-          </div>
-        )}
-
-        {view === 'spid-loading' && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px', textAlign: 'center' }}>
-            <Loader size={48} style={{ color: '#0066cc', marginBottom: '20px' }} className="spin" />
-            <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>Autenticazione in corso</h2>
-            <p style={{ color: '#6b7280' }}>Verifica credenziali...</p>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // VISTA: ADMIN LOGIN
-  // ═══════════════════════════════════════════════════════════════════════════
-  if (view === 'admin-login') {
-    return (
-      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-        <div style={{ background: '#1a1a2e', padding: '32px', borderRadius: '24px', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <h2 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', marginBottom: '24px', color: 'white' }}>Accesso Direzione</h2>
           {error && <ErrorBanner message={error} />}
-          <input type="text" placeholder="Username" value={adminUser} onChange={(e) => setAdminUser(e.target.value)} style={{ ...inputStyle, marginBottom: '12px' }} />
-          <input type="password" placeholder="Password" value={adminPass} onChange={(e) => setAdminPass(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()} style={{ ...inputStyle, marginBottom: '24px' }} />
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={onClose} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', borderRadius: '12px', cursor: 'pointer' }}>Annulla</button>
-            <button onClick={handleAdminLogin} disabled={loading} style={{ flex: 1, padding: '14px', background: 'var(--gold)', border: 'none', color: 'black', fontWeight: 700, borderRadius: '12px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+            <input
+              type="email" placeholder="Email" value={loginEmail}
+              onChange={(e) => { setLoginEmail(e.target.value); clearError(); }}
+              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              style={inputStyle}
+            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPass ? 'text' : 'password'} placeholder="Password" value={loginPass}
+                onChange={(e) => { setLoginPass(e.target.value); clearError(); }}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                style={{ ...inputStyle, paddingRight: '48px' }}
+              />
+              <button onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
+                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button style={btnPrimary} onClick={handleLogin} disabled={loading}>
+              {loading && <Loader size={18} className="spin" />}
               {loading ? 'Accesso...' : 'Accedi'}
             </button>
+            <button
+              style={{ ...btnSecondary, color: 'var(--gold)', borderColor: 'rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              onClick={() => setView('spid-gateway')}
+            >
+              <Sparkles size={16} /> Accedi con SPID
+            </button>
+            <button style={btnSecondary} onClick={() => { setError(''); setView('signup'); }}>
+              Non hai un account? <strong>Registrati</strong>
+            </button>
+          </div>
+        </OverlayWrapper>
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // VISTA: SIGNUP
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (view === 'signup') {
+      return (
+        <OverlayWrapper onClose={onClose}>
+          <SheetHandle />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+            <div>
+              <h2 style={{ fontSize: '26px', fontWeight: 700, color: 'white', marginBottom: '4px', fontFamily: 'var(--font-d)' }}>Crea Account</h2>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Unisciti alla community Elisee</p>
+            </div>
+            <CloseBtn onClose={onClose} />
+          </div>
+
+          {error && <ErrorBanner message={error} />}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+            <input type="text" placeholder="Nome completo" value={signupName} onChange={(e) => { setSignupName(e.target.value); clearError(); }} style={inputStyle} />
+            <input type="email" placeholder="Email" value={signupEmail} onChange={(e) => { setSignupEmail(e.target.value); clearError(); }} style={inputStyle} />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPass ? 'text' : 'password'} placeholder="Password (min. 8 caratteri)" value={signupPass}
+                onChange={(e) => { setSignupPass(e.target.value); clearError(); }}
+                style={{ ...inputStyle, paddingRight: '48px' }}
+              />
+              <button onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
+                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button style={btnPrimary} onClick={handleSignup} disabled={loading}>
+              {loading && <Loader size={18} className="spin" />}
+              {loading ? 'Registrazione...' : 'Crea Account'}
+            </button>
+            <button style={btnSecondary} onClick={() => { setError(''); setView('login'); }}>
+              Hai già un account? <strong>Accedi</strong>
+            </button>
+          </div>
+        </OverlayWrapper>
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // VISTA: SPID
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (view === 'spid-gateway' || view === 'spid-credentials' || view === 'spid-loading') {
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 10000, display: 'flex', flexDirection: 'column', overflowY: 'auto', pointerEvents: 'auto' }}>
+          <div style={{ background: '#0066cc', padding: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button onClick={() => setView('login')} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'flex' }}><ArrowLeft size={22} /></button>
+            <span style={{ color: 'white', fontWeight: 600, fontSize: '16px' }}>
+              {view === 'spid-gateway' ? 'Scegli il tuo Provider SPID' : view === 'spid-credentials' ? `Accedi con ${spidProvider}` : 'Autenticazione in corso'}
+            </span>
+            <button onClick={onClose} style={{ marginLeft: 'auto', color: 'white', background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
+          </div>
+
+          {view === 'spid-gateway' && (
+            <div style={{ padding: '24px', display: 'grid', gap: '12px', flex: 1, background: '#f9fafb' }}>
+              {[
+                { name: 'Poste ID', color: '#004d99' },
+                { name: 'Aruba ID', color: '#ff6600' },
+                { name: 'InfoCert ID', color: '#00a651' },
+                { name: 'Sielte ID', color: '#0099cc' },
+              ].map((p) => (
+                <button key={p.name} onClick={() => { setSpidProvider(p.name); setView('spid-credentials'); }}
+                  style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                  <span style={{ fontWeight: 700, color: p.color, fontSize: '16px' }}>{p.name}</span>
+                  <ChevronRight style={{ color: '#9ca3af' }} />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {view === 'spid-credentials' && (
+            <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <input type="text" placeholder="Nome Utente SPID" style={{ padding: '12px 16px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '16px' }} />
+              <input type="password" placeholder="Password" style={{ padding: '12px 16px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '16px' }} />
+              <button onClick={() => { setView('spid-loading'); setTimeout(onClose, 2000); }}
+                style={{ background: '#0066cc', color: 'white', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '16px', fontWeight: 700, cursor: 'pointer' }}>
+                Entra con SPID
+              </button>
+            </div>
+          )}
+
+          {view === 'spid-loading' && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px', textAlign: 'center' }}>
+              <Loader size={48} style={{ color: '#0066cc', marginBottom: '20px' }} className="spin" />
+              <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>Autenticazione in corso</h2>
+              <p style={{ color: '#6b7280' }}>Verifica credenziali...</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (view === 'admin-login') {
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', pointerEvents: 'auto' }}>
+          <div style={{ background: '#1a1a2e', padding: '32px', borderRadius: '24px', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h2 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', marginBottom: '24px', color: 'white' }}>Accesso Direzione</h2>
+            {error && <ErrorBanner message={error} />}
+            <input type="text" placeholder="Username" value={adminUser} onChange={(e) => setAdminUser(e.target.value)} style={{ ...inputStyle, marginBottom: '12px' }} />
+            <input type="password" placeholder="Password" value={adminPass} onChange={(e) => setAdminPass(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()} style={{ ...inputStyle, marginBottom: '24px' }} />
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={onClose} style={{ flex: 1, padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', borderRadius: '12px', cursor: 'pointer' }}>Annulla</button>
+              <button onClick={handleAdminLogin} disabled={loading} style={{ flex: 1, padding: '14px', background: 'var(--gold)', border: 'none', color: 'black', fontWeight: 700, borderRadius: '12px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+                {loading ? 'Accesso...' : 'Accedi'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  return null;
+    return null;
+  };
+
+  const modalContent = renderContent();
+  if (!modalContent) return null;
+
+  if (mounted) {
+    const el = document.getElementById('drawer-root');
+    if (el) return createPortal(modalContent, el);
+  }
+  return modalContent;
 }

@@ -29,9 +29,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body style={{ background: '#050008', margin: 0, padding: 0 }}>
         <div className="app-shell" style={{ width: '100%', height: '100dvh', position: 'relative', overflow: 'hidden' }}>
           <div className="app-bg-pattern" />
-          <main style={{ flex: 1, height: '100%', overflowY: 'auto', paddingBottom: '96px', position: 'relative', zIndex: 1 }}>
+          <main style={{ flex: 1, height: '100%', overflowY: 'auto', paddingBottom: '96px', position: 'relative' }}>
             {children}
           </main>
+          <div id="drawer-root" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 99999 }} />
           <FloatingButtons />
           <BottomNav />
         </div>

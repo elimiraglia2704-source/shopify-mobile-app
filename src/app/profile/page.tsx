@@ -23,6 +23,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import AuthModal from '@/components/AuthModal';
+import { createPortal } from 'react-dom';
 
 // ─── Interfacce e Tipi ────────────────────────────────────────────────────────
 type DrawerType = 
@@ -198,7 +199,10 @@ export default function ProfilePage() {
   // Fetch dei preferiti quando si apre il drawer relativo
   useEffect(() => {
     if (activeDrawer === 'favorites') {
-      fetchFavoriteProducts(favIds);
+      const timer = setTimeout(() => {
+        fetchFavoriteProducts(favIds);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [activeDrawer, favIds]);
 
@@ -1097,8 +1101,17 @@ interface DrawerProps {
 }
 
 function ProfileDrawer({ isOpen, onClose, title, children }: DrawerProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (!isOpen) return null;
-  return (
+
+  const drawerContent = (
     <div
       style={{
         position: 'fixed',
@@ -1108,6 +1121,7 @@ function ProfileDrawer({ isOpen, onClose, title, children }: DrawerProps) {
         backdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'flex-end',
+        pointerEvents: 'auto',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -1161,4 +1175,10 @@ function ProfileDrawer({ isOpen, onClose, title, children }: DrawerProps) {
       </div>
     </div>
   );
+
+  if (mounted) {
+    const el = document.getElementById('drawer-root');
+    if (el) return createPortal(drawerContent, el);
+  }
+  return drawerContent;
 }
