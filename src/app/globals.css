@@ -1538,7 +1538,7 @@ input:checked + .knob::before { transform:translateX(20px); background:var(--pur
   border-radius: 12px;
   margin-bottom: 8px;
 }
-.bet-row span {
+.bet-row > span {
   font-weight: 600;
   font-size: 14px;
   color: var(--text);

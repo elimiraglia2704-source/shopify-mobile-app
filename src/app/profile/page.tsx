@@ -118,6 +118,9 @@ export default function ProfilePage() {
   const [realOrders, setRealOrders] = useState<any[]>([]);
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
 
+  // Storico Scommesse Reali
+  const [realBets, setRealBets] = useState<any[]>([]);
+
   const fetchCustomerDetails = async (token: string) => {
     setIsOrdersLoading(true);
     const query = `
@@ -309,10 +312,37 @@ export default function ProfilePage() {
           setSettings(JSON.parse(savedSettings));
         }
       } catch {}
+
+      // Carica scommesse reali
+      try {
+        const savedBets = localStorage.getItem('elisee_bet_history');
+        if (savedBets) {
+          setRealBets(JSON.parse(savedBets));
+        }
+      } catch {}
     }, 0);
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Ricarica scommesse reali quando si aprono determinati drawer per sincronia dati
+  useEffect(() => {
+    if (activeDrawer === 'bet-history' || activeDrawer === 'inbox' || activeDrawer === 'vip') {
+      const timer = setTimeout(() => {
+        try {
+          const savedBets = localStorage.getItem('elisee_bet_history');
+          if (savedBets) {
+            setRealBets(JSON.parse(savedBets));
+          } else {
+            setRealBets([]);
+          }
+        } catch (err) {
+          console.error("Errore lettura storico scommesse:", err);
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [activeDrawer]);
 
   // Fetch dei preferiti quando si apre il drawer relativo
   useEffect(() => {
@@ -525,23 +555,74 @@ export default function ProfilePage() {
     );
   }
 
-  const mockOrders: MockOrder[] = [
-    { id: '#2841', item: 'Cover Foggia Home s.s. 25/26', size: 'iPhone 15 Pro', price: '€25.00', status: 'In Transito', date: 'In consegna oggi', color: 'var(--gold)' },
-    { id: '#2798', item: 'Cover Inter Third 25/26 resistente MagSafe®', size: 'iPhone 15 Pro', price: '€25.00', status: 'Consegnato', date: '14 Giugno 2026', color: '#4caf50' },
-    { id: '#2602', item: 'Cover Milan Away s.s. 25/26', size: 'iPhone 14', price: '€25.00', status: 'Consegnato', date: '30 Maggio 2026', color: '#4caf50' }
-  ];
+  const basePoints = 150;
+  const orderPoints = realOrders.reduce((sum, order) => sum + Math.round(parseFloat(order.totalPrice?.amount || '0') * 10), 0);
+  const betPoints = realBets.length * 100;
+  const totalPoints = basePoints + orderPoints + betPoints;
 
-  const mockMessages: MockMessage[] = [
-    { id: 1, title: '🎁 Regalo di Benvenuto sbloccato!', desc: 'Hai ricevuto 150 Punti Stile gratuiti per L\'Angolo Ludopatico. Usali subito per fare i tuoi primi pronostici!', date: '20/06/2026', read: false },
-    { id: 2, title: '📦 Spedizione Affidata al Corriere', desc: 'Ottime notizie! Il tuo ordine #2841 (Cover Foggia Home) è in consegna per la giornata di oggi tramite corriere espresso DHL.', date: 'Oggi', read: false },
-    { id: 3, title: '⚽ Pronostici Aperti per la Giornata 38', desc: 'Le giocate della settimana sono attive. Effettua il tuo inserimento ed indovina i 7 match per vincere il jackpot punti stile.', date: 'Ieri', read: true }
-  ];
+  let vipLevelName = 'SILVER MEMBER';
+  let vipLevelColor = '#bdc3c7'; // silver
+  let nextLevelName = 'Elite Gold Member';
+  let pointsToNext = 500 - totalPoints;
+  let progressPercent = (totalPoints / 500) * 100;
 
-  const mockBets: MockBet[] = [
-    { id: '#SCH-982', match: 'Napoli vs Inter', prediction: 'Inter Vincente (2)', points: '50 EP', payout: '125 EP', status: 'In Corso', color: 'var(--gold)' },
-    { id: '#SCH-940', match: 'Real Madrid vs Barcelona', prediction: 'Real Madrid Vincente (1)', points: '30 EP', payout: '57 EP', status: 'Vinta', color: '#4caf50' },
-    { id: '#SCH-912', match: 'Juventus vs Milan', prediction: 'Pareggio (X)', points: '20 EP', payout: '0 EP', status: 'Persa', color: '#ff4d4d' }
-  ];
+  if (totalPoints >= 1500) {
+    vipLevelName = 'ELITE PLATINUM MEMBER';
+    vipLevelColor = 'var(--gold)';
+    nextLevelName = '';
+    pointsToNext = 0;
+    progressPercent = 100;
+  } else if (totalPoints >= 500) {
+    vipLevelName = 'ELITE GOLD MEMBER';
+    vipLevelColor = 'var(--gold)';
+    nextLevelName = 'Elite Platinum Member';
+    pointsToNext = 1500 - totalPoints;
+    progressPercent = ((totalPoints - 500) / 1000) * 100;
+  }
+  progressPercent = Math.max(0, Math.min(100, progressPercent));
+
+  const getRealNotifications = () => {
+    const list: any[] = [];
+    
+    // 1. Ordini reali
+    realOrders.forEach((order: any) => {
+      const dateStr = new Date(order.processedAt).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const itemName = order.lineItems?.edges?.[0]?.node?.title || 'Cover';
+      list.push({
+        id: `order_${order.id}`,
+        title: `📦 Ordine Ricevuto: #${order.orderNumber}`,
+        desc: `Il tuo ordine per "${itemName}" è stato registrato ed è in elaborazione.`,
+        date: dateStr,
+        read: true
+      });
+    });
+
+    // 2. Scommesse reali
+    realBets.forEach((bet: any) => {
+      list.push({
+        id: `bet_${bet.id}`,
+        title: `⚽ Scommessa Piazzata`,
+        desc: `Hai giocato la tua schedina per i 7 match di cartello nell'Angolo del Ludopatico.`,
+        date: bet.date?.split(',')[0] || 'Oggi',
+        read: false
+      });
+    });
+
+    // 3. Impostazioni FaceID
+    if (settings.faceId) {
+      list.push({
+        id: 'faceid_secure',
+        title: '🔒 Protezione Biometrica Attiva',
+        desc: 'Lo sblocco biometrico all\'avvio dell\'app è abilitato. L\'accesso è protetto con Elisee Secure.',
+        date: 'Oggi',
+        read: false
+      });
+    }
+
+    return list;
+  };
+
+  const realNotifications = getRealNotifications();
 
   return (
     <div className="profile-body" style={{ padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '120px' }}>
@@ -1124,27 +1205,35 @@ export default function ProfilePage() {
         title="Posta in Arrivo"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {mockMessages.map((msg) => (
-            <div 
-              key={msg.id}
-              style={{ 
-                background: msg.read ? 'rgba(255,255,255,0.02)' : 'rgba(155,89,208,0.04)', 
-                border: msg.read ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(155,89,208,0.15)', 
-                borderRadius: '16px', 
-                padding: '16px', 
-                position: 'relative'
-              }}
-            >
-              {!msg.read && (
-                <div style={{ position: 'absolute', top: '16px', right: '16px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--purple-light)' }} />
-              )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', paddingRight: '12px' }}>
-                <h4 style={{ fontSize: '14px', fontWeight: 700, color: msg.read ? 'white' : 'var(--purple-light)' }}>{msg.title}</h4>
-              </div>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.5', marginBottom: '8px' }}>{msg.desc}</p>
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>{msg.date}</span>
+          {realNotifications.length === 0 ? (
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
+              <Mail style={{ width: '32px', height: '32px', margin: '0 auto 12px', opacity: 0.5, color: 'var(--purple-light)' }} />
+              <p style={{ fontWeight: 600, color: 'white', marginBottom: '4px' }}>Nessuna notifica in arrivo</p>
+              <p style={{ fontSize: '11px', opacity: 0.7 }}>Le notifiche reali per ordini e scommesse compariranno qui non appena disponibili.</p>
             </div>
-          ))}
+          ) : (
+            realNotifications.map((msg) => (
+              <div 
+                key={msg.id}
+                style={{ 
+                  background: msg.read ? 'rgba(255,255,255,0.02)' : 'rgba(155,89,208,0.04)', 
+                  border: msg.read ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(155,89,208,0.15)', 
+                  borderRadius: '16px', 
+                  padding: '16px', 
+                  position: 'relative'
+                }}
+              >
+                {!msg.read && (
+                  <div style={{ position: 'absolute', top: '16px', right: '16px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--purple-light)' }} />
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', paddingRight: '12px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, color: msg.read ? 'white' : 'var(--purple-light)' }}>{msg.title}</h4>
+                </div>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.5', marginBottom: '8px' }}>{msg.desc}</p>
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>{msg.date}</span>
+              </div>
+            ))
+          )}
         </div>
       </ProfileDrawer>
 
@@ -1160,18 +1249,18 @@ export default function ProfilePage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <div>
                 <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px' }}>Livello Attuale</span>
-                <h4 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--gold)' }}>ELITE GOLD MEMBER</h4>
+                <h4 style={{ fontSize: '18px', fontWeight: 800, color: vipLevelColor }}>{vipLevelName}</h4>
               </div>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: 'white' }}>1.250 <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>pt</span></div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: 'white' }}>{totalPoints.toLocaleString('it-IT')} <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>pt</span></div>
             </div>
             
             {/* Progress bar */}
             <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
-              <div style={{ width: '62.5%', height: '100%', background: 'linear-gradient(90deg, var(--gold), #f39c12)', borderRadius: '4px' }} />
+              <div style={{ width: `${progressPercent}%`, height: '100%', background: 'linear-gradient(90deg, var(--gold), #f39c12)', borderRadius: '4px' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
-              <span>Livello Gold</span>
-              <span>750 punti al livello Platinum</span>
+              <span>{totalPoints >= 1500 ? 'Livello Max' : totalPoints >= 500 ? 'Livello Gold' : 'Livello Silver'}</span>
+              <span>{totalPoints >= 1500 ? 'Livello Massimo Raggiunto 🎉' : `Mancano ${pointsToNext} punti al livello ${nextLevelName}`}</span>
             </div>
           </div>
 
@@ -1184,9 +1273,7 @@ export default function ProfilePage() {
               {[
                 { title: 'Spedizione Standard Gratuita', desc: 'Nessun costo di spedizione su tutti i prodotti.', active: true },
                 { title: 'Accesso all\'Angolo Ludopatico', desc: 'Gioca le tue schedine per vincere punti fedeltà.', active: true },
-                { title: 'Regalo Compleanno Esclusivo', desc: 'Bonus stile in omaggio il giorno del tuo compleanno.', active: true },
-                { title: 'Assistenza WhatsApp H24', desc: 'Servizio clienti dedicato su canale WhatsApp prioritario.', active: false, level: 'Platinum' },
-                { title: 'Anteprime ed Edizioni Limitate', desc: 'Acquista le nuove collezioni 48h prima degli altri.', active: false, level: 'Platinum' }
+                { title: 'Anteprime ed Edizioni Limitate', desc: 'Acquista le nuove collezioni 48h prima degli altri.', active: totalPoints >= 1500, level: 'Platinum' }
               ].map((ben, idx) => (
                 <div 
                   key={idx}
@@ -1240,45 +1327,94 @@ export default function ProfilePage() {
         title="Storico Scommesse"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {mockBets.map((bet) => (
-            <div 
-              key={bet.id}
-              style={{ 
-                background: 'rgba(255,255,255,0.03)', 
-                border: '1px solid rgba(255,255,255,0.05)', 
-                borderRadius: '16px', 
-                padding: '16px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '12px' 
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>Schedina {bet.id}</span>
-                <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '10px', background: `${bet.color}15`, color: bet.color, border: `1px solid ${bet.color}30` }}>
-                  {bet.status}
-                </span>
-              </div>
-              <div>
-                <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{bet.match}</h4>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Pronostico: <span style={{ color: 'white', fontWeight: 600 }}>{bet.prediction}</span></p>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px', marginTop: '2px' }}>
-                <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
-                  <span>Giocati: <span style={{ color: 'white', fontWeight: 600 }}>{bet.points}</span></span>
-                </div>
-                {bet.status === 'Vinta' && (
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#4caf50' }}>Vincita: +{bet.payout}</span>
-                )}
-                {bet.status === 'Persa' && (
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ff4d4d' }}>{bet.payout}</span>
-                )}
-                {bet.status === 'In Corso' && (
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--gold)' }}>Potenziale: {bet.payout}</span>
-                )}
-              </div>
+          {realBets.length === 0 ? (
+            <div style={{ padding: '40px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
+              <Award style={{ width: '32px', height: '32px', margin: '0 auto 12px', opacity: 0.5, color: 'var(--gold)' }} />
+              <p style={{ fontWeight: 600, color: 'white', marginBottom: '4px' }}>Nessuna scommessa effettuata</p>
+              <p style={{ fontSize: '11px', opacity: 0.7, marginBottom: '16px' }}>Non hai ancora effettuato giocate nell&apos;Angolo del Ludopatico.</p>
+              <Link 
+                href="/betting" 
+                onClick={() => setActiveDrawer('none')}
+                style={{
+                  display: 'inline-block',
+                  padding: '10px 20px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, var(--gold), #d35400)',
+                  color: 'black',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  textDecoration: 'none'
+                }}
+              >
+                Gioca Ora
+              </Link>
             </div>
-          ))}
+          ) : (
+            realBets.map((bet) => {
+              const displayId = bet.id ? (bet.id.startsWith('bet_') ? bet.id.slice(4).slice(-6) : bet.id.slice(-6)) : 'N/D';
+              const isPending = bet.status === 'in_corso';
+              const statusColor = isPending ? 'var(--gold)' : '#4caf50';
+              const statusLabel = isPending ? 'In Corso' : 'Completata';
+              
+              return (
+                <div 
+                  key={bet.id}
+                  style={{ 
+                    background: 'rgba(255,255,255,0.03)', 
+                    border: '1px solid rgba(255,255,255,0.05)', 
+                    borderRadius: '20px', 
+                    padding: '18px', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '12px' 
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>Schedina #{displayId}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '10px', background: `${statusColor}15`, color: statusColor, border: `1px solid ${statusColor}30` }}>
+                      {statusLabel}
+                    </span>
+                  </div>
+
+                  {/* List of matches in this bet ticket */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.15)', padding: '12px', borderRadius: '12px' }}>
+                    {bet.matches?.map((matchTitle: string, idx: number) => {
+                      const pred = bet.predictions?.[idx] || '-';
+                      return (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', gap: '8px' }}>
+                          <span style={{ color: 'rgba(255,255,255,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+                            {matchTitle}
+                          </span>
+                          <span style={{ 
+                            fontWeight: 700, 
+                            color: 'var(--gold)', 
+                            background: 'rgba(212,175,55,0.1)', 
+                            width: '24px', 
+                            height: '24px', 
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(212,175,55,0.2)',
+                            flexShrink: 0
+                          }}>
+                            {pred}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', marginTop: '2px', fontSize: '12px' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.4)' }}>Giocati: <span style={{ color: 'white', fontWeight: 600 }}>50 Punti Stile</span></span>
+                    <span style={{ fontWeight: 700, color: 'var(--gold)' }}>
+                      Jackpot in Palio: <span style={{ color: 'white' }}>Buono Sconto</span>
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </ProfileDrawer>
 
@@ -1374,6 +1510,10 @@ interface DrawerProps {
 
 function ProfileDrawer({ isOpen, onClose, title, children }: DrawerProps) {
   const [mounted, setMounted] = useState(false);
+  const [translateY, setTranslateY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setMounted(true);
@@ -1381,7 +1521,39 @@ function ProfileDrawer({ isOpen, onClose, title, children }: DrawerProps) {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        setTranslateY(0);
+        setIsDragging(false);
+      }, 0);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  const handleStart = (clientY: number) => {
+    setIsDragging(true);
+    setStartY(clientY - translateY);
+  };
+
+  const handleMove = (clientY: number) => {
+    if (!isDragging) return;
+    const diff = clientY - startY;
+    if (diff > 0) {
+      setTranslateY(diff);
+    }
+  };
+
+  const handleEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    if (translateY > 100) {
+      onClose();
+    } else {
+      setTranslateY(0);
+    }
+  };
 
   const drawerContent = (
     <div
@@ -1411,10 +1583,33 @@ function ProfileDrawer({ isOpen, onClose, title, children }: DrawerProps) {
           flexDirection: 'column',
           overflow: 'hidden',
           paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
+          transform: `translateY(${translateY}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)'
         }}
       >
-        {/* Handle Bar */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 6px' }}>
+        {/* Handle Bar & Drag Area */}
+        <div 
+          onTouchStart={(e) => handleStart(e.touches[0].clientY)}
+          onTouchMove={(e) => handleMove(e.touches[0].clientY)}
+          onTouchEnd={handleEnd}
+          onMouseDown={(e) => handleStart(e.clientY)}
+          onMouseMove={(e) => {
+            if (e.buttons === 1) {
+              handleMove(e.clientY);
+            }
+          }}
+          onMouseUp={handleEnd}
+          onMouseLeave={handleEnd}
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            padding: '16px 0 10px',
+            cursor: 'grab',
+            userSelect: 'none',
+            touchAction: 'none',
+            background: 'transparent'
+          }}
+        >
           <div style={{ width: '42px', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.18)' }} />
         </div>
         

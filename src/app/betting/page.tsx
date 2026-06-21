@@ -373,59 +373,128 @@ export default function BettingPage() {
             <Loader2 className="animate-spin" size={24} style={{ color: 'var(--gold)' }} />
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {matches.map((match, index) => {
               const matchDate = new Date(match.startTime);
               const dateStr = matchDate.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }) + ', ' + matchDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+              const { p1, pX, p2 } = getMatchStats(match.id);
 
               return (
                 <div 
                   key={match.id}
                   className="bet-row"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '16px',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.04)',
+                    borderRadius: '20px',
+                    padding: '16px',
+                    margin: 0
+                  }}
                 >
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'white' }}>
-                      {index + 1}. {match.home} - {match.away} ({match.info})
-                    </span>
-                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
-                      {dateStr}
-                    </span>
-                    {(() => {
-                      const { p1, pX, p2 } = getMatchStats(match.id);
-                      return (
-                        <div style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          flexWrap: 'wrap',
-                          gap: '6px', 
-                          marginTop: '6px', 
-                          fontSize: '11px', 
-                          color: 'rgba(255,255,255,0.3)'
-                        }}>
-                          <span>Voti utenti:</span>
-                          <span style={{ color: 'var(--gold)', fontWeight: 500 }}>
-                            {match.home} {p1}%
-                          </span>
-                          <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
-                          <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
-                            Pareggio {pX}%
-                          </span>
-                          <span style={{ color: 'rgba(255,255,255,0.15)' }}>•</span>
-                          <span style={{ color: 'var(--purple-light)', fontWeight: 500 }}>
-                            {match.away} {p2}%
-                          </span>
-                        </div>
-                      );
-                    })()}
+                  {/* Left Column: Match details & stats */}
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    
+                    {/* Index + Teams */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ 
+                        fontSize: '10px', 
+                        fontWeight: 800, 
+                        background: 'rgba(255,255,255,0.06)', 
+                        border: '1px solid rgba(255,255,255,0.1)', 
+                        color: 'var(--gold)', 
+                        width: '20px', 
+                        height: '20px', 
+                        borderRadius: '50%', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        flexShrink: 0 
+                      }}>
+                        {index + 1}
+                      </span>
+                      <span style={{ 
+                        fontSize: '14px', 
+                        fontWeight: 700, 
+                        color: 'white', 
+                        textOverflow: 'ellipsis', 
+                        overflow: 'hidden', 
+                        whiteSpace: 'nowrap' 
+                      }}>
+                        {match.home} - {match.away}
+                      </span>
+                    </div>
+
+                    {/* Subtitle: Date & Tournament Info */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>
+                        {dateStr}
+                      </span>
+                      <span style={{ 
+                        fontSize: '9px', 
+                        fontWeight: 700, 
+                        background: 'rgba(255,255,255,0.05)', 
+                        border: '1px solid rgba(255,255,255,0.08)', 
+                        color: 'rgba(255,255,255,0.5)', 
+                        padding: '2px 6px', 
+                        borderRadius: '6px', 
+                        textTransform: 'uppercase' 
+                      }}>
+                        {match.info}
+                      </span>
+                    </div>
+
+                    {/* Vote Percentages Stats */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>
+                      <span>Voti utenti:</span>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <span><strong style={{ color: 'var(--gold)' }}>1</strong>: {p1}%</span>
+                        <span><strong style={{ color: 'rgba(255,255,255,0.6)' }}>X</strong>: {pX}%</span>
+                        <span><strong style={{ color: 'var(--purple-light)' }}>2</strong>: {p2}%</span>
+                      </div>
+                    </div>
+
+                    {/* Segmented Votes Progress Bar */}
+                    <div style={{ display: 'flex', height: '4px', borderRadius: '2px', overflow: 'hidden', background: 'rgba(255,255,255,0.06)', marginTop: '4px', width: '100%' }}>
+                      <div style={{ width: `${p1}%`, background: 'var(--gold)', transition: 'width 0.3s' }} />
+                      <div style={{ width: `${pX}%`, background: 'rgba(255,255,255,0.25)', transition: 'width 0.3s' }} />
+                      <div style={{ width: `${p2}%`, background: 'var(--purple-light)', transition: 'width 0.3s' }} />
+                    </div>
+
                   </div>
-                  <input 
-                    type="text" 
-                    className="bet-input" 
-                    placeholder="1/X/2" 
-                    maxLength={1}
-                    value={predictions[match.id] || ''}
-                    onChange={(e) => handleInputChange(match.id, e.target.value)}
-                  />
+
+                  {/* Right Column: Prediction input */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                    <span style={{ fontSize: '8px', fontWeight: 800, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pronostico</span>
+                    <input 
+                      type="text" 
+                      className="bet-input" 
+                      placeholder="1/X/2" 
+                      maxLength={1}
+                      value={predictions[match.id] || ''}
+                      onChange={(e) => handleInputChange(match.id, e.target.value)}
+                      style={{
+                        width: '54px',
+                        height: '38px',
+                        background: 'rgba(0,0,0,0.35)',
+                        border: '1.5px solid rgba(255,255,255,0.1)',
+                        borderRadius: '10px',
+                        textAlign: 'center',
+                        color: 'var(--gold)',
+                        fontWeight: 800,
+                        fontSize: '14px',
+                        outline: 'none',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                        transition: 'all 0.2s',
+                        fontFamily: 'inherit'
+                      }}
+                    />
+                  </div>
+
                 </div>
               );
             })}
