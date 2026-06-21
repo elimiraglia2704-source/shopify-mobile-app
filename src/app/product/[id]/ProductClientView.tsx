@@ -40,21 +40,23 @@ export default function ProductClientView({ product }: { product: ShopifyProduct
 
   // States
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(() => {
-    return product.variants.edges[0]?.node;
+    return product?.variants?.edges?.[0]?.node;
   });
-  const [isFav, setIsFav] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('elisee:favorites');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          return parsed.includes(product.id);
-        }
-      } catch {}
-    }
-    return false;
-  });
+  const [isFav, setIsFav] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Load favorite state from localStorage on client side after mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('elisee:favorites');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setIsFav(parsed.includes(product.id));
+      }
+    } catch {
+      // ignore
+    }
+  }, [product.id]);
 
   // Handle Toast timeout
   useEffect(() => {

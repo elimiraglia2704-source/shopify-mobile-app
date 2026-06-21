@@ -113,6 +113,118 @@ export default function ProfilePage() {
     currency: 'EUR'
   });
 
+  // Ordini Reali da Shopify
+  const [realOrders, setRealOrders] = useState<any[]>([]);
+  const [isOrdersLoading, setIsOrdersLoading] = useState(false);
+
+  const fetchCustomerDetails = async (token: string) => {
+    setIsOrdersLoading(true);
+    const query = `
+      query getCustomerDetails($token: String!) {
+        customer(customerAccessToken: $token) {
+          firstName
+          lastName
+          email
+          orders(first: 20) {
+            edges {
+              node {
+                id
+                orderNumber
+                processedAt
+                totalPrice {
+                  amount
+                  currencyCode
+                }
+                financialStatus
+                fulfillmentStatus
+                lineItems(first: 5) {
+                  edges {
+                    node {
+                      title
+                      quantity
+                      variant {
+                        title
+                        image {
+                          url
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const res = await fetch('/api/shopify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, variables: { token } })
+      });
+      const data = await res.json();
+      const customer = data.data?.customer;
+      if (customer) {
+        const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || 'Utente';
+        setProfileName(fullName);
+        setProfileEmail(customer.email || '');
+        
+        // Salva localmente
+        localStorage.setItem('elisee:profile_name', fullName);
+        localStorage.setItem('elisee:profile_email', customer.email || '');
+
+        // Estrai gli ordini reali
+        const ordersList = customer.orders?.edges?.map((edge: any) => edge.node) || [];
+        setRealOrders(ordersList);
+      }
+    } catch (err) {
+      console.error("Errore nel recupero dettagli cliente:", err);
+    } finally {
+      setIsOrdersLoading(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    if (typeof window !== 'undefined' && window.PublicKeyCredential) {
+      try {
+        const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+        if (!available) {
+          alert("La biometria non è configurata o abilitata su questo dispositivo.");
+          return;
+        }
+
+        const assertion = await navigator.credentials.get({
+          publicKey: {
+            challenge: crypto.getRandomValues(new Uint8Array(32)),
+            rpId: window.location.hostname,
+            userVerification: "required",
+            timeout: 60000
+          }
+        });
+
+        if (assertion) {
+          const savedToken = localStorage.getItem('elisee:saved_token');
+          if (savedToken) {
+            localStorage.setItem('customerAccessToken', savedToken);
+            localStorage.removeItem('elisee:logged_out');
+            setIsLoggedIn(true);
+            fetchCustomerDetails(savedToken);
+            alert("Accesso biometrico eseguito con successo!");
+          } else {
+            alert("Nessun token salvato per l'accesso biometrico. Effettua prima l'accesso con email e password.");
+          }
+        }
+      } catch (err: any) {
+        console.error("Errore autenticazione biometrica:", err);
+        alert("Accesso biometrico annullato o non riuscito.");
+      }
+    } else {
+      alert("Questo browser o dispositivo non supporta l'autenticazione biometrica.");
+    }
+  };
+
   // Funzione per il caricamento dei preferiti da Shopify
   const fetchFavoriteProducts = async (idsToFetch: string[]) => {
     if (idsToFetch.length === 0) {
@@ -176,12 +288,17 @@ export default function ProfilePage() {
       if (savedEmail) setProfileEmail(savedEmail);
       if (savedAvatar) setProfileAvatar(savedAvatar);
 
+      const token = localStorage.getItem('customerAccessToken');
+      if (token && !loggedOut) {
+        fetchCustomerDetails(token);
+      }
+
       // Carica preferiti
       try {
-        const savedFavs = localStorage.getItem('elisee:favorites');
-        if (savedFavs) {
-          setFavIds(JSON.parse(savedFavs));
-        }
+         const savedFavs = localStorage.getItem('elisee:favorites');
+         if (savedFavs) {
+           setFavIds(JSON.parse(savedFavs));
+         }
       } catch {}
 
       // Carica impostazioni
@@ -224,7 +341,63 @@ export default function ProfilePage() {
     setActiveDrawer('none');
   };
 
-  const handleToggleSetting = (key: 'notifications' | 'sounds' | 'faceId') => {
+  const handleToggleSetting = async (key: 'notifications' | 'sounds' | 'faceId') => {
+    if (key === 'faceId') {
+      const enabling = !settings.faceId;
+      if (enabling) {
+        if (typeof window !== 'undefined' && window.PublicKeyCredential) {
+          try {
+            const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            if (!available) {
+              alert("La biometria non è supportata o abilitata su questo dispositivo.");
+              return;
+            }
+            
+            const challenge = crypto.getRandomValues(new Uint8Array(32));
+            const userId = crypto.getRandomValues(new Uint8Array(16));
+            
+            const credential = await navigator.credentials.create({
+              publicKey: {
+                challenge: challenge,
+                rp: { name: "Elisee Graphics", id: window.location.hostname },
+                user: {
+                  id: userId,
+                  name: profileEmail || "user@elisee.shop",
+                  displayName: profileName || "Utente Elisee"
+                },
+                pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
+                authenticatorSelection: {
+                  authenticatorAttachment: "platform",
+                  userVerification: "required",
+                  requireResidentKey: false
+                },
+                timeout: 60000
+              }
+            });
+            
+            if (credential) {
+              const token = localStorage.getItem('customerAccessToken');
+              if (token) {
+                localStorage.setItem('elisee:saved_token', token);
+              }
+              const updated = { ...settings, faceId: true };
+              setSettings(updated);
+              localStorage.setItem('elisee:settings', JSON.stringify(updated));
+              alert("Sblocco FaceID abilitato con successo!");
+            }
+          } catch (err: any) {
+            console.error("Errore attivazione biometria:", err);
+            alert("Impossibile attivare FaceID.");
+          }
+        } else {
+          alert("Questo browser non supporta la biometria.");
+        }
+        return;
+      } else {
+        localStorage.removeItem('elisee:saved_token');
+      }
+    }
+
     const updated = { ...settings, [key]: !settings[key] };
     setSettings(updated);
     localStorage.setItem('elisee:settings', JSON.stringify(updated));
@@ -250,16 +423,7 @@ export default function ProfilePage() {
     if (token) {
       localStorage.removeItem('elisee:logged_out');
       setIsLoggedIn(true);
-      
-      const savedEmail = localStorage.getItem('elisee_saved_email');
-      if (savedEmail) {
-        setProfileEmail(savedEmail);
-        const namePart = savedEmail.split('@')[0];
-        const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-        setProfileName(formattedName);
-        localStorage.setItem('elisee:profile_name', formattedName);
-        localStorage.setItem('elisee:profile_email', savedEmail);
-      }
+      fetchCustomerDetails(token);
     }
   };
 
@@ -320,6 +484,32 @@ export default function ProfilePage() {
         >
           Accedi o Registrati
         </button>
+        {settings.faceId && (
+          <button
+            onClick={handleBiometricLogin}
+            style={{
+              width: '100%',
+              maxWidth: '240px',
+              padding: '14px',
+              borderRadius: '16px',
+              background: 'rgba(255,255,255,0.06)',
+              color: 'var(--gold)',
+              fontWeight: 600,
+              fontSize: '14px',
+              border: '1px solid var(--gold)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              marginTop: '12px',
+              boxShadow: '0 4px 15px rgba(212,175,55,0.1)'
+            }}
+          >
+            <Fingerprint size={18} />
+            Accedi con FaceID
+          </button>
+        )}
         <AuthModal isOpen={isAuthModalOpen} onClose={handleAuthClose} />
       </div>
     );
@@ -375,11 +565,11 @@ export default function ProfilePage() {
             <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-sub)' }}>Ordini</span>
           </div>
           
-          <div id="btn-profile-pass" onClick={() => setActiveDrawer('pass')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+          <div id="btn-profile-pass" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', cursor: 'default', opacity: 0.3 }}>
             <div style={{ width: '46px', height: '46px', borderRadius: '16px', background: 'rgba(155,89,208,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(155,89,208,0.25)', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.05)' }}>
               <QrCode style={{ width: '22px', height: '22px', color: 'var(--purple-light)' }} />
             </div>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-sub)' }}>Pass</span>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-sub)' }}>Prossimamente...</span>
           </div>
 
           <div id="btn-profile-wishlist" onClick={() => setActiveDrawer('favorites')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
@@ -485,37 +675,66 @@ export default function ProfilePage() {
         title="Modifica Profilo"
       >
         <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Avatar selector */}
+          {/* Avatar selector & upload */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-            <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--gold)' }}>
-              <Image src={profileAvatar} alt="Preview" fill style={{ objectFit: 'cover' }} />
+            <div 
+              onClick={() => document.getElementById('avatar-upload-input')?.click()}
+              style={{ 
+                position: 'relative', 
+                width: '80px', 
+                height: '80px', 
+                borderRadius: '50%', 
+                overflow: 'hidden', 
+                border: '2px solid var(--gold)',
+                cursor: 'pointer',
+                background: 'rgba(255,255,255,0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+              }}
+              title="Clicca per caricare un'immagine"
+            >
+              {profileAvatar ? (
+                <Image src={profileAvatar} alt="Preview" fill style={{ objectFit: 'cover' }} />
+              ) : (
+                <User size={36} color="rgba(255,255,255,0.3)" />
+              )}
             </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {['/enea.png', 'avatar2'].map((av) => {
-                const isSelected = profileAvatar === av || (av === 'avatar2' && profileAvatar !== '/enea.png');
-                const avSrc = av === '/enea.png' ? '/enea.png' : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80';
-                return (
-                  <button 
-                    type="button"
-                    key={av} 
-                    onClick={() => setProfileAvatar(avSrc)}
-                    style={{ 
-                      width: '40px', 
-                      height: '40px', 
-                      borderRadius: '50%', 
-                      overflow: 'hidden', 
-                      border: isSelected ? '2px solid var(--gold)' : '1px solid rgba(255,255,255,0.2)', 
-                      padding: 0, 
-                      cursor: 'pointer',
-                      background: 'none',
-                      position: 'relative'
-                    }}
-                  >
-                    <Image src={avSrc} alt="Avatar option" fill style={{ objectFit: 'cover' }} />
-                  </button>
-                );
-              })}
-            </div>
+            <input 
+              type="file" 
+              id="avatar-upload-input" 
+              accept="image/*" 
+              style={{ display: 'none' }} 
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    if (event.target?.result) {
+                      setProfileAvatar(event.target.result as string);
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => document.getElementById('avatar-upload-input')?.click()}
+              style={{
+                background: 'rgba(212,175,55,0.1)',
+                border: '1px solid var(--gold)',
+                color: 'var(--gold)',
+                borderRadius: '12px',
+                padding: '6px 12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Carica Immagine
+            </button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -568,35 +787,66 @@ export default function ProfilePage() {
         title="I Miei Ordini"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {mockOrders.map((ord) => (
-            <div 
-              key={ord.id}
-              style={{ 
-                background: 'rgba(255,255,255,0.03)', 
-                border: '1px solid rgba(255,255,255,0.05)', 
-                borderRadius: '16px', 
-                padding: '16px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '12px' 
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>Ordine {ord.id}</span>
-                <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '10px', background: `${ord.color}15`, color: ord.color, border: `1px solid ${ord.color}30` }}>
-                  {ord.status}
-                </span>
-              </div>
-              <div>
-                <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'white', marginBottom: '2px' }}>{ord.item}</h4>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Dispositivo: {ord.size}</p>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px', marginTop: '2px' }}>
-                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{ord.date}</span>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: 'white' }}>{ord.price}</span>
-              </div>
+          {isOrdersLoading ? (
+            <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--gold)', fontSize: '14px' }}>
+              Caricamento ordini...
             </div>
-          ))}
+          ) : realOrders.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px 16px', color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>
+              Non hai ancora effettuato ordini.
+            </div>
+          ) : (
+            realOrders.map((ord) => {
+              const dateStr = ord.processedAt ? new Date(ord.processedAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+              const firstItem = ord.lineItems?.edges?.[0]?.node;
+              const title = firstItem?.title || 'Cover Elisee';
+              const variantTitle = firstItem?.variant?.title || '';
+              const quantity = firstItem?.quantity || 1;
+              const additionalCount = (ord.lineItems?.edges?.length || 1) - 1;
+              const displayTitle = additionalCount > 0 ? `${title} (x${quantity}) + ${additionalCount} art.` : `${title} (x${quantity})`;
+              const price = ord.totalPrice ? `€${parseFloat(ord.totalPrice.amount).toFixed(2)}` : 'N/D';
+              
+              let statusText = 'In Lavorazione';
+              let statusColor = 'var(--gold)';
+              if (ord.fulfillmentStatus === 'FULFILLED') {
+                statusText = 'Spedito';
+                statusColor = '#4caf50';
+              } else if (ord.fulfillmentStatus === 'RESTOCKED' || ord.financialStatus === 'REFUNDED') {
+                statusText = 'Rimborsato';
+                statusColor = '#ff4d4d';
+              }
+
+              return (
+                <div 
+                  key={ord.id}
+                  style={{ 
+                    background: 'rgba(255,255,255,0.03)', 
+                    border: '1px solid rgba(255,255,255,0.05)', 
+                    borderRadius: '16px', 
+                    padding: '16px', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '12px' 
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>Ordine #{ord.orderNumber}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '10px', background: `${statusColor}15`, color: statusColor, border: `1px solid ${statusColor}30` }}>
+                      {statusText}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'white', marginBottom: '2px' }}>{displayTitle}</h4>
+                    {variantTitle && <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Dispositivo: {variantTitle}</p>}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px', marginTop: '2px' }}>
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{dateStr}</span>
+                    <span style={{ fontSize: '15px', fontWeight: 700, color: 'white' }}>{price}</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </ProfileDrawer>
 
