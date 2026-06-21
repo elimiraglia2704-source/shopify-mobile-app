@@ -164,6 +164,7 @@ function sendMatchNotification(title: string, body: string, tag: string) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function BettingPage() {
   const [matches, setMatches] = useState<Match[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [predictions, setPredictions] = useState<{ [matchId: string]: string }>({});
   const [submitting, setSubmitting] = useState(false);
@@ -236,9 +237,9 @@ export default function BettingPage() {
       });
   }, [now, matches, notificationsOn, bettedMatchIds]);
 
-  // Fetch matches with polling every 15s
+  // Fetch matches and standings with polling
   useEffect(() => {
-    const fetchMatches = async () => {
+    const fetchData = async () => {
       try {
         const res = await fetch('/api/sports/matches');
         if (res.ok) {
@@ -249,12 +250,24 @@ export default function BettingPage() {
         }
       } catch {
         setMatches(FALLBACK_MATCHES);
+      }
+
+      try {
+        const res = await fetch('/api/sports/standings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.groups && data.groups.length > 0) {
+            setGroups(data.groups);
+          }
+        }
+      } catch (err) {
+        console.error("Errore fetch standings:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchMatches();
-    const interval = setInterval(fetchMatches, 15000);
+    fetchData();
+    const interval = setInterval(fetchData, 20000);
     return () => clearInterval(interval);
   }, []);
 
@@ -343,6 +356,8 @@ export default function BettingPage() {
     }
   };
 
+  const displayGroups = groups.length > 0 ? groups : WORLD_CUP_GROUPS;
+
   return (
     <div style={{ background: 'transparent', minHeight: '100vh', paddingBottom: '120px' }}>
 
@@ -412,7 +427,7 @@ export default function BettingPage() {
               msOverflowStyle: 'none',
               scrollbarWidth: 'none',
             }}>
-              {WORLD_CUP_GROUPS.map((group) => (
+              {displayGroups.map((group: Group) => (
                 <div
                   key={group.name}
                   style={{
@@ -444,7 +459,7 @@ export default function BettingPage() {
                   </div>
 
                   {/* Rows */}
-                  {group.teams.map((team, i) => (
+                  {group.teams.map((team: TeamRow, i: number) => (
                     <div
                       key={team.name}
                       style={{
@@ -570,7 +585,12 @@ export default function BettingPage() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {matches.map((match, index) => {
+            {matches
+              .filter(match => {
+                const liveInfo = getLiveScore(match.id, matches);
+                return liveInfo.status !== 'finished';
+              })
+              .map((match, index) => {
               const liveInfo = getLiveScore(match.id, matches);
               const isLive = liveInfo.status === 'live';
               const isFinished = liveInfo.status === 'finished';

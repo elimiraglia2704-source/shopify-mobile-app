@@ -1340,26 +1340,6 @@ export default function ProfilePage() {
         title="EliClub"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* Progress Section */}
-          <div style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '20px', padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <div>
-                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px' }}>Livello Attuale</span>
-                <h4 style={{ fontSize: '18px', fontWeight: 800, color: vipLevelColor }}>{vipLevelName}</h4>
-              </div>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)' }}>{totalPoints.toLocaleString('it-IT')} <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>pt</span></div>
-            </div>
-            
-            {/* Progress bar */}
-            <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
-              <div style={{ width: `${progressPercent}%`, height: '100%', background: 'linear-gradient(90deg, var(--gold), #f39c12)', borderRadius: '4px' }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
-              <span>{totalPoints >= 1500 ? 'Livello Max' : totalPoints >= 500 ? 'Livello Gold' : 'Livello Silver'}</span>
-              <span>{totalPoints >= 1500 ? 'Livello Massimo Raggiunto 🎉' : `Mancano ${pointsToNext} punti al livello ${nextLevelName}`}</span>
-            </div>
-          </div>
-
           {/* Simulator Widget */}
           <div style={{
             background: 'var(--panel-bg)',
