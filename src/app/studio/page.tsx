@@ -55,8 +55,8 @@ export default function StudioPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
           {/* Card 1 */}
-          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Image src="/banner-antica-panetteria-del-corso.png" alt="Antica Panetteria" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
+            <Image src="/banner-antica-panetteria-del-corso.png" alt="Antica Panetteria" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 Collaborazione Elisee Graphic con Antica Panetteria del Corso
@@ -65,8 +65,8 @@ export default function StudioPage() {
           </div>
 
           {/* Card 2 */}
-          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Image src="/portfolio-pranziamo.jpg" alt="PranziAmo" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
+            <Image src="/portfolio-pranziamo.jpg" alt="PranziAmo" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 Collaborazione Elisee Graphic con PranziAmo
@@ -75,8 +75,8 @@ export default function StudioPage() {
           </div>
 
           {/* Card 3 */}
-          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Image src="/portfolio-macelleria.jpg" alt="Macelleria" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
+            <Image src="/portfolio-macelleria.jpg" alt="Macelleria" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 Collaborazione Elisee Graphic con Macelleria da Carmine
@@ -85,8 +85,8 @@ export default function StudioPage() {
           </div>
 
           {/* Card 4 */}
-          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Image src="/shop-cat-sport.jpg" alt="Sport Shop" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
+            <Image src="/shop-cat-sport.jpg" alt="Sport Shop" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 Collaborazione Elisee Graphic con Sport Shop
@@ -95,8 +95,8 @@ export default function StudioPage() {
           </div>
 
           {/* Card 5 */}
-          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <Image src="/shop-cat-scarpe.jpg" alt="Accessori Moda" fill style={{ objectFit: 'cover', opacity: 0.6 }} />
+          <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', background: '#0a0a0a' }}>
+            <Image src="/shop-cat-scarpe.jpg" alt="Accessori Moda" fill style={{ objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 16px', background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                 Collaborazione Elisee Graphic con Accessori Moda
