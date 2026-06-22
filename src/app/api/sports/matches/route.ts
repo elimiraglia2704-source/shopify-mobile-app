@@ -71,7 +71,7 @@ interface CacheEntry {
   timestamp: number;
 }
 const dateCache: Record<string, CacheEntry> = {};
-const CACHE_TTL = 15000; // 15 secondi di cache per data
+const CACHE_TTL = 30000; // 30 secondi di cache per data
 
 async function fetchEspnScoreboard(dateStr: string): Promise<EspnScoreboardData | null> {
   const now = Date.now();
@@ -80,19 +80,28 @@ async function fetchEspnScoreboard(dateStr: string): Promise<EspnScoreboardData 
     return cached.data;
   }
 
+  // Timeout di 4 secondi per evitare che la pagina si blocchi se ESPN non risponde
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
   try {
     const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateStr}`;
     const res = await fetch(url, {
       cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache' }
+      headers: { 'Cache-Control': 'no-cache' },
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     if (res.ok) {
       const data = await res.json() as EspnScoreboardData;
       dateCache[dateStr] = { data, timestamp: now };
       return data;
     }
   } catch (err) {
-    console.error(`Errore fetch ESPN per data ${dateStr}:`, err);
+    clearTimeout(timeoutId);
+    if ((err as Error).name !== 'AbortError') {
+      console.error(`Errore fetch ESPN per data ${dateStr}:`, err);
+    }
   }
   return cached ? cached.data : null;
 }
@@ -153,12 +162,12 @@ function getMatchId(home: string, away: string, espnId: string): string {
 export async function GET() {
   const now = new Date();
   
-  // Genera le date da ieri fino a 4 giorni futuri (totale 5 giorni scansionati)
+  // Genera le date: ieri, oggi e domani (3 giorni totali — per ridurre latenza)
   const datesToScan: string[] = [];
   const startDay = new Date();
   startDay.setDate(startDay.getDate() - 1); // partiamo da ieri
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     const d = new Date(startDay);
     d.setDate(d.getDate() + i);
     const yyyy = d.getFullYear();
@@ -167,7 +176,12 @@ export async function GET() {
     datesToScan.push(`${yyyy}${mm}${dd}`);
   }
 
-  const mappedMatches: any[] = [];
+  interface MappedMatch {
+    id: string; home: string; away: string; info: string; startTime: string;
+    status: 'scheduled' | 'live' | 'finished'; label: string;
+    homeScore: number; awayScore: number; elapsedMins: number;
+  }
+  const mappedMatches: MappedMatch[] = [];
   const processedEventIds = new Set<string>();
 
   // Esegue il fetch sequenziale dei dati ESPN per ciascun giorno

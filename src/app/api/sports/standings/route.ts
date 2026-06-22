@@ -137,7 +137,9 @@ interface EspnStandingsData {
   children?: EspnGroup[];
 }
 
-let cachedStandings: any = null;
+interface StandingsGroup { name: string; teams: { name: string; flag: string; g: number; v: number; p: number; s: number; gf: number; gs: number; pts: number; }[]; }
+
+let cachedStandings: StandingsGroup[] | null = null;
 let lastCacheTime = 0;
 const CACHE_TTL = 30000; // 30 secondi di cache
 
@@ -147,11 +149,17 @@ export async function GET() {
     return NextResponse.json({ groups: cachedStandings });
   }
 
+  // Timeout di 4 secondi per evitare blocchi se ESPN non risponde
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
+
   try {
     const res = await fetch('https://site.api.espn.com/apis/v2/sports/soccer/fifa.world/standings', {
       cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache' }
+      headers: { 'Cache-Control': 'no-cache' },
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     if (res.ok) {
       const data = await res.json() as EspnStandingsData;
       if (data.children) {
@@ -200,7 +208,10 @@ export async function GET() {
       }
     }
   } catch (err) {
-    console.error("Errore fetch standings:", err);
+    clearTimeout(timeoutId);
+    if ((err as Error).name !== 'AbortError') {
+      console.error("Errore fetch standings:", err);
+    }
   }
 
   // Fallback se ESPN non risponde o dà errore
