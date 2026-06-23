@@ -20,14 +20,14 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
     ChatMessage(text: 'Ciao! Sono Elisee, il tuo AI Stylist e Direttore Creativo. Come posso aiutarti oggi?', isUser: false)
   ]);
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8000/api/ai'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://shopify-mobile-app-omega.vercel.app'));
 
   Future<void> sendMessage(String text) async {
     // Aggiungi il messaggio dell'utente
     state = [...state, ChatMessage(text: text, isUser: true)];
 
     try {
-      final response = await _dio.post('/chat', data: {
+      final response = await _dio.post('/api/ai/chat', data: {
         'message': text,
         'sessionId': 'flutter_mobile_user',
         'profile': {'name': 'Utente Mobile'} // Potrebbe venire dal profileProvider
